@@ -36,6 +36,10 @@
 *.ilk
 *.exp
 
+# Build logs
+*.tlog
+*.log
+
 # Unreal Engine 4
 FirstPerson/Build/*
 FirstPerson/Binaries/*
@@ -79,6 +83,8 @@ FirstPerson/Plugins/VoxelMate/Intermediate/CachedAssetRegistry.bin
 FirstPerson/Plugins/VoxelMate/Content/GTFreeMaterials/*
 FirstPerson/Plugins/VoxelMate/Content/StarterContent/*
 
-# Build logs
-*.tlog
-*.log
+FirstPerson/Source/ThirdParty/OpenVDB/src/openvdb/viewer/build_doc/*
+FirstPerson/Source/ThirdParty/OpenVDB/src/openvdb/viewer/viewer/build_doc/*
+FirstPerson/Source/ThirdParty/OpenVDB/src/openvdb/viewer/viewer/glfw-legacy-master/docs/*
+FirstPerson/Source/ThirdParty/OpenVDB/src/openvdb/viewer/glfw-legacy-master/docs/*
+FirstPerson/Source/ThirdParty/OpenVDB/src/openvdb/viewer/viewer/glfw-legacy-master/examples/*
