@@ -114,12 +114,12 @@
       <SDLCheck>false</SDLCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)\src;C:\Program Files\Epic Games\4.12\Engine\Source\ThirdParty\zlib\zlib-1.2.5\Inc;C:\Program Files\Epic Games\4.12\Engine\Source\ThirdParty\IntelTBB\IntelTBB-4.4u3\include;C:\Program Files\Epic Games\4.12\Engine\Source\ThirdParty\openexr\Deploy\include;C:\boost\boost_1_59_0</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);OPENVDB_PRIVATE;OPENVDB_STATICLIB;OPENVDB_OPENEXR_STATICLIB</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
-      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
