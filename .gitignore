@@ -37,26 +37,26 @@
 *.exp
 
 # Unreal Engine 4
-CosmicSafari/Build/*
-CosmicSafari/Binaries/*
-CosmicSafari/Build/Receipts/*
-CosmicSafari/Intermediate/Build/*
-CosmicSafari/Intermediate/Config/*
-CosmicSafari/Intermediate/Staging/*
-CosmicSafari/Intermediate/AssetRegistryCache/*
-CosmicSafari/Saved/*
-CosmicSafari/Intermediate/ProjectFiles/obj/*
-CosmicSafari/Content/FirstPerson/*
-CosmicSafari/Content/FirstPersonCPP/*
-CosmicSafari/Content/Geometry/*
-CosmicSafari/Content/Flying/*
-CosmicSafari/Content/FlyingCPP/*
-CosmicSafari/ThirdParty/Build/*
-CosmicSafari/DerivedDataCache
-CosmicSafari/Intermediate/ReimportCache
-CosmicSafari/Intermediate/CachedAssetRegistry.bin
-CosmicSafari/Content/GTFreeMaterials/*
-CosmicSafari/Content/StarterContent/*
+FirstPerson/Build/*
+FirstPerson/Binaries/*
+FirstPerson/Build/Receipts/*
+FirstPerson/Intermediate/Build/*
+FirstPerson/Intermediate/Config/*
+FirstPerson/Intermediate/Staging/*
+FirstPerson/Intermediate/AssetRegistryCache/*
+FirstPerson/Saved/*
+FirstPerson/Intermediate/ProjectFiles/obj/*
+FirstPerson/Content/FirstPerson/*
+FirstPerson/Content/FirstPersonCPP/*
+FirstPerson/Content/Geometry/*
+FirstPerson/Content/Flying/*
+FirstPerson/Content/FlyingCPP/*
+FirstPerson/ThirdParty/Build/*
+FirstPerson/DerivedDataCache
+FirstPerson/Intermediate/ReimportCache
+FirstPerson/Intermediate/CachedAssetRegistry.bin
+FirstPerson/Content/GTFreeMaterials/*
+FirstPerson/Content/StarterContent/*
 
 # Build logs
 *.tlog
