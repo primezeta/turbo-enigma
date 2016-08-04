@@ -58,6 +58,27 @@ FirstPerson/Intermediate/CachedAssetRegistry.bin
 FirstPerson/Content/GTFreeMaterials/*
 FirstPerson/Content/StarterContent/*
 
+FirstPerson/Plugins/VoxelMate/Build/*
+FirstPerson/Plugins/VoxelMate/Binaries/*
+FirstPerson/Plugins/VoxelMate/Build/Receipts/*
+FirstPerson/Plugins/VoxelMate/Intermediate/Build/*
+FirstPerson/Plugins/VoxelMate/Intermediate/Config/*
+FirstPerson/Plugins/VoxelMate/Intermediate/Staging/*
+FirstPerson/Plugins/VoxelMate/Intermediate/AssetRegistryCache/*
+FirstPerson/Plugins/VoxelMate/Saved/*
+FirstPerson/Plugins/VoxelMate/Intermediate/ProjectFiles/obj/*
+FirstPerson/Plugins/VoxelMate/Content/FirstPerson/*
+FirstPerson/Plugins/VoxelMate/Content/FirstPersonCPP/*
+FirstPerson/Plugins/VoxelMate/Content/Geometry/*
+FirstPerson/Plugins/VoxelMate/Content/Flying/*
+FirstPerson/Plugins/VoxelMate/Content/FlyingCPP/*
+FirstPerson/Plugins/VoxelMate/ThirdParty/Build/*
+FirstPerson/Plugins/VoxelMate/DerivedDataCache
+FirstPerson/Plugins/VoxelMate/Intermediate/ReimportCache
+FirstPerson/Plugins/VoxelMate/Intermediate/CachedAssetRegistry.bin
+FirstPerson/Plugins/VoxelMate/Content/GTFreeMaterials/*
+FirstPerson/Plugins/VoxelMate/Content/StarterContent/*
+
 # Build logs
 *.tlog
 *.log
