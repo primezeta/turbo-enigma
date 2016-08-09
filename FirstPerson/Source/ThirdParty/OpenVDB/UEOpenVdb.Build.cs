@@ -23,7 +23,7 @@ public class UEOpenVdb : ModuleRules
         PublicLibraryPaths.AddRange(ThirdPartyLibPaths);
         PublicAdditionalLibraries.AddRange(ThirdPartyLibNames);
         PublicDependencyModuleNames.AddRange(new string[] {"UEOpenExr", "IntelTBB", "zlib"});
-        Definitions.AddRange(new string[] { "ZLIB_STATIC", "OPENVDB_STATICLIB", "OPENVDB_OPENEXR_STATICLIB" });
+        Definitions.AddRange(new string[] { "ZLIB_STATIC", "OPENVDB_STATICLIB", "OPENVDB_OPENEXR_STATICLIB", "OPENVDB_2_ABI_COMPATIBLE" });
     }
     
     private string PlatformPath
