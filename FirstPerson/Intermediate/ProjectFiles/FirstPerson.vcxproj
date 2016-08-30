@@ -266,6 +266,7 @@
     <ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMate.cpp" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\GridDescriptorInOut.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMatePrivatePCH.h" />
+    <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMateStreams.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelData.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabase.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelMate.h" />

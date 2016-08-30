@@ -4745,4 +4745,10 @@
       <Filter>Plugins\VoxelMate\Source\Private</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\GridDescriptorInOut.h" />
+    <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMateStreams.h">
+      <Filter>Plugins\VoxelMate\Source\Private</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
