@@ -189,6 +189,7 @@ public:
 		RegisterStandardGrid<FVector2D>();
 		RegisterStandardGrid<FVector>();
 		RegisterStandardGrid<FVector4>();
+		RegisterStandardGrid<FIntVector2>();
 		RegisterStandardGrid<FIntVector>();
 		RegisterStandardGrid<FIntVector4>();
 		RegisterStandardGrid<FUintVector4>();
