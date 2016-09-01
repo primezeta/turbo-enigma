@@ -4,6 +4,7 @@
 #include "Math/Vector.h"
 #include "Math/Vector4.h"
 #include "Math/IntVector.h"
+#include "IntVector2.h"
 #pragma warning(1:4211 4800 4503 4146)
 #include <openvdb/openvdb.h>
 
@@ -24,6 +25,11 @@ template<> inline FVector openvdb::zeroVal<FVector>()
 template<> inline FVector4 openvdb::zeroVal<FVector4>()
 {
 	return FVector4(ForceInitToZero);
+}
+
+template<> inline FIntVector2 openvdb::zeroVal<FIntVector2>()
+{
+	return FIntVector2::ZeroValue;
 }
 
 template<> inline FIntVector openvdb::zeroVal<FIntVector>()
@@ -54,6 +60,13 @@ std::ostream& operator<<(std::ostream& os, const FVector4& Vec);
 FVector4 operator+(const FVector4& Vec, const float& Val);
 bool operator<(const FVector4& Lhs, const FVector4& Rhs);
 bool operator>(const FVector4& Lhs, const FVector4& Rhs);
+
+inline FIntVector2 Abs(const FIntVector2 &IVec);
+std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec);
+FIntVector2 operator+(const FIntVector2& Vec, const float& Val);
+FIntVector2 operator-(const FIntVector2& Vec);
+bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs);
+bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs);
 
 inline FIntVector Abs(const FIntVector &IVec);
 std::ostream& operator<<(std::ostream& os, const FIntVector& Vec);

@@ -69,6 +69,39 @@ bool operator>(const FVector4& Lhs, const FVector4& Rhs)
 		   Lhs.W > Rhs.W;
 }
 
+FIntVector2 Abs(const FIntVector2 &IVec)
+{
+	return FIntVector2(FMath::Abs(IVec.X), FMath::Abs(IVec.Y));
+}
+
+std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec)
+{
+	os << Vec.X << Vec.Y;
+	return os;
+}
+
+FIntVector2 operator+(const FIntVector2& Vec, const float& Val)
+{
+	return FIntVector2(Vec.X + Val, Vec.Y + Val);
+}
+
+FIntVector2 operator-(const FIntVector2& Vec)
+{
+	return FIntVector2(-Vec.X, -Vec.Y);
+}
+
+bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs)
+{
+	return Lhs.X < Rhs.X ||
+		   Lhs.Y < Rhs.Y;
+}
+
+bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs)
+{
+	return Lhs.X > Rhs.X &&
+		   Lhs.Y > Rhs.Y;
+}
+
 FIntVector Abs(const FIntVector &IVec)
 {
 	return FIntVector(FMath::Abs(IVec.X), FMath::Abs(IVec.Y), FMath::Abs(IVec.Z));
