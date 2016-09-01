@@ -47,6 +47,11 @@ template<> inline FUintVector4 openvdb::zeroVal<FUintVector4>()
 	return FUintVector4(ForceInitToZero);
 }
 
+template<> inline FMatrix openvdb::zeroVal<FMatrix>()
+{
+	return FMatrix(ForceInitToZero);
+}
+
 inline FVector2D Abs(const FVector2D& Vec);
 std::ostream& operator<<(std::ostream& os, const FVector2D& Vec);
 
@@ -92,3 +97,5 @@ FUintVector4 operator-(const FUintVector4& Lhs, const FUintVector4& Rhs);
 FUintVector4 operator-(const FUintVector4& Vec);
 bool operator<(const FUintVector4& Lhs, const FUintVector4& Rhs);
 bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs);
+
+std::ostream& operator<<(std::ostream& os, const FMatrix& Mat);

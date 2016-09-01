@@ -201,15 +201,12 @@ public:
 		RegisterMetaType<int32>();
 		RegisterMetaType<int64>();
 		RegisterMetaType<FGridDatabaseString>();
-		RegisterMetaType<openvdb::Vec2i>();
-		RegisterMetaType<openvdb::Vec2s>();
-		RegisterMetaType<openvdb::Vec2d>();
-		RegisterMetaType<openvdb::Vec3i>();
-		RegisterMetaType<openvdb::Vec3s>();
-		RegisterMetaType<openvdb::Vec3d>();
-		RegisterMetaType<openvdb::Mat4s>();
-		RegisterMetaType<openvdb::Mat4d>();
-		RegisterMetaType<openvdb::PointIndex32>();
+		RegisterMetaType<FIntVector2>();
+		RegisterMetaType<FVector2D>();
+		RegisterMetaType<FIntVector>();
+		RegisterMetaType<FVector>();
+		RegisterMetaType<FMatrix>();
+		RegisterMetaType<FPointIndex32>();
 
 		openvdb::math::MapRegistry::clear();
 		RegisterTransformMapType<openvdb::math::AffineMap>();

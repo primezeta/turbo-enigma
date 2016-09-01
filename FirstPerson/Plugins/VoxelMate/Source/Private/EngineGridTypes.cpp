@@ -230,3 +230,12 @@ bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs)
 		   Lhs.Z > Rhs.Z &&
 		   Lhs.W > Rhs.W;
 }
+
+std::ostream& operator<<(std::ostream& os, const FMatrix& Mat)
+{
+	os << Mat.M[0][0] << Mat.M[0][1] << Mat.M[0][2] << Mat.M[0][3];
+	os << Mat.M[1][0] << Mat.M[1][1] << Mat.M[1][2] << Mat.M[1][3];
+	os << Mat.M[2][0] << Mat.M[2][1] << Mat.M[2][2] << Mat.M[2][3];
+	os << Mat.M[3][0] << Mat.M[3][1] << Mat.M[3][2] << Mat.M[3][3];
+	return os;
+}
