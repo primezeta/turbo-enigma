@@ -195,6 +195,22 @@ namespace GridIOStatics
 	}
 };
 
+namespace MetadataStatics
+{
+	static inline void ClearRegistry()
+	{
+		openvdb::Metadata::clearRegistry();
+	}
+};
+
+namespace TransformMapStatics
+{
+	static inline void ClearRegistry()
+	{
+		openvdb::math::MapRegistry::clear();
+	}
+}
+
 class FGridArchive : public openvdb::io::Archive
 {
 public:

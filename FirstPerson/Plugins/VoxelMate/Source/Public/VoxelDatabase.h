@@ -194,7 +194,7 @@ public:
 		RegisterStandardGrid<FIntVector4>();
 		RegisterStandardGrid<FUintVector4>();
 
-		openvdb::Metadata::clearRegistry();
+		MetadataStatics::ClearRegistry();
 		RegisterMetaType<bool>();
 		RegisterMetaType<double>();
 		RegisterMetaType<float>();
@@ -208,7 +208,7 @@ public:
 		RegisterMetaType<FMatrix>();
 		RegisterMetaType<FPointIndex32>();
 
-		openvdb::math::MapRegistry::clear();
+		TransformMapStatics::ClearRegistry();
 		RegisterTransformMapType<openvdb::math::AffineMap>();
 		RegisterTransformMapType<openvdb::math::UnitaryMap>();
 		RegisterTransformMapType<openvdb::math::ScaleMap>();
