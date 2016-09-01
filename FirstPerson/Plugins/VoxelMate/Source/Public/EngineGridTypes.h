@@ -8,10 +8,6 @@
 #pragma warning(1:4211 4800 4503 4146)
 #include <openvdb/openvdb.h>
 
-//The following types are supported as grid voxel types:
-//FVector2D, FVector, FVector4, FIntVector, FIntVector4, FUintVector4, FTransform2D,
-//FTransform, FRotator, FQuat2D, FQuat, FMatrix2x2, FMatrix, FBox, FBox2D
-
 template<> inline FVector2D openvdb::zeroVal<FVector2D>()
 {
 	return FVector2D::ZeroVector;

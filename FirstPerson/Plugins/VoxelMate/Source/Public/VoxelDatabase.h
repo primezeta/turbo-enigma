@@ -209,14 +209,14 @@ public:
 		RegisterMetaType<FPointIndex32>();
 
 		TransformMapStatics::ClearRegistry();
-		RegisterTransformMapType<openvdb::math::AffineMap>();
-		RegisterTransformMapType<openvdb::math::UnitaryMap>();
-		RegisterTransformMapType<openvdb::math::ScaleMap>();
-		RegisterTransformMapType<openvdb::math::UniformScaleMap>();
-		RegisterTransformMapType<openvdb::math::TranslationMap>();
-		RegisterTransformMapType<openvdb::math::ScaleTranslateMap>();
-		RegisterTransformMapType<openvdb::math::UniformScaleTranslateMap>();
-		RegisterTransformMapType<openvdb::math::NonlinearFrustumMap>();
+		RegisterTransformMapType<FTransformAffineMap>();
+		RegisterTransformMapType<FTransformUnitaryMap>();
+		RegisterTransformMapType<FTransformScaleMap>();
+		RegisterTransformMapType<FTransformUniformScaleMap>();
+		RegisterTransformMapType<FTransformTranslationMap>();
+		RegisterTransformMapType<FTransformScaleTranslateMap>();
+		RegisterTransformMapType<FTransformUniformScaleTranslateMap>();
+		RegisterTransformMapType<FTransformNonlinearFrustumMap>();
 	}
 
 	bool ContainsGrid(const FString& gridName) const

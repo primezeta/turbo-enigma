@@ -431,6 +431,15 @@ public:
 	}
 };
 
+typedef FTransformMap<openvdb::math::AffineMap> FTransformAffineMap;
+typedef FTransformMap<openvdb::math::UnitaryMap> FTransformUnitaryMap;
+typedef FTransformMap<openvdb::math::ScaleMap> FTransformScaleMap;
+typedef FTransformMap<openvdb::math::UniformScaleMap> FTransformUniformScaleMap;
+typedef FTransformMap<openvdb::math::TranslationMap> FTransformTranslationMap;
+typedef FTransformMap<openvdb::math::ScaleTranslateMap> FTransformScaleTranslateMap;
+typedef FTransformMap<openvdb::math::UniformScaleTranslateMap> FTransformUniformScaleTranslateMap;
+typedef FTransformMap<openvdb::math::NonlinearFrustumMap> FTransformNonlinearFrustumMap;
+
 class FGridDescriptor
 {
 public:
