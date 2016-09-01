@@ -262,11 +262,13 @@
     <None Include="..\..\Config\DefaultGame.ini" />
     <None Include="..\..\Config\DefaultInput.ini" />
     <None Include="..\..\Plugins\VoxelMate\Source\VoxelMate.Build.cs" />
+    <ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\EngineGridTypes.cpp" />
     <ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\VoxelData.cpp" />
     <ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMate.cpp" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\GridDescriptorInOut.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMatePrivatePCH.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMateStreams.h" />
+    <ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\EngineGridTypes.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelData.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabase.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelMate.h" />

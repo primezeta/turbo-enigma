@@ -4744,11 +4744,17 @@
     <ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\VoxelData.cpp">
       <Filter>Plugins\VoxelMate\Source\Private</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\EngineGridTypes.cpp">
+      <Filter>Plugins\VoxelMate\Source\Private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\GridDescriptorInOut.h" />
     <ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMateStreams.h">
       <Filter>Plugins\VoxelMate\Source\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\EngineGridTypes.h">
+      <Filter>Plugins\VoxelMate\Source\Public</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -35,6 +35,7 @@ typedef std::multimap<FGridName, FGridDescriptor> FGridDescriptorNameMap;
 typedef FGridDescriptorNameMap::iterator FGridDescriptorNameMapIter;
 typedef FGridDescriptorNameMap::const_iterator FGridDescriptorNameMapCIter;
 typedef openvdb::MetaMap FMetaMap;
+typedef openvdb::PointIndex32 FPointIndex32;
 
 //openvdb::io::COMPRESS_NONE
 //openvdb::io::COMPRESS_ZIP

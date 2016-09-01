@@ -7,8 +7,6 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogVoxelDatabase, Log, All)
 
-//class FVoxelTransform;
-
 #undef verify
 #undef check
 #define verifyue4(expr)	{ if(UNLIKELY(!(expr))) { FDebug::LogAssertFailedMessage( #expr, __FILE__, __LINE__ ); _DebugBreakAndPromptForRemote(); FDebug::AssertFailed( #expr, __FILE__, __LINE__ ); CA_ASSUME(expr); } } 
@@ -170,7 +168,7 @@ public:
 		RegisterGridType<FTree5<DataType>>();
 	}
 
-	/* Register a grid containing voxels of DataType with the standard tree topology of Internal0 = 5, Internal1 = 4, Leaf = 3
+	/* Register a standard grid type (i.e. Grid4)
 	*/
 	template<typename DataType>
 	void RegisterStandardGrid()
@@ -188,10 +186,12 @@ public:
 		RegisterStandardGrid<int32>();
 		RegisterStandardGrid<int64>();
 		RegisterStandardGrid<FGridDatabaseString>();
-		RegisterStandardGrid<openvdb::Vec3i>();
-		RegisterStandardGrid<openvdb::Vec3f>();
-		RegisterStandardGrid<openvdb::Vec3d>();
-		RegisterStandardGrid<openvdb::PointIndex32>();
+		RegisterStandardGrid<FVector2D>();
+		RegisterStandardGrid<FVector>();
+		RegisterStandardGrid<FVector4>();
+		RegisterStandardGrid<FIntVector>();
+		RegisterStandardGrid<FIntVector4>();
+		RegisterStandardGrid<FUintVector4>();
 
 		openvdb::Metadata::clearRegistry();
 		RegisterMetaType<bool>();
