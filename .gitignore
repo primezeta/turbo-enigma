@@ -35,6 +35,8 @@
 *.idb
 *.ilk
 *.exp
+*.VC.db
+*.VC.opendb
 
 # Build logs
 *.tlog
