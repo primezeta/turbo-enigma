@@ -186,7 +186,7 @@ bool operator>(const FIntVector4& Lhs, const FIntVector4& Rhs)
 
 FUintVector4 Abs(const FUintVector4 &UVec)
 {
-	return FUintVector4(FMath::Abs(UVec.X), FMath::Abs(UVec.Y), FMath::Abs(UVec.Z), FMath::Abs(UVec.W));
+	return UVec; //unsigned type - don't need to do anything
 }
 
 std::ostream& operator<<(std::ostream& os, const FUintVector4& Vec)
@@ -212,7 +212,7 @@ FUintVector4 operator-(const FUintVector4& Lhs, const FUintVector4& Rhs)
 
 FUintVector4 operator-(const FUintVector4& Vec)
 {
-	return FUintVector4(-Vec.X, -Vec.Y, -Vec.Z, -Vec.W);
+	return FUintVector4((uint32)(-(int32)Vec.X), (uint32)(-(int32)Vec.Y), (uint32)(-(int32)Vec.Z), (uint32)(-(int32)Vec.W));
 }
 
 bool operator<(const FUintVector4& Lhs, const FUintVector4& Rhs)

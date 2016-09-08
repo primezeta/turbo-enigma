@@ -88,7 +88,7 @@ public class UEOpenVdb : ModuleRules
         {
             return new string[]
             {
-                Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), "boost", "boost_1_59_0"),
+                Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), "boost", "boost_1_61_0"),
             };
         }
     }
@@ -101,7 +101,7 @@ public class UEOpenVdb : ModuleRules
             {
                 //if (WindowsPlatform.Compiler == WindowsCompiler.VisualStudio2015)
                 Path.Combine(ModuleDirectory, "Binaries", "VS2015", PlatformPath, ConfigurationPath),
-                Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), "boost", "boost_1_59_0", "lib64-msvc-14.0"),
+                Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), "boost", "boost_1_61_0", "lib64-msvc-14.0"),
             };
         }
     }
