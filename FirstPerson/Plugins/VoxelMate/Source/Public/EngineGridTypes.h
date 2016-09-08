@@ -17,10 +17,84 @@
 class FGridDescriptor;
 template<typename MapType> class FTransformMap;
 
+//TODO: Reorganize .h files and move this definition
+class FGridDatabaseString : public std::string
+{
+public:
+    FGridDatabaseString()
+        : std::string()
+    {}
+
+    FGridDatabaseString(const std::string& str)
+        : std::string(str)
+    {}
+
+    FGridDatabaseString(const char* cstr)
+        : std::string(cstr)
+    {}
+
+    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FGridDatabaseString& GridDatabaseString)
+    {
+        if (Ar.IsLoading())
+        {
+            int32 SaveNum = -1;
+            Ar << SaveNum;
+
+            if (SaveNum < 0)
+            {
+                //Archive is corrupted
+                Ar.ArIsError = 1;
+                Ar.ArIsCriticalError = 1;
+                //UE_LOG(LogNetSerialization, Error, TEXT("Archive is corrupted")); TODO FGridDatabaseString logging
+                return Ar;
+            }
+
+            if (SaveNum > GridDatabaseString.max_size())
+            {
+                //Number of characters too large
+                Ar.ArIsError = 1;
+                Ar.ArIsCriticalError = 1;
+                //UE_LOG(LogNetSerialization, Error, TEXT("String is too large")); TODO FGridDatabaseString logging
+                return Ar;
+            }
+
+            auto MaxSerializeSize = Ar.GetMaxSerializeSize();
+            // Protect against network packets allocating too much memory
+            if ((MaxSerializeSize > 0) && (SaveNum > MaxSerializeSize))
+            {
+                Ar.ArIsError = 1;
+                Ar.ArIsCriticalError = 1;
+                //UE_LOG(LogNetSerialization, Error, TEXT("String is too large")); TODO FGridDatabaseString logging
+                return Ar;
+            }
+
+            // Resize the string only if it passes the above tests to prevent rogue packets from crashing
+            GridDatabaseString.clear();
+            if (SaveNum)
+            {
+                GridDatabaseString.resize(SaveNum);
+                if (SaveNum > 1)
+                {
+                    //Serialized string contains characters. Read them in
+                    Ar.Serialize((void*)&GridDatabaseString[0], SaveNum);
+                }
+            }
+        }
+        else
+        {
+            int32 SaveNum = GridDatabaseString.size();
+            Ar << SaveNum;
+            if (SaveNum)
+            {
+                Ar.Serialize((void*)&GridDatabaseString[0], SaveNum);
+            }
+        }
+        return Ar;
+    }
+};
+
 //////////////////////////////////
 //Type definitions
-typedef openvdb::GridBase FGridBase;
-typedef std::string FGridDatabaseString;
 typedef openvdb::Name FGridName;
 typedef openvdb::Index FIndex;
 typedef std::multimap<FGridName, FGridDescriptor> FGridDescriptorNameMap;
@@ -29,6 +103,7 @@ typedef FGridDescriptorNameMap::const_iterator FGridDescriptorNameMapCIter;
 typedef openvdb::MetaMap FMetaMap;
 typedef std::map<std::string, boost::any> FAuxDataMap;
 typedef openvdb::PointIndex32 FPointIndex32;
+typedef openvdb::PointIndex64 FPointIndex64;
 typedef FTransformMap<openvdb::math::AffineMap> FTransformAffineMap;
 typedef FTransformMap<openvdb::math::UnitaryMap> FTransformUnitaryMap;
 typedef FTransformMap<openvdb::math::ScaleMap> FTransformScaleMap;
@@ -75,6 +150,22 @@ enum class EGridClass : uint8
     GridClassStaggered
 };
 
+//openvdb::VEC_INVARIANT
+//openvdb::VEC_COVARIANT
+//openvdb::VEC_COVARIANT_NORMALIZE
+//openvdb::VEC_CONTRAVARIANT_RELATIVE
+//openvdb::VEC_CONTRAVARIANT_ABSOLUTE
+//NOTE: Must ensure these types remain aligned. Unfortunately must set UEnum values to literal
+UENUM(BlueprintType)
+enum class EVectorTypeClass : uint8
+{
+    VectorInvariant = 0,
+    VectorCovariant,
+    VectorCovariantNormalize,
+    VectorContravariantRelative,
+    VectorContravariantAbsolute
+};
+
 namespace GridExceptions
 {
     typedef openvdb::ArithmeticError FArithmeticError;
@@ -88,22 +179,22 @@ namespace GridExceptions
     typedef openvdb::RuntimeError FRuntimeError;
     typedef openvdb::TypeError FTypeError;
     typedef openvdb::ValueError FValueError;
-};
+}
 
 namespace openvdb
 {
-    template<typename Type> const char* typeNameAsDisplayString()
+    template<typename Type> inline const char* typeNameAsDisplayString()
     {
         return typeid(Type).name();
     }
-};
+}
 
-template<typename Type> FString GridTypeName()
+template<typename Type> inline FString GridTypeName()
 {
     return FString(UTF8_TO_TCHAR(openvdb::typeNameAsString<Type>()));
 }
 
-template<typename Type> FString GridTypeNameDisplay()
+template<typename Type> inline FString GridTypeNameDisplay()
 {
     return FString(UTF8_TO_TCHAR(openvdb::typeNameAsDisplayString<Type>()));
 }
@@ -114,7 +205,7 @@ template<typename Type> FString GridTypeNameDisplay()
 //////////////////////////////////
 //FVector2D
 inline FVector2D Abs(const FVector2D& Vec);
-std::ostream& operator<<(std::ostream& os, const FVector2D& Vec);
+inline std::ostream& operator<<(std::ostream& os, const FVector2D& Vec);
 
 template<> inline FVector2D openvdb::zeroVal<FVector2D>()
 {
@@ -134,9 +225,9 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FVector2D>()
 //////////////////////////////////
 //FVector
 inline FVector Abs(const FVector &Vec);
-std::ostream& operator<<(std::ostream& os, const FVector& Vec);
-bool operator<(const FVector& Lhs, const FVector& Rhs);
-bool operator>(const FVector& Lhs, const FVector& Rhs);
+inline std::ostream& operator<<(std::ostream& os, const FVector& Vec);
+inline bool operator<(const FVector& Lhs, const FVector& Rhs);
+inline bool operator>(const FVector& Lhs, const FVector& Rhs);
 
 template<> inline FVector openvdb::zeroVal<FVector>()
 {
@@ -156,10 +247,10 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FVector>()
 //////////////////////////////////
 //FVector4
 inline FVector4 Abs(const FVector4 &Vec);
-std::ostream& operator<<(std::ostream& os, const FVector4& Vec);
-FVector4 operator+(const FVector4& Vec, const float& Val);
-bool operator<(const FVector4& Lhs, const FVector4& Rhs);
-bool operator>(const FVector4& Lhs, const FVector4& Rhs);
+inline std::ostream& operator<<(std::ostream& os, const FVector4& Vec);
+inline FVector4 operator+(const FVector4& Vec, const float& Val);
+inline bool operator<(const FVector4& Lhs, const FVector4& Rhs);
+inline bool operator>(const FVector4& Lhs, const FVector4& Rhs);
 
 template<> inline FVector4 openvdb::zeroVal<FVector4>()
 {
@@ -179,11 +270,11 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FVector4>()
 //////////////////////////////////
 //FIntVector2
 inline FIntVector2 Abs(const FIntVector2 &IVec);
-std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec);
-FIntVector2 operator+(const FIntVector2& Vec, const float& Val);
-FIntVector2 operator-(const FIntVector2& Vec);
-bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs);
-bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs);
+inline std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec);
+inline FIntVector2 operator+(const FIntVector2& Vec, const float& Val);
+inline FIntVector2 operator-(const FIntVector2& Vec);
+inline bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs);
+inline bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs);
 
 template<> inline FIntVector2 openvdb::zeroVal<FIntVector2>()
 {
@@ -203,11 +294,11 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FIntVector2>()
 //////////////////////////////////
 //FIntVector
 inline FIntVector Abs(const FIntVector &IVec);
-std::ostream& operator<<(std::ostream& os, const FIntVector& Vec);
-FIntVector operator+(const FIntVector& Vec, const float& Val);
-FIntVector operator-(const FIntVector& Vec);
-bool operator<(const FIntVector& Lhs, const FIntVector& Rhs);
-bool operator>(const FIntVector& Lhs, const FIntVector& Rhs);
+inline std::ostream& operator<<(std::ostream& os, const FIntVector& Vec);
+inline FIntVector operator+(const FIntVector& Vec, const float& Val);
+inline FIntVector operator-(const FIntVector& Vec);
+inline bool operator<(const FIntVector& Lhs, const FIntVector& Rhs);
+inline bool operator>(const FIntVector& Lhs, const FIntVector& Rhs);
 
 template<> inline FIntVector openvdb::zeroVal<FIntVector>()
 {
@@ -227,13 +318,13 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FIntVector>()
 //////////////////////////////////
 //FIntVector4
 inline FIntVector4 Abs(const FIntVector4 &IVec);
-std::ostream& operator<<(std::ostream& os, const FIntVector4& Vec);
-FIntVector4 operator+(const FIntVector4& Vec, const float& Val);
-FIntVector4 operator+(const FIntVector4& Lhs, const FIntVector4& Rhs);
-FIntVector4 operator-(const FIntVector4& Lhs, const FIntVector4& Rhs);
-FIntVector4 operator-(const FIntVector4& Vec);
-bool operator<(const FIntVector4& Lhs, const FIntVector4& Rhs);
-bool operator>(const FIntVector4& Lhs, const FIntVector4& Rhs);
+inline std::ostream& operator<<(std::ostream& os, const FIntVector4& Vec);
+inline FIntVector4 operator+(const FIntVector4& Vec, const float& Val);
+inline FIntVector4 operator+(const FIntVector4& Lhs, const FIntVector4& Rhs);
+inline FIntVector4 operator-(const FIntVector4& Lhs, const FIntVector4& Rhs);
+inline FIntVector4 operator-(const FIntVector4& Vec);
+inline bool operator<(const FIntVector4& Lhs, const FIntVector4& Rhs);
+inline bool operator>(const FIntVector4& Lhs, const FIntVector4& Rhs);
 
 template<> inline FIntVector4 openvdb::zeroVal<FIntVector4>()
 {
@@ -253,13 +344,13 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FIntVector4>()
 //////////////////////////////////
 //FUintVector4
 inline FUintVector4 Abs(const FUintVector4 &UVec);
-std::ostream& operator<<(std::ostream& os, const FUintVector4& Vec);
-FUintVector4 operator+(const FUintVector4& Vec, const float& Val);
-FUintVector4 operator+(const FUintVector4& Lhs, const FUintVector4& Rhs);
-FUintVector4 operator-(const FUintVector4& Lhs, const FUintVector4& Rhs);
-FUintVector4 operator-(const FUintVector4& Vec);
-bool operator<(const FUintVector4& Lhs, const FUintVector4& Rhs);
-bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs);
+inline std::ostream& operator<<(std::ostream& os, const FUintVector4& Vec);
+inline FUintVector4 operator+(const FUintVector4& Vec, const float& Val);
+inline FUintVector4 operator+(const FUintVector4& Lhs, const FUintVector4& Rhs);
+inline FUintVector4 operator-(const FUintVector4& Lhs, const FUintVector4& Rhs);
+inline FUintVector4 operator-(const FUintVector4& Vec);
+inline bool operator<(const FUintVector4& Lhs, const FUintVector4& Rhs);
+inline bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs);
 
 template<> inline FUintVector4 openvdb::zeroVal<FUintVector4>()
 {
@@ -278,7 +369,7 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FUintVector4>()
 
 //////////////////////////////////
 //FMatrix
-std::ostream& operator<<(std::ostream& os, const FMatrix& Mat);
+inline std::ostream& operator<<(std::ostream& os, const FMatrix& Mat);
 
 template<> inline FMatrix openvdb::zeroVal<FMatrix>()
 {
@@ -300,6 +391,34 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FMatrix>()
 template<> inline const char* openvdb::typeNameAsDisplayString<FPointIndex32>()
 {
     return "Point Index32";
+}
+
+//////////////////////////////////
+//FPointIndex64
+template<> inline const char* openvdb::typeNameAsDisplayString<FPointIndex64>()
+{
+    return "Point Index64";
+}
+
+//////////////////////////////////
+//FGridDatabaseString
+inline FGridDatabaseString Abs(const FGridDatabaseString &Str);
+inline FGridDatabaseString operator-(const FGridDatabaseString& Lhs, const FGridDatabaseString& Rhs);
+inline FGridDatabaseString operator-(const FGridDatabaseString& Str);
+
+template<> inline FGridDatabaseString openvdb::zeroVal<FGridDatabaseString>()
+{
+    return FGridDatabaseString("");
+}
+
+template<> inline const char* openvdb::typeNameAsString<FGridDatabaseString>()
+{
+    return "fgriddatabasestring";
+}
+
+template<> inline const char* openvdb::typeNameAsDisplayString<FGridDatabaseString>()
+{
+    return "Grid Database String";
 }
 
 //////////////////////////////////

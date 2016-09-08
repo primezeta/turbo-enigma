@@ -202,7 +202,6 @@ public:
 		RegisterStandardGrid<double>();
 		RegisterStandardGrid<int32>();
 		RegisterStandardGrid<int64>();
-		RegisterStandardGrid<FGridDatabaseString>();
 		RegisterStandardGrid<FVector2D>();
 		RegisterStandardGrid<FVector>();
 		RegisterStandardGrid<FVector4>();
@@ -210,6 +209,9 @@ public:
 		RegisterStandardGrid<FIntVector>();
 		RegisterStandardGrid<FIntVector4>();
 		RegisterStandardGrid<FUintVector4>();
+        RegisterStandardGrid<FPointIndex32>();
+        RegisterStandardGrid<FPointIndex64>();
+        RegisterStandardGrid<FGridDatabaseString>();
 
 		MetadataStatics::ClearRegistry();
 		RegisterMetaType<bool>();
@@ -217,13 +219,14 @@ public:
 		RegisterMetaType<float>();
 		RegisterMetaType<int32>();
 		RegisterMetaType<int64>();
-		RegisterMetaType<FGridDatabaseString>();
 		RegisterMetaType<FIntVector2>();
 		RegisterMetaType<FVector2D>();
 		RegisterMetaType<FIntVector>();
 		RegisterMetaType<FVector>();
 		RegisterMetaType<FMatrix>();
-		RegisterMetaType<FPointIndex32>();
+        RegisterMetaType<FPointIndex32>();
+        RegisterMetaType<FPointIndex64>();
+        RegisterMetaType<FGridDatabaseString>();
 
 		TransformMapStatics::ClearRegistry();
 		RegisterTransformMapType<FTransformAffineMap>();

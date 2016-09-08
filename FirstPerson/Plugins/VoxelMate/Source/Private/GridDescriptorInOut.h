@@ -19,9 +19,6 @@
 //TODO Logging for FGridDescriptor
 //DECLARE_LOG_CATEGORY_EXTERN(LogGridDescriptor, Log, All)
 
-//The half-float typename suffix is declared in GridDescriptor.cc
-extern const char* HALF_FLOAT_TYPENAME_SUFFIX; //TODO Move this to it's own .h file
-
 struct FLibraryVersionId : public openvdb::VersionId
 {
 	FLibraryVersionId()
@@ -124,17 +121,20 @@ template<typename StreamType>
 class FStream : public StreamType, public FStreamMetadata
 {
 public:
-	typedef boost::shared_ptr<FStream> FPtr;
+	typedef boost::shared_ptr<FStream<StreamType>> FPtr;
 
 	FStream()
 		: FStreamMetadata(*this)
 	{}
 };
 
+//extern const char* HALF_FLOAT_TYPENAME_SUFFIX; FFFFUUUUU can't get this to link from the anonymous namespace
 namespace GridIOStatics
 {
-	const static uint32 FileVersionGridInstancing = openvdb::OPENVDB_FILE_VERSION_GRID_INSTANCING;
-};
+    const static uint32 FileVersionGridInstancing = openvdb::OPENVDB_FILE_VERSION_GRID_INSTANCING;
+    const static FGridDatabaseString HalfFloatTypenameSuffix = "_HalfFloat";
+    //const static FGridDatabaseString HalfFloatTypenameSuffix = HALF_FLOAT_TYPENAME_SUFFIX;;
+}
 
 namespace MetadataStatics
 {
@@ -142,7 +142,7 @@ namespace MetadataStatics
 	{
 		openvdb::Metadata::clearRegistry();
 	}
-};
+}
 
 namespace TransformMapStatics
 {
@@ -150,19 +150,18 @@ namespace TransformMapStatics
 	{
 		openvdb::math::MapRegistry::clear();
 	}
-};
+}
 
 class FGridArchive : public openvdb::io::Archive
 {
 public:
 	typedef boost::shared_ptr<FGridArchive> FPtr;
-	typedef const FPtr FConstPtr;
 };
 
-struct GridBaseStatics : public openvdb::GridBase
+class GridBaseStatics : public openvdb::GridBase
 {
-	typedef FGridBase::Ptr FPtr;
-	typedef FGridBase::ConstPtr FConstPtr;
+public:
+    typedef openvdb::GridBase::Ptr FPtr;
 
 	const static FGridDatabaseString MetaNameGridClass;
 	const static FGridDatabaseString MetaNameGridCreator;
@@ -177,17 +176,17 @@ struct GridBaseStatics : public openvdb::GridBase
 
 	static inline void ClearRegistry()
 	{
-		FGridBase::clearRegistry();
+        openvdb::GridBase::clearRegistry();
 	}
 
 	static inline FPtr CreateGrid(const FGridName& type)
 	{
-		return FGridBase::createGrid(type);
+		return openvdb::GridBase::createGrid(type);
 	}
 
 	static inline bool IsRegistered(const FGridName& type)
 	{
-		return FGridBase::isRegistered(type);
+		return openvdb::GridBase::isRegistered(type);
 	}
 
 	static inline void RegisterGrid(const FGridName& type, openvdb::GridBase::GridFactory factory)
@@ -199,6 +198,45 @@ struct GridBaseStatics : public openvdb::GridBase
 	{
 		openvdb::GridBase::unregisterGrid(type);
 	}
+
+    static FGridDatabaseString GridClassToString(EGridClass GridClass)
+    {
+        return openvdb::GridBase::gridClassToString((openvdb::GridClass)GridClass);
+    }
+
+    static FGridDatabaseString GridClassToMenuName(EGridClass GridClass)
+    {
+        return openvdb::GridBase::gridClassToMenuName((openvdb::GridClass)GridClass);
+    }
+
+    static EGridClass StringToGridClass(const FGridDatabaseString& Str)
+    {
+        return (EGridClass)openvdb::GridBase::stringToGridClass(Str);
+    }
+
+    static FGridDatabaseString VecTypeToString(EVectorTypeClass VecType)
+    {
+        return openvdb::GridBase::vecTypeToString((openvdb::VecType)VecType);
+    }
+
+    static FGridDatabaseString VecTypeExamples(EVectorTypeClass VecType)
+    {
+        return openvdb::GridBase::vecTypeExamples((openvdb::VecType)VecType);
+    }
+
+    static FGridDatabaseString VecTypeDescription(EVectorTypeClass VecType)
+    {
+        return openvdb::GridBase::vecTypeDescription((openvdb::VecType)VecType);
+    }
+
+    static EVectorTypeClass StringToVecType(const FGridDatabaseString& Str)
+    {
+        return (EVectorTypeClass)openvdb::GridBase::stringToVecType(Str);
+    }
+protected:
+    //Protected constructor to prevent instantiation because this class is not meant to be used.
+    //It exists solely to rename openvdb::GridBase and to grant access to protected openvdb::GridBase static functions without breaking the openvdb::Grid hierarchy.
+    GridBaseStatics() {}
 };
 
 template<typename TreeType>
@@ -256,7 +294,7 @@ public:
 class FMetadataUnknown : public openvdb::UnknownMetadata
 {
 public:
-	typedef openvdb::UnknownMetadata::Ptr FPtr;
+    typedef boost::shared_ptr<FMetadataUnknown> FPtr;
 };
 
 template<typename MetaType>
@@ -408,10 +446,10 @@ public:
 	{
 		auto& InputStream = static_cast<StreamType&>(is);		
 		OutGridType = ReadString(InputStream);
-		OutIsFloatSavedAsHalf = boost::ends_with(OutGridType, HALF_FLOAT_TYPENAME_SUFFIX);
+		OutIsFloatSavedAsHalf = boost::ends_with(OutGridType, GridIOStatics::HalfFloatTypenameSuffix);
 		if (OutIsFloatSavedAsHalf)
 		{
-			boost::erase_last(OutGridType, HALF_FLOAT_TYPENAME_SUFFIX);
+			boost::erase_last(OutGridType, GridIOStatics::HalfFloatTypenameSuffix);
 		}
 	}
 
@@ -424,10 +462,10 @@ public:
 		auto& InputStream = static_cast<StreamType&>(is);
         int64 nextGridStreamPos = std::streamoff(-1);
 
-        const bool IsGridTypeRegistered = FGridBase::isRegistered(GridTypeWithoutFloatAsHalfSuffix);
+        const bool IsGridTypeRegistered = GridBaseStatics::IsRegistered(GridTypeWithoutFloatAsHalfSuffix);
         if (IsGridTypeRegistered)
         {
-            GridBaseStatics::FPtr gridPtr = FGridBase::createGrid(GridTypeWithoutFloatAsHalfSuffix);
+            GridBaseStatics::FPtr gridPtr = GridBaseStatics::CreateGrid(GridTypeWithoutFloatAsHalfSuffix);
             if (gridPtr != nullptr)
             {
                 OutGridDescriptorIter = OutGridDescriptors.emplace(GridUniqueName, FGridDescriptor());
@@ -513,7 +551,7 @@ public:
 		WriteString(os, UniqueName);
 		if (IsFloatSavedAsHalf)
 		{
-			WriteString(os, GridType + HALF_FLOAT_TYPENAME_SUFFIX);
+			WriteString(os, GridType + GridIOStatics::HalfFloatTypenameSuffix);
 		}
 		else
 		{
