@@ -135,7 +135,8 @@ public:
 		if (!FMetadata<MetaType>::IsRegisteredType<MetaType>())
 		{
 			FMetadata<MetaType>::RegisterMeta<MetaType>();
-		}
+            RegisteredMetadataDisplayNames.Add(GridTypeNameDisplay<MetaType>());
+        }
 	}
 
 	template<typename TreeType>
@@ -146,6 +147,7 @@ public:
 			//FGrid<TreeType> Grid;
 			//Grid.fill()
 			FGrid<TreeType>::RegisterGrid<TreeType>();
+            RegisteredGridDisplayNames.Add(GridTypeNameDisplay<TreeType::ValueType>());
 		}
 	}
 
@@ -155,7 +157,8 @@ public:
 		if (!FTransformMap<MapType>::IsRegistered<MapType>())
 		{
 			FTransformMap<MapType>::RegisterTransformMap<MapType>();
-		}
+            RegisteredTransformMapDisplayNames.Add(GridTypeNameDisplay<MapType>());
+        }
 	}
 
 	/* Register a grid containing voxels of DataType with tree topology Root, Internal, and Leaf
@@ -436,4 +439,8 @@ protected:
 	FGridDescriptorNameMap GridDescriptors;
 	FVoxelDatabaseInfo::FPtr DatabaseFileHeader;
 	FMetaMap DatabaseMetadata;
+
+    TArray<FString> RegisteredGridDisplayNames;
+    TArray<FString> RegisteredMetadataDisplayNames;
+    TArray<FString> RegisteredTransformMapDisplayNames;
 };

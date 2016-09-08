@@ -13,72 +13,14 @@
 #include <openvdb/tools/PointIndexGrid.h>
 //#include "GridOps.h"
 //#include "GridMetadata.h"
+#include "EngineGridTypes.h"
 #include "VoxelMateStreams.h"
 
 //TODO Logging for FGridDescriptor
 //DECLARE_LOG_CATEGORY_EXTERN(LogGridDescriptor, Log, All)
 
-#define TO_GRID_DATABASE_STRING(fstring) TCHAR_TO_UTF8(*fstring)
-#define FROM_GRID_DATABASE_STRING(grid_database_string) UTF8_TO_TCHAR(grid_database_string.c_str())
-
 //The half-float typename suffix is declared in GridDescriptor.cc
 extern const char* HALF_FLOAT_TYPENAME_SUFFIX; //TODO Move this to it's own .h file
-
-class FGridDescriptor;
-
-typedef openvdb::GridBase FGridBase;
-typedef std::string FGridDatabaseString;
-typedef openvdb::Name FGridName;
-typedef openvdb::Index FIndex;
-typedef std::multimap<FGridName, FGridDescriptor> FGridDescriptorNameMap;
-typedef FGridDescriptorNameMap::iterator FGridDescriptorNameMapIter;
-typedef FGridDescriptorNameMap::const_iterator FGridDescriptorNameMapCIter;
-typedef openvdb::MetaMap FMetaMap;
-typedef openvdb::PointIndex32 FPointIndex32;
-typedef std::map<std::string, boost::any> FAuxDataMap;
-
-//openvdb::io::COMPRESS_NONE
-//openvdb::io::COMPRESS_ZIP
-//openvdb::io::COMPRESS_ACTIVE_MASK
-//openvdb::io::COMPRESS_BLOSC
-//NOTE: Must ensure these types remain aligned. Unfortunately must set UEnum values to literal
-UENUM(BlueprintType)
-enum class EGridCompression : uint8
-{
-	GridCompressionNone       = 0x0,
-	GridCompressionZip        = 0x1,
-	GridCompressionActiveMask = 0x2,
-	GridCompressionBlosc      = 0x4
-};
-
-//openvdb::GRID_UNKNOWN
-//openvdb::GRID_LEVEL_SET
-//openvdb::GRID_FOG_VOLUME
-//openvdb::GRID_STAGGERED
-//NOTE: Must ensure these types remain aligned. Unfortunately must set UEnum values to literal
-UENUM(BlueprintType)
-enum class EGridClass : uint8
-{
-	GridClassUnknown = 0,
-	GridClassLevelSet,
-	GridClassFogVolume,
-	GridClassStaggered
-};
-
-namespace GridExceptions
-{
-	typedef openvdb::ArithmeticError FArithmeticError;
-	typedef openvdb::IllegalValueException FIllegalValueError;
-	typedef openvdb::IndexError FIndexError;
-	typedef openvdb::IoError FIoError;
-	typedef openvdb::KeyError FKeyError;
-	typedef openvdb::LookupError FLookupError;
-	typedef openvdb::NotImplementedError FNotImplementedError;
-	typedef openvdb::ReferenceError FReferenceError;
-	typedef openvdb::RuntimeError FRuntimeError;
-	typedef openvdb::TypeError FTypeError;
-	typedef openvdb::ValueError FValueError;
-};
 
 struct FLibraryVersionId : public openvdb::VersionId
 {
@@ -208,7 +150,7 @@ namespace TransformMapStatics
 	{
 		openvdb::math::MapRegistry::clear();
 	}
-}
+};
 
 class FGridArchive : public openvdb::io::Archive
 {
@@ -216,15 +158,6 @@ public:
 	typedef boost::shared_ptr<FGridArchive> FPtr;
 	typedef const FPtr FConstPtr;
 };
-
-template<typename DataType>
-using FTree3 = openvdb::tree::Tree<openvdb::tree::RootNode<openvdb::tree::InternalNode<openvdb::tree::LeafNode<DataType, 3>, 4>>>;
-
-template<typename DataType>
-using FTree4 = openvdb::tree::Tree<openvdb::tree::RootNode<openvdb::tree::InternalNode<openvdb::tree::InternalNode<openvdb::tree::LeafNode<DataType, 3>, 4>, 5>>>;
-
-template<typename DataType>
-using FTree5 = openvdb::tree::Tree<openvdb::tree::RootNode<openvdb::tree::InternalNode<openvdb::tree::InternalNode<openvdb::tree::InternalNode<openvdb::tree::LeafNode<DataType, 3>, 4>, 5>, 6>>>;
 
 struct GridBaseStatics : public openvdb::GridBase
 {
@@ -256,11 +189,6 @@ struct GridBaseStatics : public openvdb::GridBase
 	{
 		return FGridBase::isRegistered(type);
 	}
-
-	/// Register a grid type along with a factory function.
-	//static void registerGrid(const Name& type, GridFactory);
-	/// Remove a grid type from the registry.
-	//static void unregisterGrid(const Name& type);
 
 	static inline void RegisterGrid(const FGridName& type, openvdb::GridBase::GridFactory factory)
 	{
@@ -422,15 +350,6 @@ public:
 		return MapType::isRegistered();
 	}
 };
-
-typedef FTransformMap<openvdb::math::AffineMap> FTransformAffineMap;
-typedef FTransformMap<openvdb::math::UnitaryMap> FTransformUnitaryMap;
-typedef FTransformMap<openvdb::math::ScaleMap> FTransformScaleMap;
-typedef FTransformMap<openvdb::math::UniformScaleMap> FTransformUniformScaleMap;
-typedef FTransformMap<openvdb::math::TranslationMap> FTransformTranslationMap;
-typedef FTransformMap<openvdb::math::ScaleTranslateMap> FTransformScaleTranslateMap;
-typedef FTransformMap<openvdb::math::UniformScaleTranslateMap> FTransformUniformScaleTranslateMap;
-typedef FTransformMap<openvdb::math::NonlinearFrustumMap> FTransformNonlinearFrustumMap;
 
 class FGridDescriptor
 {
