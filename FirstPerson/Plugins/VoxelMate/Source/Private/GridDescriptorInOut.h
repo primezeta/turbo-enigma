@@ -30,12 +30,12 @@ typedef openvdb::GridBase FGridBase;
 typedef std::string FGridDatabaseString;
 typedef openvdb::Name FGridName;
 typedef openvdb::Index FIndex;
-typedef openvdb::VersionId FVersionId;
 typedef std::multimap<FGridName, FGridDescriptor> FGridDescriptorNameMap;
 typedef FGridDescriptorNameMap::iterator FGridDescriptorNameMapIter;
 typedef FGridDescriptorNameMap::const_iterator FGridDescriptorNameMapCIter;
 typedef openvdb::MetaMap FMetaMap;
 typedef openvdb::PointIndex32 FPointIndex32;
+typedef std::map<std::string, boost::any> FAuxDataMap;
 
 //openvdb::io::COMPRESS_NONE
 //openvdb::io::COMPRESS_ZIP
@@ -80,119 +80,118 @@ namespace GridExceptions
 	typedef openvdb::ValueError FValueError;
 };
 
+struct FLibraryVersionId : public openvdb::VersionId
+{
+	FLibraryVersionId()
+		: openvdb::VersionId()
+	{}
+
+	FLibraryVersionId(uint32 Major, uint32 Minor)
+		: openvdb::VersionId(Major, Minor)
+	{}
+
+	FLibraryVersionId(const openvdb::VersionId& Version)
+		: openvdb::VersionId(Version.first, Version.second)
+	{}
+};
+
 class FStreamMetadata : public openvdb::io::StreamMetadata
 {
 public:
 	typedef boost::shared_ptr<FStreamMetadata> FPtr;
+
+	const int64 MagicNumber; //TODO make static
+
+	FStreamMetadata(std::ios_base& FileStream)
+		: openvdb::io::StreamMetadata(FileStream),
+		MagicNumber(int64((uint64(openvdb::OPENVDB_MAGIC) << 32) | (uint64(openvdb::OPENVDB_MAGIC))))
+	{}
+
+	inline void TransferTo(std::ios_base& FileStream) const
+	{
+		openvdb::io::StreamMetadata::transferTo(FileStream);
+	}
+
+	inline uint32 GetFileVersion() const
+	{
+		return openvdb::io::StreamMetadata::fileVersion();
+	}
+
+	inline FLibraryVersionId GetLibraryVersion() const
+	{
+		return FLibraryVersionId(openvdb::io::StreamMetadata::libraryVersion());
+	}
+
+	inline uint32 GetCompression() const
+	{
+		return openvdb::io::StreamMetadata::compression();
+	}
+
+	inline uint32 GetGridClass() const
+	{
+		return openvdb::io::StreamMetadata::gridClass();
+	}
+
+	inline const void* GetBackgroundValuePtr() const
+	{
+		return openvdb::io::StreamMetadata::backgroundPtr();
+	}
+
+	inline bool IsHalfFloat() const
+	{
+		return openvdb::io::StreamMetadata::halfFloat();
+	}
+
+	inline bool GetShouldWriteGridStats() const
+	{
+		return openvdb::io::StreamMetadata::writeGridStats();
+	}
+
+	inline const FMetaMap& GetGridMetadata() const
+	{
+		return openvdb::io::StreamMetadata::gridMetadata();
+	}
+
+	inline FMetaMap& GetGridMetadata()
+	{
+		return openvdb::io::StreamMetadata::gridMetadata();
+	}
+
+	inline const FAuxDataMap& GetAuxData() const
+	{
+		return openvdb::io::StreamMetadata::auxData();
+	}
+
+	inline FAuxDataMap& GetAuxData()
+	{
+		return openvdb::io::StreamMetadata::auxData();
+	}
+
+	inline FGridDatabaseString Str() const
+	{
+		return openvdb::io::StreamMetadata::str();
+	}
+
+	inline FString ToString() const
+	{
+		return FString(FROM_GRID_DATABASE_STRING(openvdb::io::StreamMetadata::str()));
+	}
+};
+
+template<typename StreamType>
+class FStream : public StreamType, public FStreamMetadata
+{
+public:
+	typedef boost::shared_ptr<FStream> FPtr;
+
+	FStream()
+		: FStreamMetadata(*this)
+	{}
 };
 
 namespace GridIOStatics
 {
 	const static uint32 FileVersionGridInstancing = openvdb::OPENVDB_FILE_VERSION_GRID_INSTANCING;
-	//std::string getErrorString(int errorNum); TODO
-	//std::string getErrorString(); TODO
-	static inline uint32 GetFormatVersion(std::ios_base& iosb)
-	{
-		return openvdb::io::getFormatVersion(iosb);
-	}
-
-	static inline FVersionId GetLibraryVersion(std::ios_base& iosb)
-	{
-		return openvdb::io::getLibraryVersion(iosb);
-	}
-
-	static inline FGridDatabaseString GetVersion(std::ios_base& iosb)
-	{
-		return openvdb::io::getVersion(iosb);
-	}
-
-	static inline void SetCurrentVersion(std::istream& is)
-	{
-		openvdb::io::setCurrentVersion(is);
-	}
-
-	static inline void SetVersion(std::ios_base& iosb, const FVersionId& libraryVersion, uint32 fileVersion)
-	{
-		openvdb::io::setVersion(iosb, libraryVersion, fileVersion);
-	}
-
-	static inline uint32 GetDataCompression(std::ios_base& iosb)
-	{
-		return openvdb::io::getDataCompression(iosb);
-	}
-
-	static inline void SetDataCompression(std::ios_base& iosb, uint32 compressionFlags)
-	{
-		openvdb::io::setDataCompression(iosb, compressionFlags);
-	}
-
-	static inline EGridClass GetGridClass(std::ios_base& iosb)
-	{
-		return (EGridClass)openvdb::io::getGridClass(iosb);
-	}
-
-	static inline void SetGridClass(std::ios_base& iosb, EGridClass gridClass)
-	{
-		openvdb::io::setGridClass(iosb, (uint32)gridClass);
-	}
-
-	static inline bool GetHalfFloat(std::ios_base& iosb)
-	{
-		return openvdb::io::getHalfFloat(iosb);
-	}
-
-	static inline void SetHalfFloat(std::ios_base& iosb, bool isHalfFloat)
-	{
-		openvdb::io::setHalfFloat(iosb, isHalfFloat);
-	}
-
-	static inline const void* GetGridBackgroundValuePtr(std::ios_base& iosb)
-	{
-		return openvdb::io::getGridBackgroundValuePtr(iosb);
-	}
-
-	static inline void SetGridBackgroundValuePtr(std::ios_base& iosb, const void* backgroundValuePtr)
-	{
-		openvdb::io::setGridBackgroundValuePtr(iosb, backgroundValuePtr);
-	}
-
-	static inline bool GetWriteGridStatsMetadata(std::ios_base& iosb)
-	{
-		return openvdb::io::getWriteGridStatsMetadata(iosb);
-	}
-
-	static inline void SetWriteGridStatsMetadata(std::ios_base& iosb, bool isGridStatsWritten)
-	{
-		openvdb::io::setWriteGridStatsMetadata(iosb, isGridStatsWritten);
-	}
-
-	//Do not need openvdb mapped files
-	//static inline boost::shared_ptr<openvdb::io::MappedFile> GetMappedFilePtr(std::ios_base& iosb)
-	//{
-	//	return openvdb::io::getMappedFilePtr(iosb);
-	//}
-
-	//Do not need openvdb mapped files
-	//static inline void SetMappedFilePtr(std::ios_base& iosb, boost::shared_ptr<MappedFile>& mappedFilePtr)
-	//{
-	//	openvdb::io::setMappedFilePtr(iosb, mappedFilePtr);
-	//}
-
-	static inline openvdb::io::StreamMetadata::Ptr GetStreamMetadataPtr(std::ios_base& iosb)
-	{
-		return openvdb::io::getStreamMetadataPtr(iosb);
-	}
-
-	static inline void SetStreamMetadataPtr(std::ios_base& iosb, FStreamMetadata::Ptr streamMetadataPtr, bool isStreamTransferred)
-	{
-		openvdb::io::StreamMetadata::Ptr streamMetadataBasicPtr = boost::static_pointer_cast<openvdb::io::StreamMetadata>(streamMetadataPtr);
-		openvdb::io::setStreamMetadataPtr(iosb, streamMetadataBasicPtr, isStreamTransferred);
-	}
-
-	static inline openvdb::io::StreamMetadata::Ptr ClearStreamMetadataPtr(std::ios_base& iosb)
-	{
-		return openvdb::io::clearStreamMetadataPtr(iosb);
-	}
 };
 
 namespace MetadataStatics
@@ -320,16 +319,9 @@ public:
 	}
 
 	template<typename TreeType>
-	static bool IsRegistered()
+	static inline bool IsRegistered()
 	{
 		return FGrid<TreeType>::isRegistered();
-	}
-
-	static GridBaseStatics::FPtr ReadGrid(std::istream& is, FGridDescriptorNameMap& GridDescriptors)
-	{
-		FGridDescriptor& GridDescriptor = FGridDescriptor::ReadAndInsertGridDescriptor(is, GridDescriptors);
-		GridBaseStatics::FPtr GridPtr = GridDescriptor.GridPtr;
-		return GridPtr;
 	}
 };
 
@@ -445,98 +437,159 @@ class FGridDescriptor
 public:
 	typedef boost::shared_ptr<FGridDescriptor> FPtr;
 
-	FGridDatabaseString GridName; //Grid name is not archived, rather it is the unique name with the suffix stripped
+	GridBaseStatics::FPtr GridPtr; //Important! When serializing a grid descriptor, do not serialize the grid
 	FGridDatabaseString UniqueName;
+	FGridDatabaseString GridName; //Grid name is not archived, rather it is the unique name with the suffix stripped
 	FGridDatabaseString GridType;
 	FGridDatabaseString ParentGridName;
 	bool IsFloatSavedAsHalf;
 	int64 GridStreamPosition;
 	int64 DataBlocksStreamPosition;
 	int64 GridEndPosition;
-	GridBaseStatics::FPtr GridPtr; //Important! When serializing a grid descriptor, do not serialize the grid
 
-	static inline FGridDescriptor& ReadAndInsertGridDescriptor(std::istream& is, FGridDescriptorNameMap& GridDescriptors)
+	/* Read the next grid descriptor into the input stream and return the stream position of the next grid descriptor */
+	template<typename StreamType>
+	static FGridDescriptorNameMapCIter ReadAndAddNextGridDescriptor(FStream<StreamType>& is, FGridDescriptorNameMap &OutGridDescriptors)
 	{
-		//Unique name is read alone previously to ReadGridDescriptor		
-		FGridName uniqueName = FGridDatabaseString(ReadString(is));
-		FGridDescriptorNameMapIter GridDescriptorIter = GridDescriptors.emplace(uniqueName, FGridDescriptor());
-		check(GridDescriptorIter != GridDescriptors.end());
+		auto& InputStream = static_cast<StreamType&>(is);
+		FGridDescriptorNameMapIter GridDescriptorIter = OutGridDescriptors.end();
+        const uint32 FileVersion = is.GetFileVersion();
 
-		FGridDescriptor& OutGridDescriptor = GridDescriptorIter->second;
-		OutGridDescriptor.GridName = FGridDescriptor::StripSuffix(uniqueName);
-		OutGridDescriptor.GridType = ReadString(is);
-		OutGridDescriptor.IsFloatSavedAsHalf = boost::ends_with(OutGridDescriptor.GridType, HALF_FLOAT_TYPENAME_SUFFIX);
-		
-		if (OutGridDescriptor.IsFloatSavedAsHalf)
-		{
-			boost::erase_last(OutGridDescriptor.GridType, HALF_FLOAT_TYPENAME_SUFFIX);
-		}
+		//Unique name is read alone previously to ReadGridDescriptor
+		const FGridName uniqueName = FGridDatabaseString(ReadString(InputStream));
+		FGridDatabaseString gridType;
+		bool isFloatSavedAsHalf = false;
+		ReadGridTypeAndStripHalfSavedAsFloatSuffix<StreamType>(is, gridType, isFloatSavedAsHalf);
+        
+        //Try to create the grid, adding to the grid descriptor map if it was able to be created
+        FGridDatabaseString parentName = FGridDatabaseString("");
+        if (FileVersion >= GridIOStatics::FileVersionGridInstancing)
+        {
+            parentName = ReadString(InputStream);
+        }
 
-		const uint32 formatVersion = GridIOStatics::GetFormatVersion(is);
-		if (formatVersion >= GridIOStatics::FileVersionGridInstancing)
-		{
-			OutGridDescriptor.ParentGridName = ReadString(is);
-		}
-
-		// Read in the offsets.
-		ReadBytes<int64>(is, OutGridDescriptor.GridStreamPosition);
-		ReadBytes<int64>(is, OutGridDescriptor.DataBlocksStreamPosition);
-		ReadBytes<int64>(is, OutGridDescriptor.GridEndPosition);
-
-		// Create the grid only if the grid type is registered
-		const bool isGridTypeRegistered = FGridBase::isRegistered(OutGridDescriptor.GridType);
-		if (isGridTypeRegistered)
-		{
-			//Create the grid via the base class, from which a call to the registered factory is made by the grid registry
-			OutGridDescriptor.GridPtr = FGridBase::createGrid(OutGridDescriptor.GridType);
-			if (OutGridDescriptor.GridPtr != nullptr)
-			{
-				//Set metadata values for float-as-half TODO: Figure out exactly why openvdb sets this metavalue at this point (see openvdb::io::File line 828)
-				OutGridDescriptor.GridPtr->setSaveFloatAsHalf(OutGridDescriptor.IsFloatSavedAsHalf);
-				//TODO Not sure yet if the following will be set here
-				//GridPtr->setCreator()
-				//GridPtr->setGridClass()
-				//GridPtr->setIsInWorldSpace()
-				//GridPtr->setVectorType()
-				//TODO Logging for FGridDescriptor
-				//UE_LOG(LogGridDescriptor, Display, TEXT("Created %s grid %s"),
-					//FROM_GRID_DATABASE_STRING(OutGridDescriptor.GridType),
-					//FROM_GRID_DATABASE_STRING(OutGridDescriptor.GridName));
-			}
-			else
-			{
-				//TODO Logging for FGridDescriptor
-				//UE_LOG(LogGridDescriptor, Error, TEXT("Failed to create %s grid %s"),
-					//FROM_GRID_DATABASE_STRING(OutGridDescriptor.GridType),
-					//FROM_GRID_DATABASE_STRING(OutGridDescriptor.GridName));
-			}
-		}
-		else
-		{
-			//The grid could not be read because it wasn't registered.
-			//Log the unreadable grid and continue as normal.
-			//TODO Logging for FGridDescriptor
-			//UE_LOG(LogGridDescriptor, Error, TEXT("Could not create grid %s because grid type %s is not registered"),
-				//FROM_GRID_DATABASE_STRING(OutGridDescriptor.GridName),
-				//FROM_GRID_DATABASE_STRING(OutGridDescriptor.GridType));
-		}
-
-		//Skip forward to the next descriptor
-		OutGridDescriptor.SeekToEnd(is);
-		return OutGridDescriptor;
+        const int64 nextGridPos = TryCreateGridAndAddGridDescriptor<StreamType>(is, uniqueName, gridType, parentName, isFloatSavedAsHalf, OutGridDescriptors, GridDescriptorIter);
+        if (nextGridPos > std::streamoff(-1))
+        {
+            //Seek to the next grid
+            InputStream.seekg(nextGridPos, std::ios_base::beg);
+        }
+        else
+        {
+            //TODO error handling
+        }
+		return GridDescriptorIter;
 	}
 
-	static inline FGridName StringAsUniqueName(const FGridName &name)
+	/* Read the next string in as the grid type and return the grid type with the half-as-float suffix removed (if it exists).
+	* Also return true if there was a suffix that got removed.
+	*/
+	template<typename StreamType>
+	static inline void ReadGridTypeAndStripHalfSavedAsFloatSuffix(FStream<StreamType>& is, FGridDatabaseString& OutGridType, bool& OutIsFloatSavedAsHalf)
+	{
+		auto& InputStream = static_cast<StreamType&>(is);		
+		OutGridType = ReadString(InputStream);
+		OutIsFloatSavedAsHalf = boost::ends_with(OutGridType, HALF_FLOAT_TYPENAME_SUFFIX);
+		if (OutIsFloatSavedAsHalf)
+		{
+			boost::erase_last(OutGridType, HALF_FLOAT_TYPENAME_SUFFIX);
+		}
+	}
+
+	/*Attempt to create the grid via the base class, from which a call to the registered factory is made by the grid registry.
+	* If successful create a grid descriptor and add it to the grid descriptor map and return an iter to that grid descriptor.
+	*/
+	template<typename StreamType>
+	static inline int64 TryCreateGridAndAddGridDescriptor(FStream<StreamType>& is, const FGridDatabaseString& GridUniqueName, const FGridDatabaseString& GridTypeWithoutFloatAsHalfSuffix, const FGridDatabaseString& GridParentName, bool IsFloatHalf, FGridDescriptorNameMap &OutGridDescriptors, FGridDescriptorNameMapIter& OutGridDescriptorIter)
+	{
+		auto& InputStream = static_cast<StreamType&>(is);
+        int64 nextGridStreamPos = std::streamoff(-1);
+
+        const bool IsGridTypeRegistered = FGridBase::isRegistered(GridTypeWithoutFloatAsHalfSuffix);
+        if (IsGridTypeRegistered)
+        {
+            GridBaseStatics::FPtr gridPtr = FGridBase::createGrid(GridTypeWithoutFloatAsHalfSuffix);
+            if (gridPtr != nullptr)
+            {
+                OutGridDescriptorIter = OutGridDescriptors.emplace(GridUniqueName, FGridDescriptor());
+                check(OutGridDescriptorIter != OutGridDescriptors.end()); //TODO error handling
+                FGridDescriptor& GridDescriptor = OutGridDescriptorIter->second;
+
+                GridDescriptor.GridPtr = gridPtr;
+                GridDescriptor.UniqueName = GridUniqueName;
+                GridDescriptor.GridName = FGridDescriptor::StripSuffix(GridUniqueName);
+                GridDescriptor.GridType = GridTypeWithoutFloatAsHalfSuffix;
+                GridDescriptor.ParentGridName = GridParentName;
+
+                //Set the grid descriptor float-as-half flag as well as the metadata value for float-as-half
+                GridDescriptor.IsFloatSavedAsHalf = IsFloatHalf;
+                GridDescriptor.GridPtr->setSaveFloatAsHalf(IsFloatHalf);
+
+                // Read in the offsets for grid start, data blocks, and grid end
+                ReadGridStreamPositions<StreamType>(is, GridDescriptor.GridStreamPosition, GridDescriptor.DataBlocksStreamPosition, GridDescriptor.GridEndPosition);
+                nextGridStreamPos = GridDescriptor.GridEndPosition;
+
+                //TODO Not sure yet if the following will be set here
+                //GridPtr->setCreator()
+                //GridPtr->setGridClass()
+                //GridPtr->setIsInWorldSpace()
+                //GridPtr->setVectorType()
+                //TODO Logging for FGridDescriptor
+                //UE_LOG(LogGridDescriptor, Display, TEXT("Created %s grid %s"),
+                //FROM_GRID_DATABASE_STRING(GridDescriptor.GridType),
+                //FROM_GRID_DATABASE_STRING(GridDescriptor.GridName));
+            }
+            else
+            {
+                //TODO Logging for FGridDescriptor
+                //UE_LOG(LogGridDescriptor, Error, TEXT("Failed to create %s grid %s"),
+                //FROM_GRID_DATABASE_STRING(GridDescriptor.GridType),
+                //FROM_GRID_DATABASE_STRING(GridDescriptor.GridName));
+            }
+        }
+        else
+        {
+            OutGridDescriptorIter = OutGridDescriptors.end();
+            ReadNextGridStreamPosition<StreamType>(is, nextGridStreamPos);
+            //The grid could not be read because it wasn't registered.
+            //Log the unreadable grid and continue as normal.
+            //TODO Logging for FGridDescriptor
+            //UE_LOG(LogGridDescriptor, Error, TEXT("Could not create grid %s because grid type %s is not registered"),
+            //FROM_GRID_DATABASE_STRING(GridDescriptor.GridName),
+            //FROM_GRID_DATABASE_STRING(GridDescriptor.GridType));
+        }
+        return nextGridStreamPos;
+	}
+    
+    template<typename StreamType>
+    static inline void ReadGridStreamPositions(FStream<StreamType>& is, int64& OutGridStartPos, int64& OutDataBlocksPos, int64& OutGridEndPos)
+    {
+        auto& InputStream = static_cast<StreamType&>(is);
+        ReadBytes<int64>(InputStream, OutGridStartPos);
+        ReadBytes<int64>(InputStream, OutDataBlocksPos);
+        ReadBytes<int64>(InputStream, OutGridEndPos);
+    }
+
+    template<typename StreamType>
+    static inline void ReadNextGridStreamPosition(FStream<StreamType>& is, int64& OutNextGridStartPos)
+    {
+        auto& InputStream = static_cast<StreamType&>(is);
+        ReadBytes<int64>(InputStream, OutNextGridStartPos); //read and discard...
+        ReadBytes<int64>(InputStream, OutNextGridStartPos); //read and discard...
+        ReadBytes<int64>(InputStream, OutNextGridStartPos); //use the third value
+    }
+
+	static inline FGridName StringAsUniqueName(const FGridName& name)
 	{
 		return openvdb::io::GridDescriptor::stringAsUniqueName(name);
 	}
 
-	static inline FGridName StripSuffix(const FGridName &name)
+	static inline FGridName StripSuffix(const FGridName& name)
 	{
 		return openvdb::io::GridDescriptor::stripSuffix(name);
 	}
 
-	void WriteGridHeader(std::ostream &os) const
+	void WriteGridHeader(std::ostream& os) const
 	{
 		WriteString(os, UniqueName);
 		if (IsFloatSavedAsHalf)
@@ -549,7 +602,7 @@ public:
 		}
 	}
 
-	void WriteStreamPos(std::ostream &os) const
+	void WriteStreamPos(std::ostream& os) const
 	{
 		os.write(reinterpret_cast<const char*>(&GridStreamPosition), sizeof(int64));
 		os.write(reinterpret_cast<const char*>(&DataBlocksStreamPosition), sizeof(int64));

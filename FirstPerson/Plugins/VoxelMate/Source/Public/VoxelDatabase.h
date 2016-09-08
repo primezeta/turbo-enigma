@@ -74,7 +74,7 @@ struct FVoxelDatabaseMetadataAttributes
 	}
 };
 
-class FVoxelDatabaseArchive : public FMemoryArchive, public FGridArchive, public boost::iostreams::stream<boost::iostreams::array>
+class FVoxelDatabaseArchive : public FMemoryArchive, public FGridArchive, public FStream<boost::iostreams::stream<boost::iostreams::array>>
 {
 public:
 	//TODO
@@ -91,8 +91,17 @@ public:
 	//	Could use 1-server-N-clients. Clients manage I/O but local changes to grid states are allowed/disallowed by the server and the server syncs changes to clients.
 	//	Anyway, ignore client/server complications. Just design with extensibility in mind for future design.
 	FVoxelDatabaseArchive(const FString &DatabaseName)
-		: GridArchiveName(TO_GRID_DATABASE_STRING(DatabaseName))
+		: GridArchiveName(DatabaseName)
 	{
+		if (FMemoryArchive::IsLoading())
+		{
+			BytesCount = FMemoryArchive::TotalSize();
+		}
+		else
+		{
+			BytesCount = 0;
+		}
+
 		////Register the standard grid and metadata types to enable the respective types to be serialized to and from shared memory
 		//InitializeStandardTypes(SharedMemory);
 
@@ -110,6 +119,11 @@ public:
 		//checkue4(FileHeaderSizeTest == FileHeaderSize);
 		////SharedMemory.allocate(FileHeaderSize); TODO: Need to allocate after open_or_create?
 		//openvdb::io::setCurrentVersion(StreamBuffer);
+	}
+
+	virtual FString GetArchiveName() const override
+	{
+		return GridArchiveName;
 	}
 
 	template<typename MetaType>
@@ -268,61 +282,6 @@ public:
 		return GetFileMetadataValue<ValueType>(MetaName, OutValue, MetaAttributes);
 	}
 
-	/* If the database is not already open, reset the stream buffer to the beginning of the file and read the header and grid descriptors */
-	bool OpenDatabase()
-	{
-		if (GridArchiveIsOpen)
-		{
-			return true;
-		}
-		else if (BytesCount > UINT32_MAX)
-		{
-			return false; //TODO Logging, error handling, etc
-		}
-		
-		bool isOpen = false;
-		boost::iostreams::stream<boost::iostreams::array>& Stream = *this;
-
-		//Preallocate memory, associate the stream buffer to the memory, then open the stream on top of the stream buffer
-		Bytes.SetNumUninitialized(BytesCount, false);
-		BytesAccessor.reset(new boost::iostreams::array(Bytes.GetData(), Bytes.GetData() + Bytes.Num()));
-		Stream.open(*BytesAccessor);
-
-		//Read the file header as the first item in the buffer
-		Archive::readHeader(Stream);
-		DatabaseFileHeader = FVoxelDatabaseInfo::FPtr(reinterpret_cast<FVoxelDatabaseInfo*>(Bytes.GetData()));
-
-		//Initialize I/O stream metadata
-		const bool transfer = false;
-		StreamMetadataPtr.reset(new FStreamMetadata());
-		GridIOStatics::SetStreamMetadataPtr(Stream, StreamMetadataPtr, transfer);
-		Archive::setFormatVersion(Stream);
-		Archive::setLibraryVersion(Stream);
-		Archive::setDataCompression(Stream);
-
-		//DO NOT set a mapped file.
-		//If a mapped file is set, leaf nodes would attempt to read in their buffers via the boost mapped file contained in the unchangeable Impl.
-		//In addition to not setting the mapped file, OPENVDB_2_ABI_COMPATIBLE must be defined to avoid other mapped file operations under the covers of openvdb::io.
-		//The mapped file pointer is null by default as long as openvdb::io::setMappedFilePtr isn't called.
-		//For reference, if a mapped file was desired and #ifndef OPENVDB_2_ABI_COMPATIBLE, this would be the next call:
-		//openvdb::io::setMappedFilePtr(StreamBuffer, mFileMapping);
-
-		//Read the file-level metadata
-		DatabaseMetadata.clearMetadata();
-		DatabaseMetadata.readMeta(Stream);
-
-		//Read the number of grids then for each grid read just the grid descriptor (not grid data)
-		NumGrids = readGridCount(Stream);
-		GridDescriptors.clear();
-		for (int32 i = 0; i < NumGrids; ++i)
-		{
-			FGridDescriptor::ReadAndInsertGridDescriptor(Stream, GridDescriptors);
-		}
-
-		GridArchiveIsOpen = isOpen;
-		return isOpen;
-	}
-
 	/* Return the database descriptor (i.e. file metadata) */
 	bool GetDatabaseInfo(FVoxelDatabaseInfo &OutVoxelDatabaseInfo) const
 	{
@@ -333,7 +292,89 @@ public:
 		return GridArchiveIsOpen;
 	}
 
+	bool OpenDatabase()
+	{
+		if (!GridArchiveIsOpen)
+		{
+			GridArchiveIsOpen = OpenGridArchive();
+		}
+		return GridArchiveIsOpen;
+	}
+
 protected:
+
+	inline bool IsByteStreamInitialized() const
+	{
+		return BytesAccessor != nullptr;
+	}
+
+	inline bool IsByteStreamOpen() const
+	{
+		IsByteStreamInitialized() && FStream<boost::iostreams::stream<boost::iostreams::array>>::is_open();
+	}
+
+	inline bool OpenByteStream()
+	{
+		//if (BytesCount <= UINT32_MAX) {} TODO error handling
+		if (!IsByteStreamInitialized())
+		{
+			//Preallocate memory, associate the stream buffer to the memory, then open the stream on top of the stream buffer
+			Bytes.SetNumUninitialized(BytesCount, false);
+			BytesAccessor.reset(new boost::iostreams::array(Bytes.GetData(), Bytes.GetData() + Bytes.Num()));
+			FStream<boost::iostreams::stream<boost::iostreams::array>>::open(*BytesAccessor);
+		}
+		return IsByteStreamOpen();
+	}
+
+	/* If the database is not already open, reset the stream buffer to the beginning of the file and read the header and grid descriptors */
+	bool OpenGridArchive()
+	{
+		checkue4(!GridArchiveIsOpen);
+
+		bool isGridArchiveOpen = false;
+		if (!IsByteStreamOpen() && OpenByteStream())
+		{
+			auto& BytesStream = static_cast<boost::iostreams::stream<boost::iostreams::array>&>(*this);
+
+			//Read the file header as the first item in the buffer
+			FGridArchive::readHeader(BytesStream);
+			DatabaseFileHeader = FVoxelDatabaseInfo::FPtr(reinterpret_cast<FVoxelDatabaseInfo*>(Bytes.GetData()));
+
+			//openvdb::io::StreamMetadata
+			//Initialize I/O stream metadata
+			//StreamPtr.reset(new FStreamMetadata<std::iostream>(this)); TODO Add mechanism to reset the stream metadata
+			FGridArchive::setFormatVersion(BytesStream);
+			FGridArchive::setLibraryVersion(BytesStream);
+			FGridArchive::setDataCompression(BytesStream);
+
+			//DO NOT set a mapped file.
+			//If a mapped file is set, leaf nodes would attempt to read in their buffers via the boost mapped file contained in the unchangeable Impl.
+			//In addition to not setting the mapped file, OPENVDB_2_ABI_COMPATIBLE must be defined to avoid other mapped file operations under the covers of openvdb::io.
+			//The mapped file pointer is null by default as long as openvdb::io::setMappedFilePtr isn't called.
+			//For reference, if a mapped file was desired and #ifndef OPENVDB_2_ABI_COMPATIBLE, this would be the next call:
+			//openvdb::io::setMappedFilePtr(StreamBuffer, mFileMapping);
+
+			//Read the file-level metadata
+			DatabaseMetadata.clearMetadata();
+			DatabaseMetadata.readMeta(BytesStream);
+
+			//Read the number of grids then for each grid read just the grid descriptor (not grid data)
+			NumGrids = FGridArchive::readGridCount(BytesStream);
+			GridDescriptors.clear();
+			for (int32 i = 0; i < NumGrids; ++i)
+			{
+				FGridDescriptorNameMapCIter GridDescriptorIter = FGridDescriptor::ReadAndAddNextGridDescriptor<boost::iostreams::stream<boost::iostreams::array>>(*this, GridDescriptors);
+				if (GridDescriptorIter != GridDescriptors.end())
+				{
+					//TODO log success
+				}
+			}
+
+			isGridArchiveOpen = true;
+		}
+		return isGridArchiveOpen;
+	}
+
 	FGridDescriptorNameMapCIter FindGridDescriptor(const FString &gridName) const
 	{
 		const FGridName name = TO_GRID_DATABASE_STRING(gridName);
@@ -385,15 +426,14 @@ protected:
 protected:
 	TArray<char> Bytes;
 	boost::shared_ptr<boost::iostreams::array> BytesAccessor;
-	size_t BytesCount;
-	TMap<FGridName, size_t> MaxGridSizeByType;
+	uint64 BytesCount;
+	TMap<FGridName, uint64> MaxGridSizeByType;
 
-	const FGridDatabaseString GridArchiveName;
+	FString GridArchiveName;
 	bool GridArchiveIsOpen;
 	int32 NumGrids;
 
 	FGridDescriptorNameMap GridDescriptors;
 	FVoxelDatabaseInfo::FPtr DatabaseFileHeader;
 	FMetaMap DatabaseMetadata;
-	FStreamMetadata::FPtr StreamMetadataPtr;
 };
