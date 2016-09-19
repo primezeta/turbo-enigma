@@ -32,6 +32,10 @@ struct FLibraryVersionId : public openvdb::VersionId
 	FLibraryVersionId(const openvdb::VersionId& Version)
 		: openvdb::VersionId(Version.first, Version.second)
 	{}
+
+    FLibraryVersionId(const FLibraryVersionId& Version)
+        : openvdb::VersionId(Version.first, Version.second)
+    {}
 };
 
 class FStreamMetadata : public openvdb::io::StreamMetadata
@@ -105,8 +109,43 @@ public:
 	{
 		return openvdb::io::StreamMetadata::auxData();
 	}
+    
+    inline void SetFileVersion(uint32 version)
+    {
+        openvdb::io::StreamMetadata::setFileVersion(version);
+    }
 
-	inline FGridDatabaseString Str() const
+    inline void SetLibraryVersion(const FLibraryVersionId& libraryVersion)
+    {
+        openvdb::io::StreamMetadata::setLibraryVersion(libraryVersion);
+    }
+
+    inline void SetGridCompression(EGridCompression gridCompression)
+    {
+        openvdb::io::StreamMetadata::setCompression((uint32)gridCompression);
+    }
+
+    inline void SetGridClass(EGridClass gridClass)
+    {
+        openvdb::io::StreamMetadata::setGridClass((uint32)gridClass);
+    }
+
+    inline void SetBackgroundValuePtr(const void* backgroundPtr)
+    {
+        openvdb::io::StreamMetadata::setBackgroundPtr(backgroundPtr);
+    }
+
+    inline void SetIsHalfFloat(bool isHalfFloat)
+    {
+        openvdb::io::StreamMetadata::setHalfFloat(isHalfFloat);
+    }
+
+    inline void SetWriteGridStats(bool writeGridStats)
+    {
+        openvdb::io::StreamMetadata::setWriteGridStats(writeGridStats);
+    }
+
+	inline FGridDatabaseString ToStr() const
 	{
 		return openvdb::io::StreamMetadata::str();
 	}

@@ -12,35 +12,27 @@ DECLARE_LOG_CATEGORY_EXTERN(LogVoxelDatabase, Log, All)
 #define verifyue4(expr)	{ if(UNLIKELY(!(expr))) { FDebug::LogAssertFailedMessage( #expr, __FILE__, __LINE__ ); _DebugBreakAndPromptForRemote(); FDebug::AssertFailed( #expr, __FILE__, __LINE__ ); CA_ASSUME(expr); } } 
 #define checkue4(expr) { if(UNLIKELY(!(expr))) { FDebug::LogAssertFailedMessage( #expr, __FILE__, __LINE__ ); _DebugBreakAndPromptForRemote(); FDebug::AssertFailed( #expr, __FILE__, __LINE__ ); CA_ASSUME(expr); } }
 
-#pragma pack(push,VoxelDatabaseInfoPack,1)
-struct FVoxelDatabaseInfo
+struct FVoxelDatabaseMetadata
 {
-	typedef boost::shared_ptr<FVoxelDatabaseInfo> FPtr;
-
-	FVoxelDatabaseInfo()
-		: MagicNumber(0), MajorVersion(0), MinorVersion(0), SupportsPartialGridReading(false), FileCompression(EGridCompression::GridCompressionNone)
-	{
-		FMemory::Memset(UUID, 0, 16);
-	}
+    FVoxelDatabaseMetadata(const FLibraryVersionId& libraryVersion, bool partialGridReading, EGridCompression fileCompression, const FGridDatabaseString& uuid)
+		: LibraryVersion(libraryVersion), SupportsPartialGridReading(partialGridReading), FileCompression(fileCompression), UUID(uuid)
+    {}
 
 	//NOTE: Assuming the file version is >= 222. TODO Allow previous versions.
-	int64 MagicNumber;
-	uint32 MajorVersion;
-	uint32 MinorVersion;
-	bool SupportsPartialGridReading;
-	EGridCompression FileCompression;
-	char UUID[16];
+    FLibraryVersionId LibraryVersion;
+    bool SupportsPartialGridReading;
+    EGridCompression FileCompression;
+    FGridDatabaseString UUID;
 };
-#pragma pack(pop,VoxelDatabaseInfoPack)
 
-struct FVoxelDatabaseMetadataAttributes
+struct FVoxelFileMetadata
 {
-	FVoxelDatabaseMetadataAttributes()
+    FVoxelFileMetadata()
 		: Name(TEXT("")), TypeID(TEXT("")), IsReadOnly(false)
 	{}
 
-	FVoxelDatabaseMetadataAttributes(const FString &name, const FString &typeID)
-		: Name(name), TypeID(typeID), IsReadOnly(FVoxelDatabaseMetadataAttributes::IsMetadataReadOnly(name))
+    FVoxelFileMetadata(const FString &name, const FString &typeID)
+		: Name(name), TypeID(typeID), IsReadOnly(FVoxelFileMetadata::IsMetadataReadOnly(name))
 	{}
 
 	FString ToString()
@@ -78,7 +70,7 @@ class FVoxelDatabaseArchive : public FMemoryArchive, public FGridArchive, public
 {
 public:
 	//TODO
-	//	Do not use FVoxelDatabaseInfo. Instead, provide a way to convert between openvdb .vdb file format and the UE4 archive format.
+	//	Do not use FVoxelDatabaseMetadata. Instead, provide a way to convert between openvdb .vdb file format and the UE4 archive format.
 	//	Store metamap values in TArray or TMap. Whenever a metadata type is registered, as well as the current factory functor,
 	//	store a callback function that will archive the container per type.
 	//	Metamap values (file and grid meta) should be stored in regular memory.
@@ -109,13 +101,13 @@ public:
 		//boost::interprocess::mapped_region region()
 
 		//Initially allocate enough memory to read in the vdb file header
-			//SharedMemory(boost::interprocess::open_or_create, GridArchiveName, sizeof(FVoxelDatabaseInfo)),
+			//SharedMemory(boost::interprocess::open_or_create, GridArchiveName, sizeof(FVoxelDatabaseMetadata)),
 			//MemoryBuffer(static_cast<char*>(SharedMemory.get_address()), SharedMemory.get_size()),
 			//StreamBuffer(MemoryBuffer)
 		//NOTE: Assuming the file version is >= 222. TODO Allow previous versions.
 		//Header size is int64:magic number, 2*uint32:file version, char:has offsets flag, 16*char:128-bit boost::uuids::uuid
 		//const boost::ulong_long_type FileHeaderSizeTest = sizeof(int64) + (2 * sizeof(uint32)) + sizeof(char) + (16 * sizeof(char));
-		//const boost::ulong_long_type FileHeaderSize = sizeof(FVoxelDatabaseInfo);
+		//const boost::ulong_long_type FileHeaderSize = sizeof(FVoxelDatabaseMetadata);
 		//checkue4(FileHeaderSizeTest == FileHeaderSize);
 		////SharedMemory.allocate(FileHeaderSize); TODO: Need to allocate after open_or_create?
 		//openvdb::io::setCurrentVersion(StreamBuffer);
@@ -135,7 +127,7 @@ public:
 		if (!FMetadata<MetaType>::IsRegisteredType<MetaType>())
 		{
 			FMetadata<MetaType>::RegisterMeta<MetaType>();
-            RegisteredMetadataDisplayNames.Add(GridTypeNameDisplay<MetaType>());
+            RegisteredMetadataTypeDisplayNames.Add(GridTypeNameDisplay<MetaType>());
         }
 	}
 
@@ -147,7 +139,7 @@ public:
 			//FGrid<TreeType> Grid;
 			//Grid.fill()
 			FGrid<TreeType>::RegisterGrid<TreeType>();
-            RegisteredGridDisplayNames.Add(GridTypeNameDisplay<TreeType::ValueType>());
+            RegisteredGridTypeDisplayNames.Add(GridTypeNameDisplay<TreeType::ValueType>());
 		}
 	}
 
@@ -157,7 +149,7 @@ public:
 		if (!FTransformMap<MapType>::IsRegistered<MapType>())
 		{
 			FTransformMap<MapType>::RegisterTransformMap<MapType>();
-            RegisteredTransformMapDisplayNames.Add(GridTypeNameDisplay<MapType>());
+            RegisteredTransformMapTypeDisplayNames.Add(GridTypeNameDisplay<MapType>());
         }
 	}
 
@@ -249,26 +241,26 @@ public:
 		return containsGrid;
 	}
 
-	bool GetFileMetadataAttributes(TArray<FVoxelDatabaseMetadataAttributes> &OutAttributes) const
+	bool GetFileMetadata(TArray<FVoxelFileMetadata> &OutFileMetadata) const
 	{
-		bool areAnyAttributesValid = false;
-		for (auto i = DatabaseMetadata.beginMeta(); i != DatabaseMetadata.endMeta(); ++i)
+		bool isAnyFileMetadataValid = false;
+		for (auto i = DatabaseFileMetadata.beginMeta(); i != DatabaseFileMetadata.endMeta(); ++i)
 		{
 			const FString metaNameStr = FROM_GRID_DATABASE_STRING(i->first);
 			const FString metaTypeStr = FROM_GRID_DATABASE_STRING(i->second->typeName());
-			OutAttributes.Add(FVoxelDatabaseMetadataAttributes(metaNameStr, metaTypeStr));
+            OutFileMetadata.Add(FVoxelFileMetadata(metaNameStr, metaTypeStr));
 		}
-		areAnyAttributesValid = DatabaseMetadata.metaCount() > 0;
-		return areAnyAttributesValid;
+        isAnyFileMetadataValid = DatabaseFileMetadata.metaCount() > 0;
+		return isAnyFileMetadataValid;
 	}
 
 	template<typename ValueType>
-	bool GetFileMetadataValue(const FString &MetaName, ValueType &OutValue, FVoxelDatabaseMetadataAttributes &OutAttributes) const
+	bool GetFileMetadataValue(const FString &MetaName, ValueType &OutValue, FVoxelFileMetadata &OutAttributes) const
 	{
 		bool isMetadataValueFound = false;
-		FMetadata<ValueType>::FPtr metaPtr = DatabaseMetadata.getMetadata<ValueType>(TO_GRID_DATABASE_STRING(MetaName));
+		FMetadata<ValueType>::FPtr metaPtr = DatabaseFileMetadata.getMetadata<ValueType>(TO_GRID_DATABASE_STRING(MetaName));
 		const FGridDatabaseString typeNameStdStr = metaPtr ? metaPtr->typeName() : FMetadataUnknown().typeName();
-		FVoxelDatabaseMetadataAttributes MetaAttributes(MetaName, FROM_GRID_DATABASE_STRING(typeNameStdStr));
+        FVoxelFileMetadata MetaAttributes(MetaName, FROM_GRID_DATABASE_STRING(typeNameStdStr));
 		if (metaPtr)
 		{
 			OutValue = *metaPtr;
@@ -284,16 +276,19 @@ public:
 	template<typename ValueType>
 	bool GetFileMetadataValue(const FString &MetaName, ValueType &OutValue) const
 	{
-		FVoxelDatabaseMetadataAttributes MetaAttributes;
+        FVoxelFileMetadata MetaAttributes;
 		return GetFileMetadataValue<ValueType>(MetaName, OutValue, MetaAttributes);
 	}
 
-	/* Return the database descriptor (i.e. file metadata) */
-	bool GetDatabaseInfo(FVoxelDatabaseInfo &OutVoxelDatabaseInfo) const
+	/* Return the database metadata */
+	bool GetDatabaseMetadata(FVoxelDatabaseMetadata& OutVoxelDatabaseMetadata) const
 	{
 		if (GridArchiveIsOpen)
 		{
-			OutVoxelDatabaseInfo = *DatabaseFileHeader;
+			OutVoxelDatabaseMetadata.LibraryVersion = FGridArchive::libraryVersion();
+            OutVoxelDatabaseMetadata.SupportsPartialGridReading = FGridArchive::isDelayedLoadingEnabled();
+            OutVoxelDatabaseMetadata.FileCompression = (EGridCompression)FGridArchive::compression();
+            OutVoxelDatabaseMetadata.UUID = FGridArchive::getUniqueTag();
 		}
 		return GridArchiveIsOpen;
 	}
@@ -344,7 +339,6 @@ protected:
 
 			//Read the file header as the first item in the buffer
 			FGridArchive::readHeader(BytesStream);
-			DatabaseFileHeader = FVoxelDatabaseInfo::FPtr(reinterpret_cast<FVoxelDatabaseInfo*>(Bytes.GetData()));
 
 			//openvdb::io::StreamMetadata
 			//Initialize I/O stream metadata
@@ -361,8 +355,8 @@ protected:
 			//openvdb::io::setMappedFilePtr(StreamBuffer, mFileMapping);
 
 			//Read the file-level metadata
-			DatabaseMetadata.clearMetadata();
-			DatabaseMetadata.readMeta(BytesStream);
+            DatabaseFileMetadata.clearMetadata();
+            DatabaseFileMetadata.readMeta(BytesStream);
 
 			//Read the number of grids then for each grid read just the grid descriptor (not grid data)
 			NumGrids = FGridArchive::readGridCount(BytesStream);
@@ -440,10 +434,9 @@ protected:
 	int32 NumGrids;
 
 	FGridDescriptorNameMap GridDescriptors;
-	FVoxelDatabaseInfo::FPtr DatabaseFileHeader;
-	FMetaMap DatabaseMetadata;
+	FMetaMap DatabaseFileMetadata;
 
-    TArray<FString> RegisteredGridDisplayNames;
-    TArray<FString> RegisteredMetadataDisplayNames;
-    TArray<FString> RegisteredTransformMapDisplayNames;
+    TArray<FString> RegisteredGridTypeDisplayNames;
+    TArray<FString> RegisteredMetadataTypeDisplayNames;
+    TArray<FString> RegisteredTransformMapTypeDisplayNames;
 };
