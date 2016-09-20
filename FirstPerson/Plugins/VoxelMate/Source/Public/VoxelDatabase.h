@@ -85,23 +85,6 @@ public:
 	FVoxelDatabaseArchive(const FString &DatabaseName)
 		: GridArchiveName(DatabaseName), IsDatabaseOpen(false)
 	{
-		////Register the standard grid and metadata types to enable the respective types to be serialized to and from shared memory
-		//InitializeStandardTypes(SharedMemory);
-
-		//const size_t PageSize = memory_manager::
-		//boost::interprocess::mapped_region region()
-
-		//Initially allocate enough memory to read in the vdb file header
-			//SharedMemory(boost::interprocess::open_or_create, GridArchiveName, sizeof(FVoxelDatabaseMetadata)),
-			//MemoryBuffer(static_cast<char*>(SharedMemory.get_address()), SharedMemory.get_size()),
-			//StreamBuffer(MemoryBuffer)
-		//NOTE: Assuming the file version is >= 222. TODO Allow previous versions.
-		//Header size is int64:magic number, 2*uint32:file version, char:has offsets flag, 16*char:128-bit boost::uuids::uuid
-		//const boost::ulong_long_type FileHeaderSizeTest = sizeof(int64) + (2 * sizeof(uint32)) + sizeof(char) + (16 * sizeof(char));
-		//const boost::ulong_long_type FileHeaderSize = sizeof(FVoxelDatabaseMetadata);
-		//checkue4(FileHeaderSizeTest == FileHeaderSize);
-		////SharedMemory.allocate(FileHeaderSize); TODO: Need to allocate after open_or_create?
-		//openvdb::io::setCurrentVersion(StreamBuffer);
 	}
 
 	virtual FString GetArchiveName() const override
@@ -466,6 +449,37 @@ protected:
         }
     }
 
+    void ReadAllGridsPartial()
+    {
+        for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
+        {
+            const FGridDescriptor& gridDescriptor = *i->second;
+            const int32 byteStreamIndex = gridDescriptor.GridDescriptorIndex + 3;
+            const GridBaseStatics::FPtr& gridPtr = gridDescriptor.GridPtr;
+            FStream<boost::iostreams::stream<boost::iostreams::array>>& inputStream = DatabaseByteStreams[byteStreamIndex];
+
+            FGridArchive::readGridCompression(inputStream);
+            gridPtr->readMeta(inputStream);
+
+            const int32 FormatVersion = GridIOStatics::GetFormatVersion(DatabaseByteStreams[byteStreamIndex]);
+            const bool isFileVersionForGridInstancing = FormatVersion > GridIOStatics::FileVersionGridInstancing;
+            if (isFileVersionForGridInstancing)
+            {
+                gridPtr->readTransform(inputStream);
+                const bool isGridInstance = gridDescriptor.IsGridInstance();
+                if (isGridInstance)
+                {
+                    gridPtr->readTopology(inputStream);
+                }
+            }
+            else
+            {
+                gridPtr->readTopology(inputStream);
+                gridPtr->readTransform(inputStream);
+            }
+        }
+    }
+
 	FGridDescriptorNameMapCIter FindGridDescriptor(const FString &gridName) const
 	{
 		const FGridName name = TO_GRID_DATABASE_STRING(gridName);
@@ -516,15 +530,15 @@ protected:
 
 protected:
     bool IsDatabaseOpen;
+    uint64 DatabaseHeaderBytesCount;
+    uint64 DatabaseMetadataBytesCount;
+    uint64 DatabaseGridDescriptorsBytesCount;
+    uint64 DatabaseGridBytesCount;
 
 	TArray<TArray<char>> DatabaseBytes;
     TArray<boost::shared_ptr<boost::iostreams::array>> DatabaseByteAccessors;
     TArray<FStream<boost::iostreams::stream<boost::iostreams::array>>> DatabaseByteStreams;
 
-    uint64 DatabaseHeaderBytesCount;
-    uint64 DatabaseMetadataBytesCount;
-    uint64 DatabaseGridDescriptorsBytesCount;
-    uint64 DatabaseGridBytesCount;
 	TMap<FGridName, uint64> MaxGridSizeByType;
 
 	FString GridArchiveName;

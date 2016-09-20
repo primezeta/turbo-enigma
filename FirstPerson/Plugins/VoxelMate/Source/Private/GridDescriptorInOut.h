@@ -173,6 +173,11 @@ namespace GridIOStatics
     const static uint32 FileVersionGridInstancing = openvdb::OPENVDB_FILE_VERSION_GRID_INSTANCING;
     const static FGridDatabaseString HalfFloatTypenameSuffix = "_HalfFloat";
     //const static FGridDatabaseString HalfFloatTypenameSuffix = HALF_FLOAT_TYPENAME_SUFFIX;;
+
+    uint32 GetFormatVersion(std::ios_base& ios)
+    {
+        return openvdb::io::getFormatVersion(ios);
+    }
 }
 
 namespace MetadataStatics
@@ -443,6 +448,9 @@ public:
 	int64 DataBlocksStreamPosition;
 	int64 GridEndPosition;
 
+    static int32 NextGridDescriptorIndex;
+    int32 GridDescriptorIndex;
+
 	/* Read the next grid descriptor into the input stream and return the stream position of the next grid descriptor */
 	template<typename StreamType>
 	static FGridDescriptorNameMapCIter ReadAndAddNextGridDescriptor(FStream<StreamType>& is, FGridDescriptorNameMap &OutGridDescriptors)
@@ -530,6 +538,9 @@ public:
                 //GridPtr->setGridClass()
                 //GridPtr->setIsInWorldSpace()
                 //GridPtr->setVectorType()
+
+                GridDescriptor.GridDescriptorIndex = FGridDescriptor::NextGridDescriptorIndex++;
+
                 //TODO Logging for FGridDescriptor
                 //UE_LOG(LogGridDescriptor, Display, TEXT("Created %s grid %s"),
                 //FROM_GRID_DATABASE_STRING(GridDescriptor.GridType),

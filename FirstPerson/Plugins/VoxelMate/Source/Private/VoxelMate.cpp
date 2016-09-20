@@ -5,6 +5,7 @@
 #include "ModuleManager.h"
 #include "IPluginManager.h"
 #include "VoxelDatabase.h"
+#include "GridDescriptorInOut.h"
 
 #define LOCTEXT_NAMESPACE "FVoxelMateModule"
 
@@ -29,6 +30,8 @@ const FGridDatabaseString GridBaseStatics::MetaNameFileBBoxMin     = openvdb::Gr
 const FGridDatabaseString GridBaseStatics::MetaNameFileBBoxMax     = openvdb::GridBase::META_FILE_BBOX_MAX;
 const FGridDatabaseString GridBaseStatics::MetaNameFileCompression = openvdb::GridBase::META_FILE_COMPRESSION;
 const FGridDatabaseString GridBaseStatics::MetaNameFileMemBytes    = openvdb::GridBase::META_FILE_MEM_BYTES;
+
+int32 FGridDescriptor::NextGridDescriptorIndex = 0;
 
 #undef LOCTEXT_NAMESPACE
 	
