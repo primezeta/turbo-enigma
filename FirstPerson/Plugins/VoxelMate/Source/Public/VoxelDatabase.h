@@ -455,28 +455,44 @@ protected:
         {
             const FGridDescriptor& gridDescriptor = *i->second;
             const int32 byteStreamIndex = gridDescriptor.GridDescriptorIndex + 3;
-            const GridBaseStatics::FPtr& gridPtr = gridDescriptor.GridPtr;
             FStream<boost::iostreams::stream<boost::iostreams::array>>& inputStream = DatabaseByteStreams[byteStreamIndex];
+            GridBaseStatics::GridBase& grid = *gridDescriptor.GridPtr;
 
             FGridArchive::readGridCompression(inputStream);
-            gridPtr->readMeta(inputStream);
+            grid.readMeta(inputStream);
 
             const int32 FormatVersion = GridIOStatics::GetFormatVersion(DatabaseByteStreams[byteStreamIndex]);
             const bool isFileVersionForGridInstancing = FormatVersion > GridIOStatics::FileVersionGridInstancing;
             if (isFileVersionForGridInstancing)
             {
-                gridPtr->readTransform(inputStream);
+                grid.readTransform(inputStream);
                 const bool isGridInstance = gridDescriptor.IsGridInstance();
                 if (isGridInstance)
                 {
-                    gridPtr->readTopology(inputStream);
+                    grid.readTopology(inputStream);
                 }
             }
             else
             {
-                gridPtr->readTopology(inputStream);
-                gridPtr->readTransform(inputStream);
+                grid.readTopology(inputStream);
+                grid.readTransform(inputStream);
             }
+        }
+    }
+
+    template<typename TreeType>
+    void ReadGridBuffers(const FString& GridName)
+    {
+        FGridDescriptorNameMapCIter gridIter = FindGridDescriptor(GridName);
+        if (gridIter != GridDescriptors.end())
+        {
+            const FGridDescriptor& gridDescriptor = *gridIter->second;
+            const int32 byteStreamIndex = gridDescriptor.GridDescriptorIndex + 3;
+            FStream<boost::iostreams::stream<boost::iostreams::array>>& inputStream = DatabaseByteStreams[byteStreamIndex];
+            const FGrid<TreeType>::FPtr gridPtr = boost::static_pointer_cast<FGrid<TreeType>>(gridDescriptor.GridPtr);
+            checkue4(gridPtr != nullptr);
+            const FGrid<TreeType>& grid = *gridPtr;
+            grid.readBuffers(inputStream, grid.saveFloatAsHalf());
         }
     }
 
