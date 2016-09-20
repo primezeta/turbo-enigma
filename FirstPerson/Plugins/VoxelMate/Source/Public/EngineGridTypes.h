@@ -97,7 +97,7 @@ public:
 //Type definitions
 typedef openvdb::Name FGridName;
 typedef openvdb::Index FIndex;
-typedef std::multimap<FGridName, FGridDescriptor> FGridDescriptorNameMap;
+typedef std::multimap<FGridName, boost::shared_ptr<FGridDescriptor>> FGridDescriptorNameMap;
 typedef FGridDescriptorNameMap::iterator FGridDescriptorNameMapIter;
 typedef FGridDescriptorNameMap::const_iterator FGridDescriptorNameMapCIter;
 typedef openvdb::MetaMap FMetaMap;

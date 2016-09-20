@@ -439,7 +439,7 @@ public:
 	FGridDatabaseString GridType;
 	FGridDatabaseString ParentGridName;
 	bool IsFloatSavedAsHalf;
-	int64 GridStreamPosition;
+	int64 GridStartPosition;
 	int64 DataBlocksStreamPosition;
 	int64 GridEndPosition;
 
@@ -507,9 +507,9 @@ public:
             GridBaseStatics::FPtr gridPtr = GridBaseStatics::CreateGrid(GridTypeWithoutFloatAsHalfSuffix);
             if (gridPtr != nullptr)
             {
-                OutGridDescriptorIter = OutGridDescriptors.emplace(GridUniqueName, FGridDescriptor());
+                OutGridDescriptorIter = OutGridDescriptors.emplace(GridUniqueName, boost::shared_ptr<FGridDescriptor>(new FGridDescriptor()));
                 check(OutGridDescriptorIter != OutGridDescriptors.end()); //TODO error handling
-                FGridDescriptor& GridDescriptor = OutGridDescriptorIter->second;
+                FGridDescriptor& GridDescriptor = *OutGridDescriptorIter->second;
 
                 GridDescriptor.GridPtr = gridPtr;
                 GridDescriptor.UniqueName = GridUniqueName;
@@ -522,7 +522,7 @@ public:
                 GridDescriptor.GridPtr->setSaveFloatAsHalf(IsFloatHalf);
 
                 // Read in the offsets for grid start, data blocks, and grid end
-                ReadGridStreamPositions<StreamType>(is, GridDescriptor.GridStreamPosition, GridDescriptor.DataBlocksStreamPosition, GridDescriptor.GridEndPosition);
+                ReadGridStreamPositions<StreamType>(is, GridDescriptor.GridStartPosition, GridDescriptor.DataBlocksStreamPosition, GridDescriptor.GridEndPosition);
                 nextGridStreamPos = GridDescriptor.GridEndPosition;
 
                 //TODO Not sure yet if the following will be set here
@@ -600,7 +600,7 @@ public:
 
 	void WriteStreamPos(std::ostream& os) const
 	{
-		os.write(reinterpret_cast<const char*>(&GridStreamPosition), sizeof(int64));
+		os.write(reinterpret_cast<const char*>(&GridStartPosition), sizeof(int64));
 		os.write(reinterpret_cast<const char*>(&DataBlocksStreamPosition), sizeof(int64));
 		os.write(reinterpret_cast<const char*>(&GridEndPosition), sizeof(int64));
 	}
@@ -612,7 +612,7 @@ public:
 
 	inline void SeekToGrid(std::istream& is) const
 	{
-		is.seekg(GridStreamPosition, std::ios_base::beg);
+		is.seekg(GridStartPosition, std::ios_base::beg);
 	}
 
 	inline void SeekToBlocks(std::istream& is) const
@@ -627,7 +627,7 @@ public:
 
 	inline void SeekToGrid(std::ostream& os) const
 	{
-		os.seekp(GridStreamPosition, std::ios_base::beg);
+		os.seekp(GridStartPosition, std::ios_base::beg);
 	}
 
 	inline void SeekToBlocks(std::ostream& os) const
@@ -643,8 +643,8 @@ public:
 	//TODO: Determine if iostreams really need both seekg and seekp called
 	inline void SeekToGrid(std::iostream& ios) const
 	{
-		ios.seekg(GridStreamPosition, std::ios_base::beg);
-		ios.seekp(GridStreamPosition, std::ios_base::beg);
+		ios.seekg(GridStartPosition, std::ios_base::beg);
+		ios.seekp(GridStartPosition, std::ios_base::beg);
 	}
 
 	inline void SeekToBlocks(std::iostream& ios) const
