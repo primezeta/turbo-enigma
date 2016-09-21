@@ -401,7 +401,7 @@ protected:
         FGridArchive::writeHeader(DatabaseByteStreams[0], AreDatabaseStreamsSeekable);
     }
 
-    inline void WriteDatabaseMeta()
+    inline void WriteDatabaseMetadata()
     {
         //Write the actual file metamap followed by the count of non-null grids
         DatabaseFileMetadata.writeMeta(DatabaseByteStreams[1]);        
@@ -433,14 +433,17 @@ protected:
 
         //Write the count of non-null grids
         DatabaseByteStreams[1].write(reinterpret_cast<char*>(&gridCount), sizeof(int32));
-        
+    }
+
+    void WriteAllGrids()
+    {
         //Write out the non-null grids with unique names constructed with a suffix corresponding to the count of that name if there are more than one
         FTreeMap treeMap;
         FUniqueNameSet uniqueNames;
         for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
         {
             FGridDescriptor& gridDescriptor = *(i->second);
-            if (gridDescriptor.GridPtr != nullptr)
+            if (gridDescriptor.GridPtr != nullptr && gridDescriptor.IsChanged)
             {
                 const GridBaseStatics::GridBase& grid = *gridDescriptor.GridPtr;
 
@@ -463,7 +466,7 @@ protected:
                 //Check if this grid's tree is shared with a grid that has already been written.
                 const openvdb::TreeBase* treePtr = &(grid.baseTree());
                 FTreeMapIter treeIter = treeMap.find(treePtr);
-                
+
                 const bool isInstance = ((treeIter != treeMap.end()) && (treeIter->second.IsFloatSavedAsHalf == gridDescriptor.IsFloatSavedAsHalf));
                 if (IsGridInstancingEnabled && isInstance)
                 {
@@ -475,8 +478,9 @@ protected:
                 }
                 else
                 {
-                    // Write out the grid descriptor and its associated grid.
-                    FGridDescriptor::WriteGrid(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable);
+                    // Write out the grid descriptor and its associated grid header, stream positions, metadata, transform, and topology
+                    const int64 offsetPos = FGridDescriptor::WriteGridMeta(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable);
+                    FGridDescriptor::WriteGridDataBlocks(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable, offsetPos);
                     // Record the grid's tree pointer so that the tree doesn't get written
                     // more than once.
                     treeMap[treePtr] = gridDescriptor;

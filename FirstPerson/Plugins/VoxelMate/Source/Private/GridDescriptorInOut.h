@@ -490,21 +490,28 @@ class FGridDescriptor
 public:
 	typedef boost::shared_ptr<FGridDescriptor> FPtr;
 
-	GridBaseStatics::FPtr GridPtr; //Important! When serializing a grid descriptor, do not serialize the grid
+    //Serialized
 	FGridDatabaseString UniqueName;
-	FGridDatabaseString GridName; //Grid name is not archived, rather it is the unique name with the suffix stripped
 	FGridDatabaseString GridType;
 	FGridDatabaseString ParentGridName;
 	bool IsFloatSavedAsHalf;
 	int64 GridStartPosition;
-	int64 DataBlocksStreamPosition;
+	int64 DataBlocksPosition;
 	int64 GridEndPosition;
 
+    //Not serialized
     static int32 NextGridDescriptorIndex;
+    GridBaseStatics::FPtr GridPtr;
+    FGridDatabaseString GridName; //Unique name with the suffix stripped
     int32 GridDescriptorIndex;
+    bool IsChanged;
+
+    FGridDescriptor()
+        : IsFloatSavedAsHalf(false), GridStartPosition(-1), DataBlocksPosition(-1), GridEndPosition(-1), GridDescriptorIndex(-1), IsChanged(false)
+    {}
 
     /* Write out the grid associated to the grid descriptor */
-    static inline void WriteGrid(FStream<std::ostream>& os, FGridDescriptor& GridDescriptor, bool areDatabaseStreamsSeekable)
+    static inline int64 WriteGridMeta(FStream<std::ostream>& os, FGridDescriptor& GridDescriptor, bool areDatabaseStreamsSeekable)
     {
         // Write out the descriptor's header information (grid name and type)
         GridDescriptor.WriteGridHeader(os);
@@ -555,8 +562,15 @@ public:
         // Now we know the grid block storage position.
         if (areDatabaseStreamsSeekable)
         {
-            GridDescriptor.DataBlocksStreamPosition = os.tellp();
+            GridDescriptor.DataBlocksPosition = os.tellp();
         }
+
+        return offsetPos;
+    }
+
+    static inline void WriteGridDataBlocks(FStream<std::ostream>& os, FGridDescriptor& GridDescriptor, bool areDatabaseStreamsSeekable, int64 offsetPos)
+    {
+        openvdb::GridBase& grid = *GridDescriptor.GridPtr;
 
         // Save out the data blocks of the grid.
         grid.writeBuffers(os);
@@ -699,7 +713,7 @@ public:
                 GridDescriptor.GridPtr->setSaveFloatAsHalf(IsFloatHalf);
 
                 // Read in the offsets for grid start, data blocks, and grid end
-                ReadGridStreamPositions<std::istream>(is, GridDescriptor.GridStartPosition, GridDescriptor.DataBlocksStreamPosition, GridDescriptor.GridEndPosition);
+                ReadGridStreamPositions<std::istream>(is, GridDescriptor.GridStartPosition, GridDescriptor.DataBlocksPosition, GridDescriptor.GridEndPosition);
                 nextGridStreamPos = GridDescriptor.GridEndPosition;
 
                 //TODO Not sure yet if the following will be set here
@@ -786,7 +800,7 @@ public:
 	void WriteStreamPos(std::ostream& os) const
 	{
 		os.write(reinterpret_cast<const char*>(&GridStartPosition), sizeof(int64));
-		os.write(reinterpret_cast<const char*>(&DataBlocksStreamPosition), sizeof(int64));
+		os.write(reinterpret_cast<const char*>(&DataBlocksPosition), sizeof(int64));
 		os.write(reinterpret_cast<const char*>(&GridEndPosition), sizeof(int64));
 	}
 
@@ -802,7 +816,7 @@ public:
 
 	inline void SeekToBlocks(std::istream& is) const
 	{
-		is.seekg(DataBlocksStreamPosition, std::ios_base::beg);
+		is.seekg(DataBlocksPosition, std::ios_base::beg);
 	}
 
 	inline void SeekToEnd(std::istream& is) const
@@ -817,7 +831,7 @@ public:
 
 	inline void SeekToBlocks(std::ostream& os) const
 	{
-		os.seekp(DataBlocksStreamPosition, std::ios_base::beg);
+		os.seekp(DataBlocksPosition, std::ios_base::beg);
 	}
 
 	inline void SeekToEnd(std::ostream& os) const
@@ -834,8 +848,8 @@ public:
 
 	inline void SeekToBlocks(std::iostream& ios) const
 	{
-		ios.seekg(DataBlocksStreamPosition, std::ios_base::beg);
-		ios.seekp(DataBlocksStreamPosition, std::ios_base::beg);
+		ios.seekg(DataBlocksPosition, std::ios_base::beg);
+		ios.seekp(DataBlocksPosition, std::ios_base::beg);
 	}
 
 	inline void SeekToEnd(std::iostream& ios) const
