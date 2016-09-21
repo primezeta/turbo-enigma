@@ -66,7 +66,7 @@ struct FVoxelFileMetadata
 	}
 };
 
-class FVoxelDatabaseArchive : public FMemoryArchive, public FGridArchive
+class FVoxelDatabaseArchive : public FGridArchive
 {
 public:
 	//TODO
@@ -83,13 +83,13 @@ public:
 	//	Could use 1-server-N-clients. Clients manage I/O but local changes to grid states are allowed/disallowed by the server and the server syncs changes to clients.
 	//	Anyway, ignore client/server complications. Just design with extensibility in mind for future design.
 	FVoxelDatabaseArchive(const FString &DatabaseName)
-		: GridArchiveName(DatabaseName), IsDatabaseOpen(false), AreDatabaseStreamsSeekable(true), IsGridInstancingEnabled(true)
+		: GridDatabaseName(DatabaseName), IsDatabaseOpen(false), AreDatabaseStreamsSeekable(true), IsGridInstancingEnabled(true)
 	{
 	}
 
-	virtual FString GetArchiveName() const override
+	virtual FString GetGridDatabaseName() const
 	{
-		return GridArchiveName;
+		return GridDatabaseName;
 	}
 
 	template<typename MetaType>
@@ -126,6 +126,17 @@ public:
             RegisteredTransformMapTypeDisplayNames.Add(GridTypeNameDisplay<MapType>());
         }
 	}
+
+    void GetGridNames(TArray<FString> &OutGridNames) const
+    {
+        for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
+        {
+            if (i->second != nullptr)
+            {
+                OutGridNames.Add(FROM_GRID_DATABASE_STRING(i->first));
+            }
+        }
+    }
 
     const TArray<FString>& GetRegisteredGridTypeDisplayNames() const
     {
@@ -645,7 +656,7 @@ protected:
 		const size_t count = size_t(std::distance(range.first, range.second));
 		if (count > 1 && name == uniqueName)
 		{
-			UE_LOG(LogVoxelDatabase, Error, TEXT("%s has more than one grid named %s"), *GetArchiveName(), *gridName);
+			UE_LOG(LogVoxelDatabase, Error, TEXT("%s has more than one grid named %s"), *GetGridDatabaseName(), *gridName);
 		}
 
 		FGridDescriptorNameMapCIter foundGridDescriptor = GridDescriptors.end();
@@ -692,7 +703,7 @@ protected:
     FNameCountMap GridNamesHistogram;
 	TMap<FGridName, uint64> MaxGridSizeByType;
 
-	FString GridArchiveName;
+	FString GridDatabaseName;
 	int32 NumGrids;
 
 	FGridDescriptorNameMap GridDescriptors;
