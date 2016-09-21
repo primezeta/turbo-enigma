@@ -165,18 +165,64 @@ public:
 	FStream()
 		: FStreamMetadata(*this)
 	{}
+
+    operator FStream<std::istream>&() const //TODO: Should be explicit?
+    {
+        return static_cast<FStream<std::istream>&>(*this);
+    }
+
+    operator FStream<std::ostream>&() const //TODO: Should be explicit?
+    {
+        return static_cast<FStream<std::ostream>&>(*this);
+    }
 };
 
 //extern const char* HALF_FLOAT_TYPENAME_SUFFIX; FFFFUUUUU can't get this to link from the anonymous namespace
 namespace GridIOStatics
 {
-    const static uint32 FileVersionGridInstancing = openvdb::OPENVDB_FILE_VERSION_GRID_INSTANCING;
+    enum
+    {
+        FileVersionRootNodeMap             = openvdb::OPENVDB_FILE_VERSION_ROOTNODE_MAP,
+        FileVersionInternalNodeCompression = openvdb::OPENVDB_FILE_VERSION_INTERNALNODE_COMPRESSION,
+        FileVersionSimplifiedGridTypename  = openvdb::OPENVDB_FILE_VERSION_SIMPLIFIED_GRID_TYPENAME,
+        FileVersionGridInstancing          = openvdb::OPENVDB_FILE_VERSION_GRID_INSTANCING,
+        FileVersionBoolLeafOptimization    = openvdb::OPENVDB_FILE_VERSION_BOOL_LEAF_OPTIMIZATION,
+        FileVersionBoostUuid               = openvdb::OPENVDB_FILE_VERSION_BOOST_UUID,
+        FileVersionNoGridMap               = openvdb::OPENVDB_FILE_VERSION_NO_GRIDMAP,
+        FileVersionNewTransform            = openvdb::OPENVDB_FILE_VERSION_NEW_TRANSFORM,
+        FileVersionSelectiveCompression    = openvdb::OPENVDB_FILE_VERSION_SELECTIVE_COMPRESSION,
+        FileVersionFloatFrustumBbox        = openvdb::OPENVDB_FILE_VERSION_FLOAT_FRUSTUM_BBOX,
+        FileVersionNodeMaskCompression     = openvdb::OPENVDB_FILE_VERSION_NODE_MASK_COMPRESSION,
+        FileVersionBloscCompression        = openvdb::OPENVDB_FILE_VERSION_BLOSC_COMPRESSION,
+        FileVersionPointIndexGrid          = openvdb::OPENVDB_FILE_VERSION_POINT_INDEX_GRID,
+    };
+
     const static FGridDatabaseString HalfFloatTypenameSuffix = "_HalfFloat";
     //const static FGridDatabaseString HalfFloatTypenameSuffix = HALF_FLOAT_TYPENAME_SUFFIX;;
 
     uint32 GetFormatVersion(std::ios_base& ios)
     {
         return openvdb::io::getFormatVersion(ios);
+    }
+
+    void SetDataCompression(std::ios_base& ios, uint32 compressionFlags)
+    {
+        openvdb::io::setDataCompression(ios, compressionFlags);
+    }
+
+    void SetWriteGridStatsMetadata(std::ios_base& ios, bool areGridStatsWritten)
+    {
+        openvdb::io::setWriteGridStatsMetadata(ios, areGridStatsWritten);
+    }
+
+    uint32 GetDataCompression(std::ios_base& ios)
+    {
+        return openvdb::io::getDataCompression(ios);
+    }
+
+    FGridDatabaseString CompressionToString(uint32 compressionFlags)
+    {
+        return openvdb::io::compressionToString(compressionFlags);
     }
 }
 
@@ -200,6 +246,12 @@ class FGridArchive : public openvdb::io::Archive
 {
 public:
 	typedef boost::shared_ptr<FGridArchive> FPtr;
+};
+
+class TreeBaseStatics : public openvdb::TreeBase
+{
+public:
+    typedef openvdb::TreeBase::Ptr FPtr;
 };
 
 class GridBaseStatics : public openvdb::GridBase
@@ -451,11 +503,130 @@ public:
     static int32 NextGridDescriptorIndex;
     int32 GridDescriptorIndex;
 
+    /* Write out the grid associated to the grid descriptor */
+    static inline void WriteGrid(FStream<std::ostream>& os, FGridDescriptor& GridDescriptor, bool areDatabaseStreamsSeekable)
+    {
+        // Write out the descriptor's header information (grid name and type)
+        GridDescriptor.WriteGridHeader(os);
+
+        // Save the curent stream position as postion to where the offsets for
+        // this GridDescriptor will be written to.
+        int64 offsetPos = 0;
+        if (areDatabaseStreamsSeekable)
+        {
+            offsetPos = (int64)os.tellp();
+        }
+
+        // Write out the offset information. At this point it will be incorrect.
+        // But we need to write it out to move the stream head forward.
+        GridDescriptor.WriteStreamPos(os);
+
+        // Now we know the starting grid storage position.
+        if (areDatabaseStreamsSeekable)
+        {
+            GridDescriptor.GridStartPosition = os.tellp();
+        }
+
+        // Save the compression settings for this grid.
+        //setGridCompression(os, *grid); TODO
+
+        // Save the grid's metadata and transform.
+        openvdb::GridBase& grid = *GridDescriptor.GridPtr;
+        const bool isGridStatsMetadataWritten = os.GetShouldWriteGridStats();
+        if (!isGridStatsMetadataWritten)
+        {
+            grid.writeMeta(os);
+        }
+        else
+        {
+            // Compute and add grid statistics metadata.
+            const uint32 compressionFlags = GridIOStatics::GetDataCompression(os);
+            openvdb::GridBase::Ptr copyOfGridPtr = grid.copyGrid(); // shallow copy
+            openvdb::GridBase& copyOfGrid = *copyOfGridPtr;
+            copyOfGrid.addStatsMetadata();
+            copyOfGrid.insertMeta(GridBaseStatics::MetaNameFileCompression, openvdb::StringMetadata(GridIOStatics::CompressionToString(compressionFlags)));
+            copyOfGrid.writeMeta(os);
+        }
+        grid.writeTransform(os);
+
+        // Save the grid's structure.
+        grid.writeTopology(os);
+
+        // Now we know the grid block storage position.
+        if (areDatabaseStreamsSeekable)
+        {
+            GridDescriptor.DataBlocksStreamPosition = os.tellp();
+        }
+
+        // Save out the data blocks of the grid.
+        grid.writeBuffers(os);
+
+        // Now we know the end position of this grid.
+        if (areDatabaseStreamsSeekable)
+        {
+            GridDescriptor.GridEndPosition = os.tellp();
+
+            // Now, go back to where the Descriptor's offset information is written
+            // and write the offsets again.
+            os.seekp(offsetPos, std::ios_base::beg);
+            GridDescriptor.WriteStreamPos(os);
+
+            // Now seek back to the end.
+            GridDescriptor.SeekToEnd(os);
+        }
+    }
+
+    /* Write out the grid descriptor as a grid instance to the output stream */
+    static inline void WriteGridInstance(FStream<std::ostream>& os, FGridDescriptor& GridDescriptor, bool areDatabaseStreamsSeekable)
+    {
+        // Write out the descriptor's header information (grid name and type)
+        GridDescriptor.WriteGridHeader(os);
+
+        // Save the curent stream position as postion to where the offsets for
+        // this GridDescriptor will be written to.
+        int64 offsetPos = 0;
+        if (areDatabaseStreamsSeekable)
+        {
+            offsetPos = (int64)os.tellp();
+        }
+
+        // Write out the offset information. At this point it will be incorrect.
+        // But we need to write it out to move the stream head forward.
+        GridDescriptor.WriteStreamPos(os);
+
+        // Now we know the starting grid storage position.
+        if (areDatabaseStreamsSeekable)
+        {
+            GridDescriptor.GridStartPosition = os.tellp();
+        }
+
+        // Save the compression settings for this grid.
+        //setGridCompression(os, *grid); TODO
+
+        // Save the grid's metadata and transform.
+        openvdb::GridBase& grid = *GridDescriptor.GridPtr;
+        grid.writeMeta(os);
+        grid.writeTransform(os);
+
+        // Now we know the end position of this grid.
+        if (areDatabaseStreamsSeekable)
+        {
+            GridDescriptor.GridEndPosition = os.tellp();
+
+            // Now, go back to where the Descriptor's offset information is written
+            // and write the offsets again.
+            os.seekp(offsetPos, std::ios_base::beg);
+            GridDescriptor.WriteStreamPos(os);
+
+            // Now seek back to the end.
+            GridDescriptor.SeekToEnd(os);
+        }
+    }
+
 	/* Read the next grid descriptor into the input stream and return the stream position of the next grid descriptor */
-	template<typename StreamType>
-	static FGridDescriptorNameMapCIter ReadAndAddNextGridDescriptor(FStream<StreamType>& is, FGridDescriptorNameMap &OutGridDescriptors)
+	static FGridDescriptorNameMapCIter ReadAndAddNextGridDescriptor(FStream<std::istream>& is, FGridDescriptorNameMap &OutGridDescriptors)
 	{
-		auto& InputStream = static_cast<StreamType&>(is);
+		auto& InputStream = static_cast<std::istream&>(is);
 		FGridDescriptorNameMapIter GridDescriptorIter = OutGridDescriptors.end();
         const uint32 FileVersion = is.GetFileVersion();
 
@@ -463,7 +634,7 @@ public:
 		const FGridName uniqueName = FGridDatabaseString(ReadString(InputStream));
 		FGridDatabaseString gridType;
 		bool isFloatSavedAsHalf = false;
-		ReadGridTypeAndStripHalfSavedAsFloatSuffix<StreamType>(is, gridType, isFloatSavedAsHalf);
+		ReadGridTypeAndStripHalfSavedAsFloatSuffix(is, gridType, isFloatSavedAsHalf);
         
         //Try to create the grid, adding to the grid descriptor map if it was able to be created
         FGridDatabaseString parentName = FGridDatabaseString("");
@@ -472,7 +643,7 @@ public:
             parentName = ReadString(InputStream);
         }
 
-        const int64 nextGridPos = TryCreateGridAndAddGridDescriptor<StreamType>(is, uniqueName, gridType, parentName, isFloatSavedAsHalf, OutGridDescriptors, GridDescriptorIter);
+        const int64 nextGridPos = TryCreateGridAndAddGridDescriptor(is, uniqueName, gridType, parentName, isFloatSavedAsHalf, OutGridDescriptors, GridDescriptorIter);
         if (nextGridPos > std::streamoff(-1))
         {
             //Seek to the next grid
@@ -488,10 +659,9 @@ public:
 	/* Read the next string in as the grid type and return the grid type with the half-as-float suffix removed (if it exists).
 	* Also return true if there was a suffix that got removed.
 	*/
-	template<typename StreamType>
-	static inline void ReadGridTypeAndStripHalfSavedAsFloatSuffix(FStream<StreamType>& is, FGridDatabaseString& OutGridType, bool& OutIsFloatSavedAsHalf)
+	static inline void ReadGridTypeAndStripHalfSavedAsFloatSuffix(FStream<std::istream>& is, FGridDatabaseString& OutGridType, bool& OutIsFloatSavedAsHalf)
 	{
-		auto& InputStream = static_cast<StreamType&>(is);		
+		auto& InputStream = static_cast<std::istream&>(is);
 		OutGridType = ReadString(InputStream);
 		OutIsFloatSavedAsHalf = boost::ends_with(OutGridType, GridIOStatics::HalfFloatTypenameSuffix);
 		if (OutIsFloatSavedAsHalf)
@@ -503,10 +673,9 @@ public:
 	/*Attempt to create the grid via the base class, from which a call to the registered factory is made by the grid registry.
 	* If successful create a grid descriptor and add it to the grid descriptor map and return an iter to that grid descriptor.
 	*/
-	template<typename StreamType>
-	static inline int64 TryCreateGridAndAddGridDescriptor(FStream<StreamType>& is, const FGridDatabaseString& GridUniqueName, const FGridDatabaseString& GridTypeWithoutFloatAsHalfSuffix, const FGridDatabaseString& GridParentName, bool IsFloatHalf, FGridDescriptorNameMap &OutGridDescriptors, FGridDescriptorNameMapIter& OutGridDescriptorIter)
+	static inline int64 TryCreateGridAndAddGridDescriptor(FStream<std::istream>& is, const FGridDatabaseString& GridUniqueName, const FGridDatabaseString& GridTypeWithoutFloatAsHalfSuffix, const FGridDatabaseString& GridParentName, bool IsFloatHalf, FGridDescriptorNameMap &OutGridDescriptors, FGridDescriptorNameMapIter& OutGridDescriptorIter)
 	{
-		auto& InputStream = static_cast<StreamType&>(is);
+		auto& InputStream = static_cast<std::istream&>(is);
         int64 nextGridStreamPos = std::streamoff(-1);
 
         const bool IsGridTypeRegistered = GridBaseStatics::IsRegistered(GridTypeWithoutFloatAsHalfSuffix);
@@ -530,7 +699,7 @@ public:
                 GridDescriptor.GridPtr->setSaveFloatAsHalf(IsFloatHalf);
 
                 // Read in the offsets for grid start, data blocks, and grid end
-                ReadGridStreamPositions<StreamType>(is, GridDescriptor.GridStartPosition, GridDescriptor.DataBlocksStreamPosition, GridDescriptor.GridEndPosition);
+                ReadGridStreamPositions<std::istream>(is, GridDescriptor.GridStartPosition, GridDescriptor.DataBlocksStreamPosition, GridDescriptor.GridEndPosition);
                 nextGridStreamPos = GridDescriptor.GridEndPosition;
 
                 //TODO Not sure yet if the following will be set here
@@ -557,7 +726,7 @@ public:
         else
         {
             OutGridDescriptorIter = OutGridDescriptors.end();
-            ReadNextGridStreamPosition<StreamType>(is, nextGridStreamPos);
+            ReadNextGridStreamPosition(is, nextGridStreamPos);
             //The grid could not be read because it wasn't registered.
             //Log the unreadable grid and continue as normal.
             //TODO Logging for FGridDescriptor
@@ -595,6 +764,11 @@ public:
 	{
 		return openvdb::io::GridDescriptor::stripSuffix(name);
 	}
+
+    static inline FGridName AddSuffix(const FGridName& name, int32 suffix)
+    {
+        return openvdb::io::GridDescriptor::addSuffix(name, suffix);
+    }
 
 	void WriteGridHeader(std::ostream& os) const
 	{

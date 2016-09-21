@@ -98,6 +98,10 @@ public:
 typedef openvdb::Name FGridName;
 typedef openvdb::Index FIndex;
 typedef std::multimap<FGridName, boost::shared_ptr<FGridDescriptor>> FGridDescriptorNameMap;
+typedef std::map<FGridName, int32> FNameCountMap;
+typedef std::set<FGridName> FUniqueNameSet;
+typedef std::map<const openvdb::TreeBase*, FGridDescriptor> FTreeMap;
+typedef FTreeMap::iterator FTreeMapIter;
 typedef FGridDescriptorNameMap::iterator FGridDescriptorNameMapIter;
 typedef FGridDescriptorNameMap::const_iterator FGridDescriptorNameMapCIter;
 typedef openvdb::MetaMap FMetaMap;

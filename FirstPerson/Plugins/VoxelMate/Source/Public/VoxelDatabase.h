@@ -83,7 +83,7 @@ public:
 	//	Could use 1-server-N-clients. Clients manage I/O but local changes to grid states are allowed/disallowed by the server and the server syncs changes to clients.
 	//	Anyway, ignore client/server complications. Just design with extensibility in mind for future design.
 	FVoxelDatabaseArchive(const FString &DatabaseName)
-		: GridArchiveName(DatabaseName), IsDatabaseOpen(false)
+		: GridArchiveName(DatabaseName), IsDatabaseOpen(false), AreDatabaseStreamsSeekable(true), IsGridInstancingEnabled(true)
 	{
 	}
 
@@ -307,6 +307,7 @@ public:
         //TODO write changes
     }
 
+    
 protected:
 
 	inline bool IsByteStreamInitialized(int32 StreamIndex) const
@@ -395,6 +396,95 @@ protected:
 		return isGridArchiveOpen;
 	}
 
+    inline void WriteDatabaseHeader()
+    {
+        FGridArchive::writeHeader(DatabaseByteStreams[0], AreDatabaseStreamsSeekable);
+    }
+
+    inline void WriteDatabaseMeta()
+    {
+        //Write the actual file metamap followed by the count of non-null grids
+        DatabaseFileMetadata.writeMeta(DatabaseByteStreams[1]);        
+        GridNamesHistogram.clear();
+
+        int32 gridCount = 0;
+        for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
+        {
+            const FGridDescriptor& gridDescriptor = *(i->second);
+            if (gridDescriptor.GridPtr != nullptr)
+            {
+                GridIOStatics::SetDataCompression(DatabaseByteStreams[1], FGridArchive::compression());
+                GridIOStatics::SetWriteGridStatsMetadata(DatabaseByteStreams[1], FGridArchive::isGridStatsMetadataEnabled());
+
+                const GridBaseStatics::GridBase& grid = *gridDescriptor.GridPtr;
+                const FGridName gridActualName = grid.getName();
+                auto gridNameIter = GridNamesHistogram.find(gridActualName);
+                if (gridNameIter != GridNamesHistogram.end())
+                {
+                    gridNameIter->second++;
+                }
+                else
+                {
+                    GridNamesHistogram[gridActualName] = 1;
+                }
+                ++gridCount;
+            }
+        }
+
+        //Write the count of non-null grids
+        DatabaseByteStreams[1].write(reinterpret_cast<char*>(&gridCount), sizeof(int32));
+        
+        //Write out the non-null grids with unique names constructed with a suffix corresponding to the count of that name if there are more than one
+        FTreeMap treeMap;
+        FUniqueNameSet uniqueNames;
+        for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
+        {
+            FGridDescriptor& gridDescriptor = *(i->second);
+            if (gridDescriptor.GridPtr != nullptr)
+            {
+                const GridBaseStatics::GridBase& grid = *gridDescriptor.GridPtr;
+
+                // Ensure that the grid's descriptor has a unique grid name, by appending
+                // a number to it if a grid with the same name was already written.
+                // Always add a number if the grid name is empty, so that the grid can be
+                // properly identified as an instance parent, if necessary.
+                FGridName name = grid.getName();
+                if (name.empty() || GridNamesHistogram[name] > 1)
+                {
+                    name = FGridDescriptor::AddSuffix(name, 0);
+                }
+
+                for (int32 n = 1; GridNamesHistogram.find(name) != GridNamesHistogram.end(); ++n)
+                {
+                    name = FGridDescriptor::AddSuffix(grid.getName(), n);
+                }
+                uniqueNames.insert(name);
+
+                //Check if this grid's tree is shared with a grid that has already been written.
+                const openvdb::TreeBase* treePtr = &(grid.baseTree());
+                FTreeMapIter treeIter = treeMap.find(treePtr);
+                
+                const bool isInstance = ((treeIter != treeMap.end()) && (treeIter->second.IsFloatSavedAsHalf == gridDescriptor.IsFloatSavedAsHalf));
+                if (IsGridInstancingEnabled && isInstance)
+                {
+                    // This grid's tree is shared with another grid that has already been written.
+                    // Get the name of the other grid.
+                    gridDescriptor.ParentGridName = treeIter->second.UniqueName;
+                    // Write out this grid's descriptor and metadata, but not its tree.
+                    FGridDescriptor::WriteGridInstance(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable);
+                }
+                else
+                {
+                    // Write out the grid descriptor and its associated grid.
+                    FGridDescriptor::WriteGrid(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable);
+                    // Record the grid's tree pointer so that the tree doesn't get written
+                    // more than once.
+                    treeMap[treePtr] = gridDescriptor;
+                }
+            }
+        }
+    }
+
     bool ReadDatabaseMetadata()
     {
         checkue4(!IsByteStreamOpen(1));
@@ -425,7 +515,7 @@ protected:
                 {
                     bool isGridStreamOpen = false;
 
-                    FGridDescriptorNameMapCIter GridDescriptorIter = FGridDescriptor::ReadAndAddNextGridDescriptor<boost::iostreams::stream<boost::iostreams::array>>(DatabaseByteStreams[2], GridDescriptors);
+                    FGridDescriptorNameMapCIter GridDescriptorIter = FGridDescriptor::ReadAndAddNextGridDescriptor(DatabaseByteStreams[2], GridDescriptors);
                     if (GridDescriptorIter != GridDescriptors.end())
                     {
                         FGridDescriptor& gridDescriptor = *(GridDescriptorIter->second);
@@ -449,7 +539,7 @@ protected:
         }
     }
 
-    void ReadAllGridsPartial()
+    void ReadAllGridsMeta()
     {
         for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
         {
@@ -463,8 +553,12 @@ protected:
 
             const int32 FormatVersion = GridIOStatics::GetFormatVersion(DatabaseByteStreams[byteStreamIndex]);
             const bool isFileVersionForGridInstancing = FormatVersion > GridIOStatics::FileVersionGridInstancing;
+            const bool isFileVersionForNoGridMap = FormatVersion < GridIOStatics::FileVersionNoGridMap;
+
             if (isFileVersionForGridInstancing)
             {
+                //Read transform then topology
+                //If the file version supports grid instancing then only read the topology for child grids
                 grid.readTransform(inputStream);
                 const bool isGridInstance = gridDescriptor.IsGridInstance();
                 if (isGridInstance)
@@ -474,8 +568,18 @@ protected:
             }
             else
             {
+                //Read topology then transform
                 grid.readTopology(inputStream);
                 grid.readTransform(inputStream);
+            }
+
+            if (isFileVersionForNoGridMap)
+            {
+                //This file version does not store the grid name as grid metadata so set the name here
+                if (grid.getName().empty())
+                {
+                    grid.setName(gridDescriptor.GridName);
+                }
             }
         }
     }
@@ -493,6 +597,29 @@ protected:
             checkue4(gridPtr != nullptr);
             const FGrid<TreeType>& grid = *gridPtr;
             grid.readBuffers(inputStream, grid.saveFloatAsHalf());
+        }
+    }
+
+    template<typename TreeType>
+    void WriteGridMeta(const FString& GridName)
+    {
+        //io::setDataCompression(os, compression());
+        //io::setWriteGridStatsMetadata(os, isGridStatsMetadataEnabled());
+
+        //this->writeHeader(os, seekable);
+
+        //metadata.writeMeta(os);
+
+        //// Write the number of non-null grids.
+        //int32_t gridCount = 0;
+        //for (GridCPtrVecCIter i = grids.begin(), e = grids.end(); i != e; ++i) {
+        //    if (*i) ++gridCount;
+        //}
+        //os.write(reinterpret_cast<char*>(&gridCount), sizeof(int32_t));
+
+        FGridDescriptorNameMapCIter gridIter = FindGridDescriptor(GridName);
+        if (gridIter != GridDescriptors.end())
+        {
         }
     }
 
@@ -546,6 +673,9 @@ protected:
 
 protected:
     bool IsDatabaseOpen;
+    const bool AreDatabaseStreamsSeekable;
+    const bool IsGridInstancingEnabled;
+
     uint64 DatabaseHeaderBytesCount;
     uint64 DatabaseMetadataBytesCount;
     uint64 DatabaseGridDescriptorsBytesCount;
@@ -555,6 +685,7 @@ protected:
     TArray<boost::shared_ptr<boost::iostreams::array>> DatabaseByteAccessors;
     TArray<FStream<boost::iostreams::stream<boost::iostreams::array>>> DatabaseByteStreams;
 
+    FNameCountMap GridNamesHistogram;
 	TMap<FGridName, uint64> MaxGridSizeByType;
 
 	FString GridArchiveName;
