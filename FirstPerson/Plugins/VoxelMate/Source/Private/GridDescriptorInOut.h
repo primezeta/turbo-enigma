@@ -381,7 +381,7 @@ public:
 	}
 
 	template<typename TreeType>
-	static inline bool IsRegistered()
+	static inline bool IsRegisteredType()
 	{
 		return FGrid<TreeType>::isRegistered();
 	}
@@ -479,7 +479,7 @@ public:
 	}
 
 	template<typename MapType>
-	static bool IsRegistered()
+	static bool IsRegisteredType()
 	{
 		return MapType::isRegistered();
 	}
@@ -500,14 +500,13 @@ public:
 	int64 GridEndPosition;
 
     //Not serialized
-    static int32 NextGridDescriptorIndex;
     GridBaseStatics::FPtr GridPtr;
     FGridDatabaseString GridName; //Unique name with the suffix stripped
-    int32 GridDescriptorIndex;
+    int32 GridDescriptorStreamIndex;
     bool IsChanged;
 
     FGridDescriptor()
-        : IsFloatSavedAsHalf(false), GridStartPosition(-1), DataBlocksPosition(-1), GridEndPosition(-1), GridDescriptorIndex(-1), IsChanged(false)
+        : IsFloatSavedAsHalf(false), GridStartPosition(-1), DataBlocksPosition(-1), GridEndPosition(-1), GridDescriptorStreamIndex(-1), IsChanged(false)
     {}
 
     /* Write out the grid associated to the grid descriptor */
@@ -721,8 +720,6 @@ public:
                 //GridPtr->setGridClass()
                 //GridPtr->setIsInWorldSpace()
                 //GridPtr->setVectorType()
-
-                GridDescriptor.GridDescriptorIndex = FGridDescriptor::NextGridDescriptorIndex++;
 
                 //TODO Logging for FGridDescriptor
                 //UE_LOG(LogGridDescriptor, Display, TEXT("Created %s grid %s"),

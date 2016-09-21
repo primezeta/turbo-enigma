@@ -31,8 +31,6 @@ const FGridDatabaseString GridBaseStatics::MetaNameFileBBoxMax     = openvdb::Gr
 const FGridDatabaseString GridBaseStatics::MetaNameFileCompression = openvdb::GridBase::META_FILE_COMPRESSION;
 const FGridDatabaseString GridBaseStatics::MetaNameFileMemBytes    = openvdb::GridBase::META_FILE_MEM_BYTES;
 
-int32 FGridDescriptor::NextGridDescriptorIndex = 0;
-
 #undef LOCTEXT_NAMESPACE
 	
 IMPLEMENT_MODULE(FVoxelMateModule, VoxelMate)
