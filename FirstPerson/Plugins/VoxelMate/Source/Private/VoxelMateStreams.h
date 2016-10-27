@@ -17,6 +17,12 @@ static inline void ReadBytes(std::istream& is, Type &OutValue)
 	is.read(reinterpret_cast<char*>(&OutValue), sizeof(Type));
 }
 
+template<typename Type>
+static inline void WriteBytes(std::ostream& os, const Type &InValue)
+{
+    os.write(reinterpret_cast<char*>(&InValue), sizeof(Type));
+}
+
 static inline void WriteString(std::ostream& os, const std::string &str)
 {
 	uint32 size = uint32(str.size());

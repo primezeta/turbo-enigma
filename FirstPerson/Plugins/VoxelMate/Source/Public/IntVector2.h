@@ -15,10 +15,10 @@ struct FIntVector2
 public:
 
 	/** An int point with zeroed values. */
-	CORE_API static const FIntVector2 ZeroValue;
+	static const FIntVector2 ZeroValue;
 
 	/** An int point with INDEX_NONE values. */
-	CORE_API static const FIntVector2 NoneValue;
+	static const FIntVector2 NoneValue;
 
 public:
 

@@ -1,73 +1,17 @@
 #pragma once
-#include "String.h"
-#include "Archive.h"
+#include "EngineMinimal.h"
 #include "VoxelData.h"
-#include "VoxelMateStreams.h"
-#include "GridDescriptorInOut.h"
+#include "EngineGridTypes.h"
+#include "VoxelDatabaseStatics.h"
+#include "ArchiveGrid.h"
+#include "ArchiveMetaMap.h"
+#include "VoxelDatabase.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(LogVoxelDatabase, Log, All)
-
-#undef verify
-#undef check
-#define verifyue4(expr)	{ if(UNLIKELY(!(expr))) { FDebug::LogAssertFailedMessage( #expr, __FILE__, __LINE__ ); _DebugBreakAndPromptForRemote(); FDebug::AssertFailed( #expr, __FILE__, __LINE__ ); CA_ASSUME(expr); } } 
-#define checkue4(expr) { if(UNLIKELY(!(expr))) { FDebug::LogAssertFailedMessage( #expr, __FILE__, __LINE__ ); _DebugBreakAndPromptForRemote(); FDebug::AssertFailed( #expr, __FILE__, __LINE__ ); CA_ASSUME(expr); } }
-
-struct FVoxelDatabaseMetadata
+UCLASS()
+class UVoxelDatabase : public UObject
 {
-    FVoxelDatabaseMetadata(const FLibraryVersionId& libraryVersion, bool partialGridReading, EGridCompression fileCompression, const FGridDatabaseString& uuid)
-		: LibraryVersion(libraryVersion), SupportsPartialGridReading(partialGridReading), FileCompression(fileCompression), UUID(uuid)
-    {}
+    GENERATED_BODY()
 
-	//NOTE: Assuming the file version is >= 222. TODO Allow previous versions.
-    FLibraryVersionId LibraryVersion;
-    bool SupportsPartialGridReading;
-    EGridCompression FileCompression;
-    FGridDatabaseString UUID;
-};
-
-struct FVoxelFileMetadata
-{
-    FVoxelFileMetadata()
-		: Name(TEXT("")), TypeID(TEXT("")), IsReadOnly(false)
-	{}
-
-    FVoxelFileMetadata(const FString &name, const FString &typeID)
-		: Name(name), TypeID(typeID), IsReadOnly(FVoxelFileMetadata::IsMetadataReadOnly(name))
-	{}
-
-	FString ToString()
-	{
-		return FString::Printf(TEXT("%s:%s:%s"), *Name, *TypeID, IsReadOnly ? TEXT("Rx") : TEXT("RW"));
-	}
-
-	const FString Name;
-	const FString TypeID;
-	const bool IsReadOnly;
-
-	static inline bool IsMetadataReadOnly(const FString &MetaName)
-	{
-		return IsMetadataReadOnly(std::string(TO_GRID_DATABASE_STRING(MetaName)));
-	}
-
-	static inline bool IsMetadataReadOnly(const std::string &MetaName)
-	{
-		const bool isReadOnly =
-			MetaName == GridBaseStatics::MetaNameGridClass       ||
-			MetaName == GridBaseStatics::MetaNameGridCreator     ||
-			MetaName == GridBaseStatics::MetaNameGridName        ||
-			MetaName == GridBaseStatics::MetaNameSaveHalfFloat   ||
-			MetaName == GridBaseStatics::MetaNameIsLocalSpace    ||
-			MetaName == GridBaseStatics::MetaNameVectorType      ||
-			MetaName == GridBaseStatics::MetaNameFileBBoxMin     ||
-			MetaName == GridBaseStatics::MetaNameFileBBoxMax     ||
-			MetaName == GridBaseStatics::MetaNameFileCompression ||
-			MetaName == GridBaseStatics::MetaNameFileMemBytes;
-		return isReadOnly;
-	}
-};
-
-class FVoxelDatabaseArchive : public FGridArchive
-{
 public:
 	//TODO
 	//	Do not use FVoxelDatabaseMetadata. Instead, provide a way to convert between openvdb .vdb file format and the UE4 archive format.
@@ -82,183 +26,81 @@ public:
 	//	Any change to a region is communicated to the shared region.
 	//	Could use 1-server-N-clients. Clients manage I/O but local changes to grid states are allowed/disallowed by the server and the server syncs changes to clients.
 	//	Anyway, ignore client/server complications. Just design with extensibility in mind for future design.
-	FVoxelDatabaseArchive(const FString &DatabaseName)
-		: GridDatabaseName(DatabaseName), IsDatabaseOpen(false), AreDatabaseStreamsSeekable(true), IsGridInstancingEnabled(true)
+    UVoxelDatabase(const FObjectInitializer& ObjectInitializer)
+		: AreDatabaseStreamsSeekable(true), IsGridInstancingEnabled(true)
 	{
 	}
 
-	virtual FString GetGridDatabaseName() const
-	{
-		return GridDatabaseName;
-	}
+    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, UVoxelDatabase& VoxelDatabase)
+    {
+        Ar << VoxelDatabase.DatabaseHeader;
+        Ar << VoxelDatabase.DatabaseMetadata;
+        Ar << VoxelDatabase.Grids;
+        return Ar;
+    }
 
-	template<typename MetaType>
-	void RegisterMetaType()
-	{
-		//TODO for this and other registered types:
-		//Move TFunction initializaton to GridDescriptorInOut.h and just call parameterless FMetadata<ValueType>::RegisterMeta() here
-		//Also use TFunctionRef, referencing the static declaration of the tfunction
-		if (!FMetadata<MetaType>::IsRegisteredType<MetaType>())
-		{
-			FMetadata<MetaType>::RegisterMeta<MetaType>();
-            RegisteredMetadataTypeDisplayNames.Add(GridTypeNameDisplay<MetaType>());
-        }
-	}
-
-	template<typename TreeType>
-	void RegisterGridType()
-	{
-		if (!FGrid<TreeType>::IsRegisteredType<TreeType>())
-		{
-			//FGrid<TreeType> Grid;
-			//Grid.fill()
-			FGrid<TreeType>::RegisterGrid<TreeType>();
-            RegisteredGridTypeDisplayNames.Add(GridTypeNameDisplay<TreeType::ValueType>());
-		}
-	}
-
-	template<typename MapType>
-	void RegisterTransformMapType()
-	{
-		if (!FTransformMap<MapType>::IsRegisteredType<MapType>())
-		{
-			FTransformMap<MapType>::RegisterTransformMap<MapType>();
-            RegisteredTransformMapTypeDisplayNames.Add(GridTypeNameDisplay<MapType>());
-        }
-	}
+    virtual void Serialize(FArchive& Ar) override
+    {
+        Ar << *this;
+        Super::Serialize(Ar);
+    }
 
     void GetGridNames(TArray<FString> &OutGridNames) const
     {
-        for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
-        {
-            if (i->second != nullptr)
-            {
-                OutGridNames.Add(FROM_GRID_DATABASE_STRING(i->first));
-            }
-        }
+        //for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
+        //{
+        //    if (i->second != nullptr)
+        //    {
+        //        OutGridNames.Add(FROM_GRID_DATABASE_STRING(i->first));
+        //    }
+        //}
     }
 
     const TArray<FString>& GetRegisteredGridTypeDisplayNames() const
     {
-        return RegisteredGridTypeDisplayNames;
+        return FGridFactory::RegisteredTypeDisplayNames;
     }
 
     const TArray<FString>& GetRegisteredMetadataTypeDisplayNames() const
     {
-        return RegisteredMetadataTypeDisplayNames;
+        return FMetaValueFactory::RegisteredTypeDisplayNames;
     }
 
     const TArray<FString>& GetRegisteredTransformMapTypeDisplayNames() const
     {
-        return RegisteredTransformMapTypeDisplayNames;
+        return FTransformMapFactory::RegisteredTypeDisplayNames;
     }
 
-	/* Register a grid containing voxels of DataType with tree topology Root, Internal, and Leaf
-	*/
-	template<typename DataType>
-	void RegisterGrid3()
-	{
-		RegisterGridType<FTree3<DataType>>();
-	}
-
-	/* Register a grid containing voxels of DataType with tree topology Root, Internal0, Internal1, and Leaf
-	*/
-	template<typename DataType>
-	void RegisterGrid4()
-	{
-		RegisterGridType<FTree4<DataType>>();
-	}
-
-	/* Register a grid containing voxels of DataType with tree topology Root, Internal0, Internal1, Internal2, and Leaf
-	*/
-	template<typename DataType>
-	void RegisterGrid5()
-	{
-		RegisterGridType<FTree5<DataType>>();
-	}
-
-	/* Register a standard grid type (i.e. Grid4)
-	*/
-	template<typename DataType>
-	void RegisterStandardGrid()
-	{
-		RegisterGrid4<DataType>();
-	}
-
-	void InitializeStandardTypes()
-	{
-		//Register the standard grid and metadata types
-		GridBaseStatics::ClearRegistry();
-		RegisterStandardGrid<bool>();
-		RegisterStandardGrid<float>();
-		RegisterStandardGrid<double>();
-		RegisterStandardGrid<int32>();
-		RegisterStandardGrid<int64>();
-		RegisterStandardGrid<FVector2D>();
-		RegisterStandardGrid<FVector>();
-		RegisterStandardGrid<FVector4>();
-		RegisterStandardGrid<FIntVector2>();
-		RegisterStandardGrid<FIntVector>();
-		RegisterStandardGrid<FIntVector4>();
-		RegisterStandardGrid<FUintVector4>();
-        RegisterStandardGrid<FPointIndex32>();
-        RegisterStandardGrid<FPointIndex64>();
-        RegisterStandardGrid<FGridDatabaseString>();
-
-		MetadataStatics::ClearRegistry();
-		RegisterMetaType<bool>();
-		RegisterMetaType<double>();
-		RegisterMetaType<float>();
-		RegisterMetaType<int32>();
-		RegisterMetaType<int64>();
-		RegisterMetaType<FIntVector2>();
-		RegisterMetaType<FVector2D>();
-		RegisterMetaType<FIntVector>();
-		RegisterMetaType<FVector>();
-		RegisterMetaType<FMatrix>();
-        RegisterMetaType<FPointIndex32>();
-        RegisterMetaType<FPointIndex64>();
-        RegisterMetaType<FGridDatabaseString>();
-
-		TransformMapStatics::ClearRegistry();
-		RegisterTransformMapType<FTransformAffineMap>();
-		RegisterTransformMapType<FTransformUnitaryMap>();
-		RegisterTransformMapType<FTransformScaleMap>();
-		RegisterTransformMapType<FTransformUniformScaleMap>();
-		RegisterTransformMapType<FTransformTranslationMap>();
-		RegisterTransformMapType<FTransformScaleTranslateMap>();
-		RegisterTransformMapType<FTransformUniformScaleTranslateMap>();
-		RegisterTransformMapType<FTransformNonlinearFrustumMap>();
-	}
+    void InitializeStandardTypes();
 
     template<typename ValueType>
     bool AddGrid(const FString& GridName, bool IsFloatHalf)
     {
         bool isGridAdded = false;
-        if (IsDatabaseOpen)
-        {
-            int32 gridByteCount = 0;
-            FGridName uniqueGridName = GridName;
-            MakeAndInsertUniqueName(uniqueGridName);
-            const FGridDatabaseString typeName = openvdb::typeNameAsString<ValueType>();
+        //if (IsDatabaseOpen)
+        //{
+        //    int32 gridByteCount = 0;
+        //    FGridName uniqueGridName = GridName;
+        //    MakeAndInsertUniqueName(uniqueGridName);
+        //    const openvdb::Name typeName = openvdb::typeNameAsString<ValueType>();
 
-            gridByteCount += uniqueGridName.size() + typeName.size();
-            if (IsFloatHalf)
-            {
-                //Reserve space for the half-as-float suffix without actually appending it to the type name
-                gridByteCount += GridIOStatics::HalfFloatTypenameSuffix.size();
-            }
+        //    gridByteCount += uniqueGridName.size() + typeName.size();
+        //    if (IsFloatHalf)
+        //    {
+        //        //Reserve space for the half-as-float suffix without actually appending it to the type name
+        //        gridByteCount += GridIOStatics::HalfFloatTypenameSuffix.size();
+        //    }
 
-            const FGridDatabaseString parentName = ""; //No parent name. To add an instanced grid, use AddGridInstance
-            const int32 StreamIndex = AddByteStream(gridByteCount);
-            //TODO!!!!**** Need to have a version of TryCreateGridAndAddGridDescriptor that operates on an output stream
-            //const int64 nextGridPos = FGridDescriptor::TryCreateGridAndAddGridDescriptor(DatabaseByteStreams[StreamIndex], uniqueGridName, typeName, parentName, IsFloatHalf, GridDescriptors)
-            
-        }
-        else
-        {
-            //TODO logging and error handling
-        }
+        //    const openvdb::Name parentName = ""; //No parent name. To add an instanced grid, use AddGridInstance
+        //    const int32 StreamIndex = AddByteStream(gridByteCount);
+        //    //TODO!!!!**** Need to have a version of TryCreateGridAndAddGridDescriptor that operates on an output stream
+        //    //const int64 nextGridPos = FGridDescriptor::TryCreateGridAndAddGridDescriptor(DatabaseByteStreams[StreamIndex], uniqueGridName, typeName, parentName, IsFloatHalf, GridDescriptors)
+        //    
+        //}
+        //else
+        //{
+        //    //TODO logging and error handling
+        //}
         return isGridAdded;
     }
 
@@ -266,488 +108,270 @@ public:
     bool AddGridInstance(const FString& GridName, const FString& ParentGridName, bool IsFloatHalf)
     {
         bool isGridInstanceAdded = false;
-        if (IsDatabaseOpen)
-        {
-            if (FileVersion >= GridIOStatics::FileVersionGridInstancing)
-            {
-            }
-        }
-        else
-        {
-            //TODO logging and error handling
-        }
+        //if (IsDatabaseOpen)
+        //{
+        //    if (FileVersion >= GridIOStatics::FileVersionGridInstancing)
+        //    {
+        //    }
+        //}
+        //else
+        //{
+        //    //TODO logging and error handling
+        //}
         return isGridInstanceAdded;
     }
 
 	bool ContainsGrid(const FString& gridName) const
 	{
-		bool containsGrid = FindGridDescriptor(gridName) != GridDescriptors.end();
-		return containsGrid;
-	}
-
-	bool GetFileMetadata(TArray<FVoxelFileMetadata> &OutFileMetadata) const
-	{
-		bool isAnyFileMetadataValid = false;
-		for (auto i = DatabaseFileMetadata.beginMeta(); i != DatabaseFileMetadata.endMeta(); ++i)
-		{
-			const FString metaNameStr = FROM_GRID_DATABASE_STRING(i->first);
-			const FString metaTypeStr = FROM_GRID_DATABASE_STRING(i->second->typeName());
-            OutFileMetadata.Add(FVoxelFileMetadata(metaNameStr, metaTypeStr));
-		}
-        isAnyFileMetadataValid = DatabaseFileMetadata.metaCount() > 0;
-		return isAnyFileMetadataValid;
-	}
-
-	template<typename ValueType>
-	bool GetFileMetadataValue(const FString &MetaName, ValueType &OutValue, FVoxelFileMetadata &OutAttributes) const
-	{
-		bool isMetadataValueFound = false;
-		FMetadata<ValueType>::FPtr metaPtr = DatabaseFileMetadata.getMetadata<ValueType>(TO_GRID_DATABASE_STRING(MetaName));
-		const FGridDatabaseString typeNameStdStr = metaPtr ? metaPtr->typeName() : FMetadataUnknown().typeName();
-        FVoxelFileMetadata MetaAttributes(MetaName, FROM_GRID_DATABASE_STRING(typeNameStdStr));
-		if (metaPtr)
-		{
-			OutValue = *metaPtr;
-			OutAttributes = MetaAttributes;
-			isMetadataValueFound = true;
-		}
-		UE_LOG(LogVoxelDatabase, Verbose, TEXT("%s"), MetaAttributes.ToString());
-		return isMetadataValueFound;
-	}
-    
-	template<typename ValueType>
-	bool GetFileMetadataValue(const FString &MetaName, ValueType &OutValue) const
-	{
-        FVoxelFileMetadata MetaAttributes;
-		return GetFileMetadataValue<ValueType>(MetaName, OutValue, MetaAttributes);
+		//bool containsGrid = FindGridDescriptor(gridName) != GridDescriptors.end();
+		//return containsGrid;
+        return false; //TODO
 	}
 
 	/* Return the database metadata */
-	bool GetDatabaseMetadata(FVoxelDatabaseMetadata& OutVoxelDatabaseMetadata) const
-	{
-        const bool isOpen = IsByteStreamOpen(1);
-		if (isOpen)
-		{
-			OutVoxelDatabaseMetadata.LibraryVersion = FGridArchive::libraryVersion();
-            OutVoxelDatabaseMetadata.SupportsPartialGridReading = FGridArchive::isDelayedLoadingEnabled();
-            OutVoxelDatabaseMetadata.FileCompression = (EGridCompression)FGridArchive::compression();
-            OutVoxelDatabaseMetadata.UUID = FGridArchive::getUniqueTag();
-		}
-		return isOpen;
-	}
+	//bool GetDatabaseConfiguration(FVoxelDatabaseConfiguration& OutVoxelDatabaseConfiguration) const
+	//{
+  //      const bool IsOpen = DatabaseHeader.IsOpen();
+		//if (IsOpen)
+		//{
+  //          OutVoxelDatabaseConfiguration.LibraryVersion = DatabaseHeader.libraryVersion();
+  //          OutVoxelDatabaseConfiguration.SupportsPartialGridReading = DatabaseHeader.isDelayedLoadingEnabled();
+  //          OutVoxelDatabaseConfiguration.FileCompression = (EGridCompression)DatabaseHeader.compression();
+  //          OutVoxelDatabaseConfiguration.UUID = DatabaseHeader.getUniqueTag();
+		//}
+	//	return IsOpen;
+	//}
 
 	bool OpenDatabase()
 	{
         //Add byte arrays for file header, file metadata, and grid descriptors
         //Open the first two byte streams which are used for the file header and file metadata
 
-        bool isDatabaseOpen = IsDatabaseOpen;        
-        if (!isDatabaseOpen)
-        {
-            const bool isDatabaseHeaderOpen = ReadDatabaseHeader();
-            if (isDatabaseHeaderOpen)
-            {
-                const bool isDatabaseMetadataOpen = ReadDatabaseMetadata();
-                //TODO log open status
-                if (isDatabaseMetadataOpen)
-                {
-                    bool isDatabaseGridDescriptorsOpen = ReadDatabaseGridDescriptors();
-                    //TODO log open status
-                }
-            }
-            IsDatabaseOpen = isDatabaseHeaderOpen;
-        }
-		return IsDatabaseOpen;
+        bool isDatabaseOpen = false;
+        //bool isDatabaseOpen = IsDatabaseOpen;
+        //if (!isDatabaseOpen)
+        //{
+        //    const bool isDatabaseHeaderOpen = ReadDatabaseHeader();
+        //    if (isDatabaseHeaderOpen)
+        //    {
+        //        const bool isDatabaseMetadataOpen = ReadDatabaseMetadata();
+        //        IsDatabaseOpen = isDatabaseMetadataOpen;
+        //        //TODO log open status
+        //    }
+        //}
+		return isDatabaseOpen;
 	}
 
     void CloseDatabase()
     {
-        CloseAllByteStreams();
-        //TODO write changes
+        //TODO
     }
         
 protected:
 
-	inline bool IsByteStreamInitialized(int32 StreamIndex) const
-	{
-        checkue4(StreamIndex > -1 && StreamIndex < DatabaseByteAccessors.Num());
-        return DatabaseByteAccessors[StreamIndex] != nullptr;
-	}
-
-	inline bool IsByteStreamOpen(int32 StreamIndex) const
-	{
-        checkue4(StreamIndex > -1 && StreamIndex < DatabaseByteStreams.Num());
-		IsByteStreamInitialized(StreamIndex) && DatabaseByteStreams[StreamIndex].is_open();
-	}
-
-    inline void EmptyByteStreams()
-    {
-        //TODO logging
-        DatabaseBytes.Empty();
-        DatabaseByteAccessors.Empty();
-        DatabaseByteStreams.Empty();
-    }
-
-    inline int32 AddByteStream(uint64 BytesCount)
-    {
-        //if (BytesCount <= UINT32_MAX) {} TODO error handling
-        int32 NextStreamIndex = DatabaseBytes.Num();
-        if (!IsByteStreamInitialized(NextStreamIndex))
-        {
-            DatabaseBytes.AddDefaulted(1);
-
-            DatabaseBytes[NextStreamIndex].AddDefaulted(BytesCount);
-            DatabaseByteAccessors.AddDefaulted(1);
-            DatabaseByteStreams.AddDefaulted(1);
-
-            auto* DataStart = DatabaseBytes[NextStreamIndex].GetData();
-            auto* DataEnd = DataStart + DatabaseBytes[NextStreamIndex].Num();
-            checkue4(DataStart > DataEnd); //TODO error handling
-            DatabaseByteAccessors[NextStreamIndex].reset(new boost::iostreams::array(DataStart, DataEnd));
-            DatabaseByteStreams[NextStreamIndex].open(*DatabaseByteAccessors[NextStreamIndex]);
-        }
-        return IsByteStreamOpen(NextStreamIndex);
-    }
-
-    inline void CloseByteStream(int32 StreamIndex)
-    {
-        checkue4(StreamIndex > 0 && StreamIndex < DatabaseByteStreams.Num());
-        DatabaseByteStreams[StreamIndex].close();
-    }
-
-    inline void CloseAllByteStreams()
-    {
-        for (auto i = DatabaseByteStreams.CreateIterator(); i; ++i)
-        {
-            i->close();
-        }
-        EmptyByteStreams();
-    }
-
 	/* If the database is not already open, reset the stream buffer to the beginning of the file and read the header and grid descriptors */
-	bool ReadDatabaseHeader()
+    inline bool ReadDatabaseHeader()
 	{
-		checkue4(!IsByteStreamOpen(0));
-
-		bool isGridArchiveOpen = false;
-        const int32 StreamIndex = AddByteStream(DatabaseHeaderBytesCount);
-        if (StreamIndex > -1)
-        {
-            //Read the file header as the first item in the buffer
-            FGridArchive::readHeader(DatabaseByteStreams[StreamIndex]);
-
-            //openvdb::io::StreamMetadata
-            //Initialize I/O stream metadata
-            //StreamPtr.reset(new FStreamMetadata<std::iostream>(this)); TODO Add mechanism to reset the stream metadata
-            FGridArchive::setFormatVersion(DatabaseByteStreams[StreamIndex]);
-            FGridArchive::setLibraryVersion(DatabaseByteStreams[StreamIndex]);
-            FGridArchive::setDataCompression(DatabaseByteStreams[StreamIndex]);
-
-            //DO NOT set a mapped file.
-            //If a mapped file is set, leaf nodes would attempt to read in their buffers via the boost mapped file contained in the unchangeable Impl.
-            //In addition to not setting the mapped file, OPENVDB_2_ABI_COMPATIBLE must be defined to avoid other mapped file operations under the covers of openvdb::io.
-            //The mapped file pointer is null by default as long as openvdb::io::setMappedFilePtr isn't called.
-            //For reference, if a mapped file was desired and #ifndef OPENVDB_2_ABI_COMPATIBLE, this would be the next call:
-            //openvdb::io::setMappedFilePtr(StreamBuffer, mFileMapping);
-         
-            isGridArchiveOpen = true;
-        }
-		return isGridArchiveOpen;
+		const bool IsOpen = false;
+        return IsOpen;
 	}
 
     inline void WriteDatabaseHeader()
     {
-        FGridArchive::writeHeader(DatabaseByteStreams[0], AreDatabaseStreamsSeekable);
     }
 
-    inline void WriteDatabaseMetadata()
+    inline bool ReadDatabaseMetadata()
     {
-        //Write the actual file metamap followed by the count of non-null grids
-        DatabaseFileMetadata.writeMeta(DatabaseByteStreams[1]);        
-        GridNamesHistogram.clear();
+        const bool IsOpen = false;
+        return IsOpen;
+    }
 
-        int32 gridCount = 0;
-        for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
-        {
-            const FGridDescriptor& gridDescriptor = *(i->second);
-            if (gridDescriptor.GridPtr != nullptr)
-            {
-                GridIOStatics::SetDataCompression(DatabaseByteStreams[1], FGridArchive::compression());
-                GridIOStatics::SetWriteGridStatsMetadata(DatabaseByteStreams[1], FGridArchive::isGridStatsMetadataEnabled());
-
-                const GridBaseStatics::GridBase& grid = *gridDescriptor.GridPtr;
-                const FGridName gridActualName = grid.getName();
-                auto gridNameIter = GridNamesHistogram.find(gridActualName);
-                if (gridNameIter != GridNamesHistogram.end())
-                {
-                    gridNameIter->second++;
-                }
-                else
-                {
-                    GridNamesHistogram[gridActualName] = 1;
-                }
-                ++gridCount;
-            }
-        }
-
-        //Write the count of non-null grids
-        DatabaseByteStreams[1].write(reinterpret_cast<char*>(&gridCount), sizeof(int32));
+    inline bool WriteDatabaseMetadata()
+    {
+        const bool IsOpen = false;
+        return IsOpen;
     }
 
     void WriteAllGrids()
     {
+        //TODO
         //Write out the non-null grids with unique names constructed with a suffix corresponding to the count of that name if there are more than one
-        for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
-        {
-            FGridDescriptor& gridDescriptor = *(i->second);
-            if (gridDescriptor.GridPtr != nullptr && gridDescriptor.IsChanged)
-            {
-                const GridBaseStatics::GridBase& grid = *gridDescriptor.GridPtr;
+        //for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
+        //{
+        //    FGridDescriptor& gridDescriptor = *(i->second);
+        //    if (gridDescriptor.GridPtr != nullptr && gridDescriptor.IsChanged)
+        //    {
+        //        const GridStatics::GridBase& grid = *gridDescriptor.GridPtr;
 
-                // Ensure that the grid's descriptor has a unique grid name, by appending
-                // a number to it if a grid with the same name was already written.
-                // Always add a number if the grid name is empty, so that the grid can be
-                // properly identified as an instance parent, if necessary.
-                FGridName uniqueGridName = grid.getName();
-                MakeAndInsertUniqueName(uniqueGridName);
+        //        // Ensure that the grid's descriptor has a unique grid name, by appending
+        //        // a number to it if a grid with the same name was already written.
+        //        // Always add a number if the grid name is empty, so that the grid can be
+        //        // properly identified as an instance parent, if necessary.
+        //        FGridName uniqueGridName = grid.getName();
+        //        MakeAndInsertUniqueName(uniqueGridName);
 
-                //Check if this grid's tree is shared with a grid that has already been written.
-                const openvdb::TreeBase* treePtr = &(grid.baseTree());
-                FTreeMapIter treeIter = TreeMap.find(treePtr);
+        //        //Check if this grid's tree is shared with a grid that has already been written.
+        //        const openvdb::TreeBase* treePtr = &(grid.baseTree());
+        //        FTreeMapIter treeIter = TreeMap.find(treePtr);
 
-                const bool isInstance = ((treeIter != TreeMap.end()) && (treeIter->second.IsFloatSavedAsHalf == gridDescriptor.IsFloatSavedAsHalf));
-                if (IsGridInstancingEnabled && isInstance)
-                {
-                    // This grid's tree is shared with another grid that has already been written.
-                    // Get the name of the other grid.
-                    gridDescriptor.ParentGridName = treeIter->second.UniqueName;
-                    // Write out this grid's descriptor and metadata, but not its tree.
-                    FGridDescriptor::WriteGridInstance(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable);
-                }
-                else
-                {
-                    // Write out the grid descriptor and its associated grid header, stream positions, metadata, transform, and topology
-                    const int64 offsetPos = FGridDescriptor::WriteGridMeta(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable);
-                    FGridDescriptor::WriteGridDataBlocks(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable, offsetPos);
-                    // Record the grid's tree pointer so that the tree doesn't get written
-                    // more than once.
-                    TreeMap[treePtr] = gridDescriptor;
-                }
-            }
-        }
+        //        const bool isInstance = ((treeIter != TreeMap.end()) && (treeIter->second.IsFloatSavedAsHalf == gridDescriptor.IsFloatSavedAsHalf));
+        //        if (IsGridInstancingEnabled && isInstance)
+        //        {
+        //            // This grid's tree is shared with another grid that has already been written.
+        //            // Get the name of the other grid.
+        //            gridDescriptor.ParentGridName = treeIter->second.UniqueName;
+        //            // Write out this grid's descriptor and metadata, but not its tree.
+        //            FGridDescriptor::WriteGridInstance(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable);
+        //        }
+        //        else
+        //        {
+        //            // Write out the grid descriptor and its associated grid header, stream positions, metadata, transform, and topology
+        //            const int64 offsetPos = FGridDescriptor::WriteGridMeta(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable);
+        //            FGridDescriptor::WriteGridDataBlocks(DatabaseByteStreams[2], gridDescriptor, AreDatabaseStreamsSeekable, offsetPos);
+        //            // Record the grid's tree pointer so that the tree doesn't get written
+        //            // more than once.
+        //            TreeMap[treePtr] = gridDescriptor;
+        //        }
+        //    }
+        //}
     }
 
     void MakeAndInsertUniqueName(FGridName& InOutGridName)
     {
         const FGridName originalName = InOutGridName;
 
-        if (InOutGridName.empty() || GridNamesHistogram[InOutGridName] > 1)
-        {
-            InOutGridName = FGridDescriptor::AddSuffix(InOutGridName, 0);
-        }
+        //if (InOutGridName.empty() || GridNamesHistogram[InOutGridName] > 1)
+        //{
+        //    InOutGridName = FGridDescriptor::AddSuffix(InOutGridName, 0);
+        //}
 
-        for (int32 n = 1; GridNamesHistogram.find(InOutGridName) != GridNamesHistogram.end(); ++n)
-        {
-            InOutGridName = FGridDescriptor::AddSuffix(originalName, n);
-        }
-        UniqueNames.insert(InOutGridName);
-    }
-
-    bool ReadDatabaseMetadata()
-    {
-        checkue4(!IsByteStreamOpen(1));
-
-        bool isGridArchiveOpen = false;
-        const int32 StreamIndex = AddByteStream(DatabaseMetadataBytesCount);
-        if (StreamIndex > -1)
-        {
-            //Read the file-level metadata
-            DatabaseFileMetadata.clearMetadata();
-            DatabaseFileMetadata.readMeta(DatabaseByteStreams[StreamIndex]);
-        }
-    }
-
-    bool ReadDatabaseGridDescriptors()
-    {
-        checkue4(!IsByteStreamOpen(2));
-
-        bool isGridArchiveOpen = false;
-        const int32 NumGridsStreamIndex = AddByteStream(sizeof(NumGrids));
-        if (NumGridsStreamIndex > -1)
-        {
-            //Read the number of grids then for each grid read just the grid descriptor (not grid data)
-            NumGrids = FGridArchive::readGridCount(DatabaseByteStreams[NumGridsStreamIndex]);
-            if (NumGrids > 0)
-            {
-                const int32 GridDescriptorsStreamIndex = AddByteStream(DatabaseGridDescriptorsBytesCount);
-                checkue4(GridDescriptorsStreamIndex > -1); //TODO better handling of error case
-                GridDescriptors.clear();
-                
-                for (int32 i = 0; i < NumGrids; ++i)
-                {
-                    bool isGridStreamOpen = false;
-
-                    FGridDescriptorNameMapCIter GridDescriptorIter = FGridDescriptor::ReadAndAddNextGridDescriptor(DatabaseByteStreams[GridDescriptorsStreamIndex], GridDescriptors);
-                    if (GridDescriptorIter != GridDescriptors.end())
-                    {
-                        FGridDescriptor& gridDescriptor = *(GridDescriptorIter->second);
-                        if (gridDescriptor.GridEndPosition > gridDescriptor.GridStartPosition)
-                        {
-                            //Add a byte stream for the actual grid
-                            const int32 GridStreamIndex = AddByteStream(gridDescriptor.GridEndPosition - gridDescriptor.GridStartPosition);
-                            isGridStreamOpen = GridStreamIndex > -1;
-                        }
-                    }
-
-                    if (isGridStreamOpen)
-                    {
-                        //TODO log success
-                    }
-                    else
-                    {
-                        //TODO log failure
-                    }
-                }
-            }
-            //TODO log number of grids
-        }
+        //for (int32 n = 1; GridNamesHistogram.find(InOutGridName) != GridNamesHistogram.end(); ++n)
+        //{
+        //    InOutGridName = FGridDescriptor::AddSuffix(originalName, n);
+        //}
+        //UniqueNames.insert(InOutGridName);
     }
 
     void ReadAllGridsMeta()
     {
-        for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
-        {
-            const FGridDescriptor& gridDescriptor = *i->second;
-            const int32& byteStreamIndex = gridDescriptor.GridDescriptorStreamIndex;
-            FStream<boost::iostreams::stream<boost::iostreams::array>>& inputStream = DatabaseByteStreams[byteStreamIndex];
-            GridBaseStatics::GridBase& grid = *gridDescriptor.GridPtr;
+        //for (FGridDescriptorNameMapCIter i = GridDescriptors.begin(); i != GridDescriptors.end(); ++i)
+        //{
+        //    const FGridDescriptor& gridDescriptor = *i->second;
+        //    const int32& byteStreamIndex = gridDescriptor.GridDescriptorStreamIndex;
+        //    FStream<boost::iostreams::stream<boost::iostreams::array>>& inputStream = DatabaseByteStreams[byteStreamIndex];
+        //    GridStatics::GridBase& grid = *gridDescriptor.GridPtr;
 
-            FGridArchive::readGridCompression(inputStream);
-            grid.readMeta(inputStream);
+        //    FGridArchive::readGridCompression(inputStream);
+        //    grid.readMeta(inputStream);
 
-            const int32 FormatVersion = GridIOStatics::GetFormatVersion(DatabaseByteStreams[byteStreamIndex]);
-            const bool isFileVersionForGridInstancing = FormatVersion > GridIOStatics::FileVersionGridInstancing;
-            const bool isFileVersionForNoGridMap = FormatVersion < GridIOStatics::FileVersionNoGridMap;
+        //    const int32 FormatVersion = GridIOStatics::GetFormatVersion(DatabaseByteStreams[byteStreamIndex]);
+        //    const bool isFileVersionForGridInstancing = FormatVersion > GridIOStatics::FileVersionGridInstancing;
+        //    const bool isFileVersionForNoGridMap = FormatVersion < GridIOStatics::FileVersionNoGridMap;
 
-            if (isFileVersionForGridInstancing)
-            {
-                //Read transform then topology
-                //If the file version supports grid instancing then only read the topology for child grids
-                grid.readTransform(inputStream);
-                const bool isGridInstance = gridDescriptor.IsGridInstance();
-                if (isGridInstance)
-                {
-                    grid.readTopology(inputStream);
-                }
-            }
-            else
-            {
-                //Read topology then transform
-                grid.readTopology(inputStream);
-                grid.readTransform(inputStream);
-            }
+        //    if (isFileVersionForGridInstancing)
+        //    {
+        //        //Read transform then topology
+        //        //If the file version supports grid instancing then only read the topology for child grids
+        //        grid.readTransform(inputStream);
+        //        const bool isGridInstance = gridDescriptor.IsGridInstance();
+        //        if (isGridInstance)
+        //        {
+        //            grid.readTopology(inputStream);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        //Read topology then transform
+        //        grid.readTopology(inputStream);
+        //        grid.readTransform(inputStream);
+        //    }
 
-            if (isFileVersionForNoGridMap)
-            {
-                //This file version does not store the grid name as grid metadata so set the name here
-                if (grid.getName().empty())
-                {
-                    grid.setName(gridDescriptor.GridName);
-                }
-            }
-        }
+        //    if (isFileVersionForNoGridMap)
+        //    {
+        //        //This file version does not store the grid name as grid metadata so set the name here
+        //        if (grid.getName().empty())
+        //        {
+        //            grid.setName(gridDescriptor.GridName);
+        //        }
+        //    }
+        //}
     }
 
     template<typename TreeType>
     void ReadGridBuffers(const FString& GridName)
     {
-        FGridDescriptorNameMapCIter gridIter = FindGridDescriptor(GridName);
-        if (gridIter != GridDescriptors.end())
-        {
-            const FGridDescriptor& gridDescriptor = *gridIter->second;
-            const int32& byteStreamIndex = gridDescriptor.GridDescriptorStreamIndex;
-            FStream<boost::iostreams::stream<boost::iostreams::array>>& inputStream = DatabaseByteStreams[byteStreamIndex];
-            const FGrid<TreeType>::FPtr gridPtr = boost::static_pointer_cast<FGrid<TreeType>>(gridDescriptor.GridPtr);
-            checkue4(gridPtr != nullptr);
-            const FGrid<TreeType>& grid = *gridPtr;
-            grid.readBuffers(inputStream, grid.saveFloatAsHalf());
-        }
+        //FGridDescriptorNameMapCIter gridIter = FindGridDescriptor(GridName);
+        //if (gridIter != GridDescriptors.end())
+        //{
+        //    const FGridDescriptor& gridDescriptor = *gridIter->second;
+        //    const int32& byteStreamIndex = gridDescriptor.GridDescriptorStreamIndex;
+        //    FStream<boost::iostreams::stream<boost::iostreams::array>>& inputStream = DatabaseByteStreams[byteStreamIndex];
+        //    const FGrid<TreeType>::FPtr gridPtr = boost::static_pointer_cast<FGrid<TreeType>>(gridDescriptor.GridPtr);
+        //    checkue4(gridPtr != nullptr);
+        //    const FGrid<TreeType>& grid = *gridPtr;
+        //    grid.readBuffers(inputStream, grid.saveFloatAsHalf());
+        //}
     }
 
 	FGridDescriptorNameMapCIter FindGridDescriptor(const FString &gridName) const
 	{
-		const FGridName name = TO_GRID_DATABASE_STRING(gridName);
-		const FGridName uniqueName = FGridDescriptor::StringAsUniqueName(name);
+		//const FGridName name = TO_GRID_DATABASE_STRING(gridName);
+		//const FGridName uniqueName = FGridDescriptor::StringAsUniqueName(name);
 
-		// Find all descriptors with the given grid name.
-		std::pair<FGridDescriptorNameMapCIter, FGridDescriptorNameMapCIter> range = GridDescriptors.equal_range(name);
+		//// Find all descriptors with the given grid name.
+  //      
+		//std::pair<FGridDescriptorNameMapCIter, FGridDescriptorNameMapCIter> range = GridDescriptors.equal_range(name);
 
-		if (range.first == range.second)
-		{
-			// If no descriptors were found with the given grid name, the name might have
-			// a suffix ("name[N]").  In that case, remove the "[N]" suffix and search again.
-			range = GridDescriptors.equal_range(FGridDescriptor::StripSuffix(uniqueName).c_str());
-		}
+		//if (range.first == range.second)
+		//{
+		//	// If no descriptors were found with the given grid name, the name might have
+		//	// a suffix ("name[N]").  In that case, remove the "[N]" suffix and search again.
+		//	range = GridDescriptors.equal_range(FGridDescriptor::StripSuffix(uniqueName).c_str());
+		//}
 
-		const size_t count = size_t(std::distance(range.first, range.second));
-		if (count > 1 && name == uniqueName)
-		{
-			UE_LOG(LogVoxelDatabase, Error, TEXT("%s has more than one grid named %s"), *GetGridDatabaseName(), *gridName);
-		}
+		//const size_t count = size_t(std::distance(range.first, range.second));
+		//if (count > 1 && name == uniqueName)
+		//{
+		//	UE_LOG(LogVoxelDatabase, Error, TEXT("%s has more than one grid named %s"), *GetGridDatabaseName(), *gridName);
+		//}
 
-		FGridDescriptorNameMapCIter foundGridDescriptor = GridDescriptors.end();
-		if (count > 0)
-		{
-			if (name == uniqueName)
-			{
-				// If the given grid name is unique or if no "[N]" index was given,
-				// use the first matching descriptor.
-				foundGridDescriptor = range.first;
-			}
-			else
-			{
-				// If the given grid name has a "[N]" index, find the descriptor
-				// with a matching unique name.
-				for (FGridDescriptorNameMapCIter i = range.first; i != range.second; ++i)
-				{
-					const FGridName candidateName = i->second->UniqueName;
-					if (candidateName == uniqueName || candidateName == name)
-					{
-						foundGridDescriptor = i;
-						break;
-					}
-				}
-			}
-		}
-		return foundGridDescriptor;
+		//FGridDescriptorNameMapCIter foundGridDescriptor = GridDescriptors.end();
+		//if (count > 0)
+		//{
+		//	if (name == uniqueName)
+		//	{
+		//		// If the given grid name is unique or if no "[N]" index was given,
+		//		// use the first matching descriptor.
+		//		foundGridDescriptor = range.first;
+		//	}
+		//	else
+		//	{
+		//		// If the given grid name has a "[N]" index, find the descriptor
+		//		// with a matching unique name.
+		//		for (FGridDescriptorNameMapCIter i = range.first; i != range.second; ++i)
+		//		{
+		//			const FGridName candidateName = i->second->UniqueName;
+		//			if (candidateName == uniqueName || candidateName == name)
+		//			{
+		//				foundGridDescriptor = i;
+		//				break;
+		//			}
+		//		}
+		//	}
+		//}
+		//return foundGridDescriptor;
 	}
 
+    
+    UPROPERTY()
+        FString GridDatabaseName;
+    UPROPERTY()
+        bool AreDatabaseStreamsSeekable;
+    UPROPERTY()
+        bool IsGridInstancingEnabled;
+
 protected:
-    bool IsDatabaseOpen;
-    const bool AreDatabaseStreamsSeekable;
-    const bool IsGridInstancingEnabled;
-
-    uint64 DatabaseHeaderBytesCount;
-    uint64 DatabaseMetadataBytesCount;
-    uint64 DatabaseGridDescriptorsBytesCount;
-    uint64 DatabaseGridBytesCount;
-
-	TArray<TArray<char>> DatabaseBytes;
-    TArray<boost::shared_ptr<boost::iostreams::array>> DatabaseByteAccessors;
-    TArray<FStream<boost::iostreams::stream<boost::iostreams::array>>> DatabaseByteStreams;
-
-    FNameCountMap GridNamesHistogram;
-    FTreeMap TreeMap;
-    FUniqueNameSet UniqueNames;
-	TMap<FGridName, uint64> MaxGridSizeByType;
-
-	FString GridDatabaseName;
-	int32 NumGrids;
-
-	FGridDescriptorNameMap GridDescriptors;
-	FMetaMap DatabaseFileMetadata;
-
-    TArray<FString> RegisteredGridTypeDisplayNames;
-    TArray<FString> RegisteredMetadataTypeDisplayNames;
-    TArray<FString> RegisteredTransformMapTypeDisplayNames;
+    FVoxelDatabaseHeader DatabaseHeader;
+    TMap<FString, FMetaValueFactory> DatabaseMetadata;
+    TMap<FString, FGridFactory> Grids;
 };

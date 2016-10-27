@@ -1,121 +1,106 @@
 #pragma once
 #include "Platform.h"
-#include "Engine.h" //TODO: Engine.h is included just for UENUM, UCLASS, etc. Find exact header for these defines
+#include "EngineMinimal.h" //TODO: Engine.h is included just for UENUM, UCLASS, etc. Find exact header for these defines
 #include "Math/Vector2D.h"
 #include "Math/Vector.h"
 #include "Math/Vector4.h"
 #include "Math/IntVector.h"
 #include "IntVector2.h"
+
 #pragma warning(1:4211 4800 4503 4146)
 #include <openvdb/openvdb.h>
 
 #define TO_GRID_DATABASE_STRING(fstring) TCHAR_TO_UTF8(*fstring)
 #define FROM_GRID_DATABASE_STRING(grid_database_string) UTF8_TO_TCHAR(grid_database_string.c_str())
 
-//////////////////////////////////
-//Forward declarations
-class FGridDescriptor;
-template<typename MapType> class FTransformMap;
-
-//TODO: Reorganize .h files and move this definition
-class FGridDatabaseString : public std::string
+struct FVoxelDatabaseHeader
 {
-public:
-    FGridDatabaseString()
-        : std::string()
-    {}
-
-    FGridDatabaseString(const std::string& str)
-        : std::string(str)
-    {}
-
-    FGridDatabaseString(const char* cstr)
-        : std::string(cstr)
-    {}
-
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FGridDatabaseString& GridDatabaseString)
+    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FVoxelDatabaseHeader& VoxelDatabaseHeaderHeader)
     {
-        if (Ar.IsLoading())
-        {
-            int32 SaveNum = -1;
-            Ar << SaveNum;
-
-            if (SaveNum < 0)
-            {
-                //Archive is corrupted
-                Ar.ArIsError = 1;
-                Ar.ArIsCriticalError = 1;
-                //UE_LOG(LogNetSerialization, Error, TEXT("Archive is corrupted")); TODO FGridDatabaseString logging
-                return Ar;
-            }
-
-            if (SaveNum > GridDatabaseString.max_size())
-            {
-                //Number of characters too large
-                Ar.ArIsError = 1;
-                Ar.ArIsCriticalError = 1;
-                //UE_LOG(LogNetSerialization, Error, TEXT("String is too large")); TODO FGridDatabaseString logging
-                return Ar;
-            }
-
-            auto MaxSerializeSize = Ar.GetMaxSerializeSize();
-            // Protect against network packets allocating too much memory
-            if ((MaxSerializeSize > 0) && (SaveNum > MaxSerializeSize))
-            {
-                Ar.ArIsError = 1;
-                Ar.ArIsCriticalError = 1;
-                //UE_LOG(LogNetSerialization, Error, TEXT("String is too large")); TODO FGridDatabaseString logging
-                return Ar;
-            }
-
-            // Resize the string only if it passes the above tests to prevent rogue packets from crashing
-            GridDatabaseString.clear();
-            if (SaveNum)
-            {
-                GridDatabaseString.resize(SaveNum);
-                if (SaveNum > 1)
-                {
-                    //Serialized string contains characters. Read them in
-                    Ar.Serialize((void*)&GridDatabaseString[0], SaveNum);
-                }
-            }
-        }
-        else
-        {
-            int32 SaveNum = GridDatabaseString.size();
-            Ar << SaveNum;
-            if (SaveNum)
-            {
-                Ar.Serialize((void*)&GridDatabaseString[0], SaveNum);
-            }
-        }
+        //TODO
         return Ar;
     }
 };
+
+//TODO: Reorganize .h files and move this definition
+FORCEINLINE FArchive& operator<<(FArchive& Ar, openvdb::Name& Name)
+{
+    if (Ar.IsLoading())
+    {
+        int32 SaveNum = -1;
+        Ar << SaveNum;
+
+        if (SaveNum < 0)
+        {
+            //Archive is corrupted
+            Ar.ArIsError = 1;
+            Ar.ArIsCriticalError = 1;
+            //UE_LOG(LogNetSerialization, Error, TEXT("Archive is corrupted")); TODO openvdb::Name logging
+            return Ar;
+        }
+
+        if (SaveNum > Name.max_size())
+        {
+            //Number of characters too large
+            Ar.ArIsError = 1;
+            Ar.ArIsCriticalError = 1;
+            //UE_LOG(LogNetSerialization, Error, TEXT("String is too large")); TODO openvdb::Name logging
+            return Ar;
+        }
+
+        auto MaxSerializeSize = Ar.GetMaxSerializeSize();
+        // Protect against network packets allocating too much memory
+        if ((MaxSerializeSize > 0) && (SaveNum > MaxSerializeSize))
+        {
+            Ar.ArIsError = 1;
+            Ar.ArIsCriticalError = 1;
+            //UE_LOG(LogNetSerialization, Error, TEXT("String is too large")); TODO openvdb::Name logging
+            return Ar;
+        }
+
+        // Resize the string only if it passes the above tests to prevent rogue packets from crashing
+        Name.clear();
+        if (SaveNum)
+        {
+            Name.resize(SaveNum);
+            if (SaveNum > 1)
+            {
+                //Serialized string contains characters. Read them in
+                Ar.Serialize((void*)&Name[0], SaveNum);
+            }
+        }
+    }
+    else
+    {
+        int32 SaveNum = Name.size();
+        Ar << SaveNum;
+        if (SaveNum)
+        {
+            Ar.Serialize((void*)&Name[0], SaveNum);
+        }
+    }
+    return Ar;
+}
 
 //////////////////////////////////
 //Type definitions
 typedef openvdb::Name FGridName;
 typedef openvdb::Index FIndex;
-typedef std::multimap<FGridName, boost::shared_ptr<FGridDescriptor>> FGridDescriptorNameMap;
 typedef std::map<FGridName, int32> FNameCountMap;
 typedef std::set<FGridName> FUniqueNameSet;
-typedef std::map<const openvdb::TreeBase*, FGridDescriptor> FTreeMap;
-typedef FTreeMap::iterator FTreeMapIter;
-typedef FGridDescriptorNameMap::iterator FGridDescriptorNameMapIter;
-typedef FGridDescriptorNameMap::const_iterator FGridDescriptorNameMapCIter;
-typedef openvdb::MetaMap FMetaMap;
+typedef FNameCountMap::iterator FGridDescriptorNameMapIter;
+typedef FNameCountMap::const_iterator FGridDescriptorNameMapCIter;
 typedef std::map<std::string, boost::any> FAuxDataMap;
 typedef openvdb::PointIndex32 FPointIndex32;
 typedef openvdb::PointIndex64 FPointIndex64;
-typedef FTransformMap<openvdb::math::AffineMap> FTransformAffineMap;
-typedef FTransformMap<openvdb::math::UnitaryMap> FTransformUnitaryMap;
-typedef FTransformMap<openvdb::math::ScaleMap> FTransformScaleMap;
-typedef FTransformMap<openvdb::math::UniformScaleMap> FTransformUniformScaleMap;
-typedef FTransformMap<openvdb::math::TranslationMap> FTransformTranslationMap;
-typedef FTransformMap<openvdb::math::ScaleTranslateMap> FTransformScaleTranslateMap;
-typedef FTransformMap<openvdb::math::UniformScaleTranslateMap> FTransformUniformScaleTranslateMap;
-typedef FTransformMap<openvdb::math::NonlinearFrustumMap> FTransformNonlinearFrustumMap;
+typedef openvdb::math::AffineMap FTransformAffineMap;
+typedef openvdb::math::UnitaryMap FTransformUnitaryMap;
+typedef openvdb::math::ScaleMap FTransformScaleMap;
+typedef openvdb::math::UniformScaleMap FTransformUniformScaleMap;
+typedef openvdb::math::TranslationMap FTransformTranslationMap;
+typedef openvdb::math::ScaleTranslateMap FTransformScaleTranslateMap;
+typedef openvdb::math::UniformScaleTranslateMap FTransformUniformScaleTranslateMap;
+typedef openvdb::math::NonlinearFrustumMap FTransformNonlinearFrustumMap;
 
 template<typename DataType>
 using FTree3 = openvdb::tree::Tree<openvdb::tree::RootNode<openvdb::tree::InternalNode<openvdb::tree::LeafNode<DataType, 3>, 4>>>;
@@ -140,6 +125,46 @@ enum class EGridCompression : uint8
     GridCompressionBlosc      = 0x4
 };
 
+inline bool GridCompressionFlagsAreInRange(uint8 GridCompressionFlags)
+{
+    const uint8 AllCompressionFlagBits =
+        (uint8)EGridCompression::GridCompressionNone       &
+        (uint8)EGridCompression::GridCompressionZip        &
+        (uint8)EGridCompression::GridCompressionActiveMask &
+        (uint8)EGridCompression::GridCompressionBlosc;
+    return (GridCompressionFlags & (~AllCompressionFlagBits)) == 0;
+}
+
+inline bool GridCompressionIsNone(uint8 GridCompressionFlags)
+{
+    return GridCompressionFlags == (uint8)EGridCompression::GridCompressionNone;
+}
+
+inline bool GridCompressionIsZip(uint8 GridCompressionFlags)
+{
+    return (GridCompressionFlags & (uint8)EGridCompression::GridCompressionZip) > 0;
+}
+
+inline bool GridCompressionHasActiveMask(uint8 GridCompressionFlags)
+{
+    return (GridCompressionFlags & (uint8)EGridCompression::GridCompressionActiveMask) > 0;
+}
+
+inline bool GridCompressionHasBlosc (uint8 GridCompressionFlags)
+{
+    return (GridCompressionFlags & (uint8)EGridCompression::GridCompressionBlosc) > 0;
+}
+
+inline uint8 SetGridCompressionFlagOn(uint8 GridCompressionFlags, EGridCompression CompressionFlag)
+{
+    return GridCompressionFlags | (uint8)CompressionFlag;
+}
+
+inline uint8 SetGridCompressionFlagOff(uint8 GridCompressionFlags, EGridCompression CompressionFlag)
+{
+    return GridCompressionFlags & (~(uint8)CompressionFlag);
+}
+
 //openvdb::GRID_UNKNOWN
 //openvdb::GRID_LEVEL_SET
 //openvdb::GRID_FOG_VOLUME
@@ -163,11 +188,11 @@ enum class EGridClass : uint8
 UENUM(BlueprintType)
 enum class EVectorTypeClass : uint8
 {
-    VectorInvariant = 0,
-    VectorCovariant,
-    VectorCovariantNormalize,
-    VectorContravariantRelative,
-    VectorContravariantAbsolute
+    VectorTypeInvariant = 0,
+    VectorTypeCovariant,
+    VectorTypeCovariantNormalize,
+    VectorTypeContravariantRelative,
+    VectorTypeContravariantAbsolute
 };
 
 namespace GridExceptions
@@ -193,12 +218,12 @@ namespace openvdb
     }
 }
 
-template<typename Type> inline FString GridTypeName()
+template<typename Type> inline FString VoxelDatabaseTypeName()
 {
     return FString(UTF8_TO_TCHAR(openvdb::typeNameAsString<Type>()));
 }
 
-template<typename Type> inline FString GridTypeNameDisplay()
+template<typename Type> inline FString VoxelDatabaseTypeNameDisplay()
 {
     return FString(UTF8_TO_TCHAR(openvdb::typeNameAsDisplayString<Type>()));
 }
@@ -402,27 +427,6 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FPointIndex32>()
 template<> inline const char* openvdb::typeNameAsDisplayString<FPointIndex64>()
 {
     return "Point Index64";
-}
-
-//////////////////////////////////
-//FGridDatabaseString
-inline FGridDatabaseString Abs(const FGridDatabaseString &Str);
-inline FGridDatabaseString operator-(const FGridDatabaseString& Lhs, const FGridDatabaseString& Rhs);
-inline FGridDatabaseString operator-(const FGridDatabaseString& Str);
-
-template<> inline FGridDatabaseString openvdb::zeroVal<FGridDatabaseString>()
-{
-    return FGridDatabaseString("");
-}
-
-template<> inline const char* openvdb::typeNameAsString<FGridDatabaseString>()
-{
-    return "fgriddatabasestring";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FGridDatabaseString>()
-{
-    return "Grid Database String";
 }
 
 //////////////////////////////////

@@ -231,21 +231,6 @@ bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs)
 		   Lhs.W > Rhs.W;
 }
 
-FGridDatabaseString Abs(const FGridDatabaseString &Str)
-{
-    return Str;
-}
-
-FGridDatabaseString operator-(const FGridDatabaseString& Lhs, const FGridDatabaseString& Rhs)
-{
-    return Lhs;
-}
-
-FGridDatabaseString operator-(const FGridDatabaseString& Str)
-{
-    return Str;
-}
-
 std::ostream& operator<<(std::ostream& os, const FMatrix& Mat)
 {
 	os << Mat.M[0][0] << Mat.M[0][1] << Mat.M[0][2] << Mat.M[0][3];
