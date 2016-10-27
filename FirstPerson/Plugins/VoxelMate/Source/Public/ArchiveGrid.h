@@ -5,13 +5,12 @@
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <vector>
 
-FORCEINLINE static FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid);
-
 struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
 {
     static TMap<FString, int32> TopologySizeByTreeType;
     uint8 CompressionFlags;
 
+    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid);
     virtual void Serialize(FArchive& Ar) override;
 
     template<typename TreeType>
