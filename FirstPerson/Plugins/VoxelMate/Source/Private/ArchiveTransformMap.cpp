@@ -1,7 +1,7 @@
 #include "VoxelMatePrivatePCH.h"
 #include "ArchiveTransformMap.h"
 
-TArray<FString> FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::RegisteredTypeDisplayNames;
+TArray<FString> FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::RegisteredTypeNames;
 
 void FTransformMapFactory::Serialize(FArchive& Ar)
 {
@@ -25,7 +25,8 @@ FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap)
     }
     else
     {
-        const int32 MapSize = VoxelDatabaseStatics::TransformMapStatics::SizeOfMap(TransformMap.type());
+        const FString TypeName = UTF8_TO_TCHAR(TransformMap.type().c_str());
+        const int32 MapSize = VoxelDatabaseStatics::TransformMapStatics::SizeOfMap(TypeName);
         DataBytes.SetNumUninitialized(MapSize > 0 ? MapSize : 0, false);
     }
 

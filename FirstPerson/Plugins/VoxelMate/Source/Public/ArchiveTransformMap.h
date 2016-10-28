@@ -5,37 +5,38 @@
 
 struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::MapBase>
 {
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap);
     virtual void Serialize(FArchive& Ar) override;
+    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap);
 
     template<typename MapType>
     static inline void RegisterTransformMapType()
     {
-        if (!IsRegistered(MapType::mapType()))
+        static const FString TypeName = UTF8_TO_TCHAR(MapType::mapType().c_str());
+        if (!IsRegistered(TypeName))
         {
-            Register(MapType::mapType(), MapType::create);
-            FTransformMapFactory::RegisteredTypeDisplayNames.Add(VoxelDatabaseTypeNameDisplay<MapType>());
+            Register(TypeName, MapType::create);
+            FTransformMapFactory::RegisteredTypeNames.Add(VoxelDatabaseTypeName<MapType>());
         }
     }
 
-    static ValueTypePtr Create(const openvdb::Name& TypeName)
+    static ValueTypePtr Create(const FString& TypeName)
     {
-        return openvdb::math::MapRegistry::createMap(TypeName);
+        return openvdb::math::MapRegistry::createMap(TCHAR_TO_UTF8(*TypeName));
     }
 
-    static void Register(const openvdb::Name& TypeName, openvdb::math::MapBase::MapFactory Factory)
+    static void Register(const FString& TypeName, openvdb::math::MapBase::MapFactory Factory)
     {
-        openvdb::math::MapRegistry::registerMap(TypeName, Factory);
+        openvdb::math::MapRegistry::registerMap(TCHAR_TO_UTF8(*TypeName), Factory);
     }
 
-    static void Unregister(const openvdb::Name& TypeName)
+    static void Unregister(const FString& TypeName)
     {
-        openvdb::math::MapRegistry::unregisterMap(TypeName);
+        openvdb::math::MapRegistry::unregisterMap(TCHAR_TO_UTF8(*TypeName));
     }
 
-    static bool IsRegistered(const openvdb::Name& TypeName)
+    static bool IsRegistered(const FString& TypeName)
     {
-        return openvdb::math::MapRegistry::isRegistered(TypeName);
+        return openvdb::math::MapRegistry::isRegistered(TCHAR_TO_UTF8(*TypeName));
     }
 
     static void ClearRegistry()
@@ -43,3 +44,12 @@ struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::Ma
         openvdb::math::MapRegistry::clear();
     }
 };
+
+FORCEINLINE static FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& TransformMapPtr)
+{
+    if (TransformMapPtr != nullptr)
+    {
+        Ar << *TransformMapPtr;
+    }
+    return Ar;
+}

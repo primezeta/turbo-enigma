@@ -19,16 +19,16 @@ void FVoxelMateModule::ShutdownModule()
 	// we call this function before unloading the module.
 }
 
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameGridClass       = openvdb::GridBase::META_GRID_CLASS;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameGridCreator     = openvdb::GridBase::META_GRID_CREATOR;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameGridName        = openvdb::GridBase::META_GRID_NAME;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameSaveHalfFloat   = openvdb::GridBase::META_SAVE_HALF_FLOAT;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameIsLocalSpace    = openvdb::GridBase::META_IS_LOCAL_SPACE;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameVectorType      = openvdb::GridBase::META_VECTOR_TYPE;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameFileBBoxMin     = openvdb::GridBase::META_FILE_BBOX_MIN;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameFileBBoxMax     = openvdb::GridBase::META_FILE_BBOX_MAX;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameFileCompression = openvdb::GridBase::META_FILE_COMPRESSION;
-const openvdb::Name VoxelDatabaseStatics::GridStatics::MetaNameFileMemBytes    = openvdb::GridBase::META_FILE_MEM_BYTES;
+const FString VoxelDatabaseStatics::GridStatics::MetaNameGridClass       = UTF8_TO_TCHAR(openvdb::GridBase::META_GRID_CLASS);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameGridCreator     = UTF8_TO_TCHAR(openvdb::GridBase::META_GRID_CREATOR);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameGridName        = UTF8_TO_TCHAR(openvdb::GridBase::META_GRID_NAME);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameSaveHalfFloat   = UTF8_TO_TCHAR(openvdb::GridBase::META_SAVE_HALF_FLOAT);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameIsLocalSpace    = UTF8_TO_TCHAR(openvdb::GridBase::META_IS_LOCAL_SPACE);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameVectorType      = UTF8_TO_TCHAR(openvdb::GridBase::META_VECTOR_TYPE);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameFileBBoxMin     = UTF8_TO_TCHAR(openvdb::GridBase::META_FILE_BBOX_MIN);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameFileBBoxMax     = UTF8_TO_TCHAR(openvdb::GridBase::META_FILE_BBOX_MAX);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameFileCompression = UTF8_TO_TCHAR(openvdb::GridBase::META_FILE_COMPRESSION);
+const FString VoxelDatabaseStatics::GridStatics::MetaNameFileMemBytes    = UTF8_TO_TCHAR(openvdb::GridBase::META_FILE_MEM_BYTES);
 
 #undef LOCTEXT_NAMESPACE
 	

@@ -1,7 +1,7 @@
 #include "VoxelMatePrivatePCH.h"
 #include "ArchiveMetaValue.h"
 
-TArray<FString> FVoxelDatabaseTypeFactory<openvdb::Metadata>::RegisteredTypeDisplayNames;
+TArray<FString> FVoxelDatabaseTypeFactory<openvdb::Metadata>::RegisteredTypeNames;
 
 void FMetaValueFactory::Serialize(FArchive& Ar)
 {

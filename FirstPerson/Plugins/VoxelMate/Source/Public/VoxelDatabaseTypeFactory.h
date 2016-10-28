@@ -15,14 +15,16 @@ struct FVoxelDatabaseTypeFactory
     typedef typename OpenVdbType ValueType;
     typedef typename boost::shared_ptr<ValueType> ValueTypePtr;
 
+    static TArray<FString> RegisteredTypeNames;
     static TArray<FString> RegisteredTypeDisplayNames;
-    openvdb::Name TypeName;
+    FString TypeName;
     ValueTypePtr ValuePtr;
 
     FVoxelDatabaseTypeFactory()
     {}
 
-    FVoxelDatabaseTypeFactory(const openvdb::Name& TypeName)
+    FVoxelDatabaseTypeFactory(const FString& Type)
+        : TypeName(Type)
     {
         FVoxelDatabaseTypeFactory::Register(TypeName);
     }

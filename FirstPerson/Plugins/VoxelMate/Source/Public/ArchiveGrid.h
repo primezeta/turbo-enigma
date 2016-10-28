@@ -10,25 +10,33 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
     static TMap<FString, int32> TopologySizeByTreeType;
     uint8 CompressionFlags;
 
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid);
     virtual void Serialize(FArchive& Ar) override;
+    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid);
 
     template<typename TreeType>
     static void RegisterGridType()
     {
-        TreeType Tree;
-        const openvdb::Name& Type = Tree.type();
-        if (!FGridFactory::IsRegistered(Type))
+        const FString TypeName = VoxelDatabaseTypeName<TreeType::ValueType>();
+        if (!FGridFactory::IsRegistered(TypeName))
         {
-            Register(Type, Create<TreeType>);
-            FGridFactory::RegisteredTypeDisplayNames.Add(VoxelDatabaseTypeNameDisplay<TreeType::ValueType>());
+            Register(TypeName, VoxelDatabaseStatics::GridStatics::Factory<TreeType>);
+            FGridFactory::RegisteredTypeNames.Add(TypeName);
         }
     }
 
-    template<typename TreeType>
-    static openvdb::GridBase::Ptr Create()
+    static openvdb::GridBase::Ptr Create(const FString& TypeName)
     {
-        return openvdb::Grid<TreeType>::create();
+        ValueTypePtr GridPtr;
+        try
+        {
+            GridPtr = openvdb::GridBase::createGrid(TCHAR_TO_UTF8(*TypeName));
+        }
+        catch (const openvdb::LookupError& e)
+        {
+            //TODO error handling (grid type is not registered)
+            (void)e;
+        }
+        return GridPtr;
     }
 
     /* Register a grid containing voxels of DataType with tree topology Root, Internal, and Leaf
@@ -63,24 +71,19 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         RegisterGrid4<DataType>();
     }
 
-    static ValueTypePtr Create(const openvdb::Name& TypeName)
-    {
-        return openvdb::GridBase::createGrid(TypeName);
-    }
-
-    static void Register(const openvdb::Name& TypeName, openvdb::GridBase::GridFactory Factory)
+    static void Register(const FString& TypeName, openvdb::GridBase::GridFactory Factory)
     {
         VoxelDatabaseStatics::GridStatics::RegisterGrid(TypeName, Factory);
     }
 
-    static void Unregister(const openvdb::Name& TypeName)
+    static void Unregister(const FString& TypeName)
     {
         VoxelDatabaseStatics::GridStatics::UnregisterGrid(TypeName);
     }
 
-    static bool IsRegistered(const openvdb::Name& TypeName)
+    static bool IsRegistered(const FString& TypeName)
     {
-        return openvdb::GridBase::isRegistered(TypeName);
+        return openvdb::GridBase::isRegistered(TCHAR_TO_UTF8(*TypeName));
     }
 
     static void ClearRegistry()
@@ -88,3 +91,12 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         openvdb::GridBase::clearRegistry();
     }
 };
+
+FORCEINLINE static FArchive& operator<<(FArchive& Ar, FGridFactory::ValueTypePtr& GridPtr)
+{
+    if (GridPtr != nullptr)
+    {
+        Ar << *GridPtr;
+    }
+    return Ar;
+}

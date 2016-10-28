@@ -88,27 +88,40 @@ namespace VoxelDatabaseStatics
 
     struct GridStatics : private openvdb::GridBase
     {
-        const static openvdb::Name MetaNameGridClass;
-        const static openvdb::Name MetaNameGridCreator;
-        const static openvdb::Name MetaNameGridName;
-        const static openvdb::Name MetaNameSaveHalfFloat;
-        const static openvdb::Name MetaNameIsLocalSpace;
-        const static openvdb::Name MetaNameVectorType;
-        const static openvdb::Name MetaNameFileBBoxMin;
-        const static openvdb::Name MetaNameFileBBoxMax;
-        const static openvdb::Name MetaNameFileCompression;
-        const static openvdb::Name MetaNameFileMemBytes;
+        const static FString MetaNameGridClass;
+        const static FString MetaNameGridCreator;
+        const static FString MetaNameGridName;
+        const static FString MetaNameSaveHalfFloat;
+        const static FString MetaNameIsLocalSpace;
+        const static FString MetaNameVectorType;
+        const static FString MetaNameFileBBoxMin;
+        const static FString MetaNameFileBBoxMax;
+        const static FString MetaNameFileCompression;
+        const static FString MetaNameFileMemBytes;
 
-        static void RegisterGrid(const openvdb::Name& TypeName, openvdb::GridBase::GridFactory CreateFunction)
+        static void RegisterGrid(const FString& TypeName, openvdb::GridBase::GridFactory CreateFunction)
         {
-            openvdb::GridBase::registerGrid(TypeName, CreateFunction);
+            try
+            {
+                openvdb::GridBase::registerGrid(TCHAR_TO_UTF8(*TypeName), CreateFunction);
+            }
+            catch (const openvdb::KeyError& e)
+            {
+                //TODO handle errors (grid type already registered)
+                (void)e;
+            }
         }
 
-        static void UnregisterGrid(const openvdb::Name& TypeName)
+        static void UnregisterGrid(const FString& TypeName)
         {
-            openvdb::GridBase::unregisterGrid(TypeName);
+            openvdb::GridBase::unregisterGrid(TCHAR_TO_UTF8(*TypeName));
         }
 
+        template<typename TreeType>
+        static openvdb::GridBase::Ptr Factory()
+        {
+            return openvdb::Grid<TreeType>::create();
+        }
     protected:
         //Protected constructor to prevent instantiation
         GridStatics() {}
@@ -116,38 +129,39 @@ namespace VoxelDatabaseStatics
 
     struct TransformMapStatics
     {
-        static inline int32 SizeOfMap(const openvdb::Name& TypeName)
+        static inline int32 SizeOfMap(const FString& TypeName)
         {
             int32 MapSize = 0;
-            if (TypeName == FTransformScaleMap::mapType())
+            const openvdb::Name TypeStr = TCHAR_TO_UTF8(*TypeName);
+            if (TypeStr == FTransformScaleMap::mapType())
             {
                 MapSize = SizeOf<FTransformScaleMap>();
             }
-            else if (TypeName == FTransformTranslationMap::mapType())
+            else if (TypeStr == FTransformTranslationMap::mapType())
             {
                 MapSize = SizeOf<FTransformTranslationMap>();
             }
-            else if (TypeName == FTransformScaleTranslateMap::mapType())
+            else if (TypeStr == FTransformScaleTranslateMap::mapType())
             {
                 MapSize = SizeOf<FTransformScaleTranslateMap>();
             }
-            else if (TypeName == FTransformUniformScaleMap::mapType())
+            else if (TypeStr == FTransformUniformScaleMap::mapType())
             {
                 MapSize = SizeOf<FTransformUniformScaleMap>();
             }
-            else if (TypeName == FTransformUniformScaleTranslateMap::mapType())
+            else if (TypeStr == FTransformUniformScaleTranslateMap::mapType())
             {
                 MapSize = SizeOf<FTransformUniformScaleTranslateMap>();
             }
-            else if (TypeName == FTransformAffineMap::mapType())
+            else if (TypeStr == FTransformAffineMap::mapType())
             {
                 MapSize = SizeOf<FTransformAffineMap>();
             }
-            else if (TypeName == FTransformUnitaryMap::mapType())
+            else if (TypeStr == FTransformUnitaryMap::mapType())
             {
                 MapSize = SizeOf<FTransformUnitaryMap>();
             }
-            else if (TypeName == FTransformNonlinearFrustumMap::mapType())
+            else if (TypeStr == FTransformNonlinearFrustumMap::mapType())
             {
                 MapSize = SizeOf<FTransformNonlinearFrustumMap>();
             }
@@ -180,8 +194,8 @@ namespace GridIOStatics
         FileVersionPointIndexGrid          = openvdb::OPENVDB_FILE_VERSION_POINT_INDEX_GRID,
     };
 
-    const static openvdb::Name HalfFloatTypenameSuffix = "_HalfFloat";
-    //const static openvdb::Name HalfFloatTypenameSuffix = HALF_FLOAT_TYPENAME_SUFFIX;;
+    const static FString HalfFloatTypenameSuffix = TEXT("_HalfFloat");
+    //const static FString HalfFloatTypenameSuffix = UTF8_TO_TCHAR(HALF_FLOAT_TYPENAME_SUFFIX);
 
     static uint32 GetFormatVersion(std::ios_base& ios)
     {
@@ -203,8 +217,8 @@ namespace GridIOStatics
         return openvdb::io::getDataCompression(ios);
     }
 
-    static openvdb::Name CompressionToString(uint32 compressionFlags)
+    static FString CompressionToString(uint32 compressionFlags)
     {
-        return openvdb::io::compressionToString(compressionFlags);
+        return UTF8_TO_TCHAR(openvdb::io::compressionToString(compressionFlags).c_str());
     }
 }

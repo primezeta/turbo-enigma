@@ -1,7 +1,7 @@
 #include "VoxelMatePrivatePCH.h"
 #include "ArchiveGrid.h"
 
-TArray<FString> FVoxelDatabaseTypeFactory<openvdb::GridBase>::RegisteredTypeDisplayNames;
+TArray<FString> FVoxelDatabaseTypeFactory<openvdb::GridBase>::RegisteredTypeNames;
 TMap<FString, int32> FGridFactory::TopologySizeByTreeType;
 
 void FGridFactory::Serialize(FArchive& Ar)
@@ -19,27 +19,6 @@ void FGridFactory::Serialize(FArchive& Ar)
 FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid)
 {
     const bool IsLoading = Ar.IsLoading();
-    ////TODO where to set the compression flags?
-    //if (IsLoading)
-    //{
-    //    //Read and validate the grid compression flag
-    //    Ar << CompressionFlags;
-    //    if (!GridCompressionFlagsAreInRange(GridFactory.CompressionFlags))
-    //    {
-    //        GridFactory.CompressionFlags = 0;
-    //        //TODO log error (read invalid grid compression flag)
-    //    }
-    //}
-    //else
-    //{
-    //    //Validate and write the grid compression flag
-    //    if (!GridCompressionFlagsAreInRange(GridFactory.CompressionFlags))
-    //    {
-    //        GridFactory.CompressionFlags = 0;
-    //        //TODO log error (tried to write invalid grid compression flag)
-    //    }
-    //    Ar << GridFactory.CompressionFlags;
-    //}
 
     //De/serialize the grid metadata
     openvdb::MetaMap& GridMetaMap = Grid;

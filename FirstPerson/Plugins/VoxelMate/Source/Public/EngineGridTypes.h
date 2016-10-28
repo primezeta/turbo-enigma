@@ -10,9 +10,6 @@
 #pragma warning(1:4211 4800 4503 4146)
 #include <openvdb/openvdb.h>
 
-#define TO_GRID_DATABASE_STRING(fstring) TCHAR_TO_UTF8(*fstring)
-#define FROM_GRID_DATABASE_STRING(grid_database_string) UTF8_TO_TCHAR(grid_database_string.c_str())
-
 struct FVoxelDatabaseHeader
 {
     FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FVoxelDatabaseHeader& VoxelDatabaseHeaderHeader)
@@ -195,6 +192,14 @@ enum class EVectorTypeClass : uint8
     VectorTypeContravariantAbsolute
 };
 
+UENUM(BlueprintType)
+enum class ETreeType : uint8
+{
+    Tree3,
+    Tree4,
+    Tree5
+};
+
 namespace GridExceptions
 {
     typedef openvdb::ArithmeticError FArithmeticError;
@@ -210,22 +215,9 @@ namespace GridExceptions
     typedef openvdb::ValueError FValueError;
 }
 
-namespace openvdb
-{
-    template<typename Type> inline const char* typeNameAsDisplayString()
-    {
-        return typeid(Type).name();
-    }
-}
-
 template<typename Type> inline FString VoxelDatabaseTypeName()
 {
     return FString(UTF8_TO_TCHAR(openvdb::typeNameAsString<Type>()));
-}
-
-template<typename Type> inline FString VoxelDatabaseTypeNameDisplay()
-{
-    return FString(UTF8_TO_TCHAR(openvdb::typeNameAsDisplayString<Type>()));
 }
 
 //////////////////////////////////
@@ -242,11 +234,6 @@ template<> inline FVector2D openvdb::zeroVal<FVector2D>()
 }
 
 template<> inline const char* openvdb::typeNameAsString<FVector2D>()
-{
-    return "fvector2d";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FVector2D>()
 {
     return "Vector 2D";
 }
@@ -265,11 +252,6 @@ template<> inline FVector openvdb::zeroVal<FVector>()
 
 template<> inline const char* openvdb::typeNameAsString<FVector>()
 {
-    return "fvector";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FVector>()
-{
     return "Vector 3D";
 }
 
@@ -287,11 +269,6 @@ template<> inline FVector4 openvdb::zeroVal<FVector4>()
 }
 
 template<> inline const char* openvdb::typeNameAsString<FVector4>()
-{
-    return "fvector4";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FVector4>()
 {
     return "Vector 4D";
 }
@@ -312,11 +289,6 @@ template<> inline FIntVector2 openvdb::zeroVal<FIntVector2>()
 
 template<> inline const char* openvdb::typeNameAsString<FIntVector2>()
 {
-    return "fintvector2";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FIntVector2>()
-{
     return "IntVector 2D";
 }
 
@@ -335,11 +307,6 @@ template<> inline FIntVector openvdb::zeroVal<FIntVector>()
 }
 
 template<> inline const char* openvdb::typeNameAsString<FIntVector>()
-{
-    return "fintvector";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FIntVector>()
 {
     return "IntVector 3D";
 }
@@ -362,11 +329,6 @@ template<> inline FIntVector4 openvdb::zeroVal<FIntVector4>()
 
 template<> inline const char* openvdb::typeNameAsString<FIntVector4>()
 {
-    return "fintvector4";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FIntVector4>()
-{
     return "IntVector 4D";
 }
 
@@ -388,11 +350,6 @@ template<> inline FUintVector4 openvdb::zeroVal<FUintVector4>()
 
 template<> inline const char* openvdb::typeNameAsString<FUintVector4>()
 {
-    return "fuintvector4";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FUintVector4>()
-{
     return "UIntVector 4D";
 }
 
@@ -407,36 +364,12 @@ template<> inline FMatrix openvdb::zeroVal<FMatrix>()
 
 template<> inline const char* openvdb::typeNameAsString<FMatrix>()
 {
-    return "fmatrix";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FMatrix>()
-{
     return "Matrix 4x4";
-}
-
-//////////////////////////////////
-//FPointIndex32
-template<> inline const char* openvdb::typeNameAsDisplayString<FPointIndex32>()
-{
-    return "Point Index32";
-}
-
-//////////////////////////////////
-//FPointIndex64
-template<> inline const char* openvdb::typeNameAsDisplayString<FPointIndex64>()
-{
-    return "Point Index64";
 }
 
 //////////////////////////////////
 //FTransformAffineMap
 template<> inline const char* openvdb::typeNameAsString<FTransformAffineMap>()
-{
-    return "ftransformaffinemap";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FTransformAffineMap>()
 {
     return "Affine";
 }
@@ -445,22 +378,12 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FTransformAffineM
 //FTransformUnitaryMap
 template<> inline const char* openvdb::typeNameAsString<FTransformUnitaryMap>()
 {
-    return "ftransformunitarymap";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FTransformUnitaryMap>()
-{
     return "Unitary";
 }
 
 //////////////////////////////////
 //FTransformScaleMap
 template<> inline const char* openvdb::typeNameAsString<FTransformScaleMap>()
-{
-    return "ftransformscalemap";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FTransformScaleMap>()
 {
     return "Scaling";
 }
@@ -469,22 +392,12 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FTransformScaleMa
 //FTransformUniformScaleMap
 template<> inline const char* openvdb::typeNameAsString<FTransformUniformScaleMap>()
 {
-    return "ftransformuniformscalemap";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FTransformUniformScaleMap>()
-{
     return "Uniform Scaling";
 }
 
 //////////////////////////////////
 //FTransformTranslationMap
 template<> inline const char* openvdb::typeNameAsString<FTransformTranslationMap>()
-{
-    return "ftransformtranslationmap";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FTransformTranslationMap>()
 {
     return "Translation";
 }
@@ -493,11 +406,6 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FTransformTransla
 //FTransformScaleTranslateMap
 template<> inline const char* openvdb::typeNameAsString<FTransformScaleTranslateMap>()
 {
-    return "ftransformscaletranslateMap";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FTransformScaleTranslateMap>()
-{
     return "Scale and Translation";
 }
 
@@ -505,22 +413,12 @@ template<> inline const char* openvdb::typeNameAsDisplayString<FTransformScaleTr
 //FTransformUniformScaleTranslateMap
 template<> inline const char* openvdb::typeNameAsString<FTransformUniformScaleTranslateMap>()
 {
-    return "ftransformuniformscaletranslatemap";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FTransformUniformScaleTranslateMap>()
-{
     return "Uniform Scaling and Translation";
 }
 
 //////////////////////////////////
 //FTransformNonlinearFrustumMap
 template<> inline const char* openvdb::typeNameAsString<FTransformNonlinearFrustumMap>()
-{
-    return "ftransformnonlinearfrustummap";
-}
-
-template<> inline const char* openvdb::typeNameAsDisplayString<FTransformNonlinearFrustumMap>()
 {
     return "Nonlinear Frustum";
 }

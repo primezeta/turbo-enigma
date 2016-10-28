@@ -4,37 +4,38 @@
 
 struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
 {
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::Metadata& MetaValue);
     virtual void Serialize(FArchive& Ar) override;
+    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::Metadata& MetaValue);
 
     template<typename MetaType>
     static inline void RegisterMetaType()
     {
-        if (!IsRegistered(openvdb::TypedMetadata<MetaType>::staticTypeName()))
+        static const FString TypeName = UTF8_TO_TCHAR(openvdb::TypedMetadata<MetaType>::staticTypeName().c_str());
+        if (!IsRegistered(TypeName))
         {
-            Register(openvdb::TypedMetadata<MetaType>::staticTypeName(), openvdb::TypedMetadata<MetaType>::createMetadata);
-            FMetaValueFactory::RegisteredTypeDisplayNames.Add(VoxelDatabaseTypeNameDisplay<MetaType>());
+            Register(TypeName, openvdb::TypedMetadata<MetaType>::createMetadata);
+            FMetaValueFactory::RegisteredTypeNames.Add(VoxelDatabaseTypeName<MetaType>());
         }
     }
 
-    static ValueTypePtr Create(const openvdb::Name& TypeName)
+    static ValueTypePtr Create(const FString& TypeName)
     {
-        return openvdb::Metadata::createMetadata(TypeName);
+        return openvdb::Metadata::createMetadata(TCHAR_TO_UTF8(*TypeName));
     }
 
-    static void Register(const openvdb::Name& TypeName, openvdb::Metadata::Ptr(*createMetadata)())
+    static void Register(const FString& TypeName, openvdb::Metadata::Ptr(*createMetadata)())
     {
-        openvdb::Metadata::registerType(TypeName, createMetadata);
+        openvdb::Metadata::registerType(TCHAR_TO_UTF8(*TypeName), createMetadata);
     }
 
-    static void Unregister(const openvdb::Name& TypeName)
+    static void Unregister(const FString& TypeName)
     {
-        openvdb::Metadata::unregisterType(TypeName);
+        openvdb::Metadata::unregisterType(TCHAR_TO_UTF8(*TypeName));
     }
 
-    static bool IsRegistered(const openvdb::Name& TypeName)
+    static bool IsRegistered(const FString& TypeName)
     {
-        return openvdb::Metadata::isRegisteredType(TypeName);
+        return openvdb::Metadata::isRegisteredType(TCHAR_TO_UTF8(*TypeName));
     }
 
     static void ClearRegistry()
@@ -42,3 +43,12 @@ struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
         openvdb::Metadata::clearRegistry();
     }
 };
+
+FORCEINLINE static FArchive& operator<<(FArchive& Ar, FMetaValueFactory::ValueTypePtr& MetaValuePtr)
+{
+    if (MetaValuePtr != nullptr)
+    {
+        Ar << *MetaValuePtr;
+    }
+    return Ar;
+}
