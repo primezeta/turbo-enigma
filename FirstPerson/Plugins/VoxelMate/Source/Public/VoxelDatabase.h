@@ -7,15 +7,15 @@
 #include "ArchiveMetaMap.h"
 #include "VoxelDatabase.generated.h"
 
-UCLASS()
-class UVoxelDatabase : public UObject
+UCLASS(ClassGroup=VoxelMate, Blueprintable, Config=Editor, NotPlaceable)
+class VOXELMATE_API UVoxelDatabase : public UObject
 {
     GENERATED_BODY()
 
 public:
-    UPROPERTY()
+    UPROPERTY(Config)
         FString DatabaseName;
-    UPROPERTY()
+    UPROPERTY(Config)
         bool IsGridInstancingEnabled;
 
     UVoxelDatabase(const FObjectInitializer& ObjectInitializer)
