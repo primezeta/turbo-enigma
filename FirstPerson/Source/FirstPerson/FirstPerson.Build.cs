@@ -6,6 +6,6 @@ public class FirstPerson : ModuleRules
 {
 	public FirstPerson(TargetInfo Target)
 	{
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "VoxelMate" });
-	}
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "VoxelMate" });
+    }
 }
