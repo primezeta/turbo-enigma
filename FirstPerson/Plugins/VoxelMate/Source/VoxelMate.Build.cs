@@ -33,15 +33,15 @@ public class VoxelMate : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "InputCore",
+                "UEOpenVdb",
 				// ... add other public dependencies that you statically link with here ...
 			}
-			);
+            );
 			
 		
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-                "UEOpenVdb",
                 "LibNoise",
                 //"FastNoise",
                 //"FastNoiseSIMD",
