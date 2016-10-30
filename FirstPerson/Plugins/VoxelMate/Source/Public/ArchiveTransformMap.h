@@ -1,6 +1,7 @@
 #pragma once
 #include "EngineMinimal.h"
 #include "ArchiveMetaMap.h"
+#include "VoxelDatabaseTransformMapTypeSpecifier.h"
 #include "VoxelDatabaseTypeFactory.h"
 
 struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::MapBase>
@@ -22,6 +23,12 @@ struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::Ma
     static ValueTypePtr Create(const FString& TypeName)
     {
         return openvdb::math::MapRegistry::createMap(TCHAR_TO_UTF8(*TypeName));
+    }
+
+    static ValueTypePtr Create(const FVoxelDatabaseTransformMapTypeSpecifier& TransformMapTypeSpecifier)
+    {
+        const FString TypeName = TransformMapTypeSpecifier.GetTypeName();
+        return Create(TypeName);
     }
 
     static void Register(const FString& TypeName, openvdb::math::MapBase::MapFactory Factory)

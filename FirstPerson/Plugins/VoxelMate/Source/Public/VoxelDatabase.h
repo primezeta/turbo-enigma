@@ -6,8 +6,9 @@
 #include "VoxelDatabaseStatics.h"
 #include "ArchiveGrid.h"
 #include "ArchiveMetaMap.h"
-#include "GridSpecifier.h"
-#include "MetadataSpecifier.h"
+#include "VoxelDatabaseGridTypeSpecifier.h"
+#include "VoxelDatabaseMetadataTypeSpecifier.h"
+#include "VoxelDatabaseTransformMapTypeSpecifier.h"
 #include "VoxelDatabase.generated.h"
 
 UCLASS(ClassGroup=VoxelMate, BlueprintType, Blueprintable, Config=Editor)
@@ -20,8 +21,10 @@ public:
         FString DatabaseName;
     UPROPERTY(Config)
         bool IsGridInstancingEnabled;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite) //TODO investigate making Grids NonTransactional
+        TArray<FVoxelDatabaseGridTypeSpecifier> Grids;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        TArray<FGridSpecifier> Grids;
+        TArray<FVoxelDatabaseMetadataTypeSpecifier> Metadata;
 
     UVoxelDatabase(const FObjectInitializer& ObjectInitializer)
 	{
@@ -46,7 +49,14 @@ public:
     {
         for (auto i = GridData.CreateConstIterator(); i; ++i)
         {
-            OutGridNames.Add(i.Key());
+            if (i->Value != nullptr)
+            {
+                FString GridName;
+                const openvdb::Name MetaNameGridName = TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayName);
+                auto MetaValuePtr = i->Value->getMetadata<openvdb::TypedMetadata<FString>>(MetaNameGridName);
+                check(MetaValuePtr != nullptr);
+                OutGridNames.Add(MetaValuePtr->value());
+            }
         }
     }
 
@@ -67,18 +77,31 @@ public:
 
     void InitializeGridTypes();
 
-    bool AddGrid(const FGridSpecifier& GridSpecifier)
+    bool AddGrid(const FVoxelDatabaseGridTypeSpecifier& GridTypeSpecifier, FString& OutGridId)
     {
         bool IsGridAdded = false;
-        const FString TypeName = EnumValueToString<EVoxelDatabaseType>(GridSpecifier.Type);
-        FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create(TypeName);
+        FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create(GridTypeSpecifier);
         if (GridPtr != nullptr)
         {
-            check(!Grids.ContainsByPredicate([&](const FGridSpecifier& gs) { return GridSpecifier.Name == gs.Name; })); //TODO handle name clashes
-            GridPtr->setName(TCHAR_TO_UTF8(*GridSpecifier.Name));
-            GridPtr->setSaveFloatAsHalf(GridSpecifier.SaveFloatAsHalf);
-            GridData[GridSpecifier.Name] = GridPtr;
-            Grids.Add(GridSpecifier);
+            TFunctionRef<bool(const FVoxelDatabaseGridTypeSpecifier&)> FindGridByName = [&](const FVoxelDatabaseGridTypeSpecifier& gs) { return GridTypeSpecifier.Name == gs.Name; };
+            FVoxelDatabaseGridTypeSpecifier* Specifier = Grids.FindByPredicate(FindGridByName);
+            if (Specifier)
+            {
+                Specifier->NameCount++;
+            }
+            else
+            {
+                Grids.Add(GridTypeSpecifier);
+            }
+
+            const FGuid UniqueId = FGuid::NewGuid();
+            OutGridId = UniqueId.ToString();
+            GridPtr->setName(TCHAR_TO_UTF8(*OutGridId));
+            GridPtr->setSaveFloatAsHalf(GridTypeSpecifier.SaveFloatAsHalf);
+            GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayName), openvdb::TypedMetadata<FString>(GridTypeSpecifier.Name));
+
+            check(!GridData.Contains(OutGridId));
+            GridData.Add(OutGridId, GridPtr);
             IsGridAdded = true;
         }
         return IsGridAdded;
@@ -87,15 +110,28 @@ public:
     //TODO
     //bool AddGridInstance
 
-    bool AddMetadata(const FMetadataSpecifier& MetadataSpecifier)
+    bool AddMetadata(const FVoxelDatabaseMetadataTypeSpecifier& MetadataTypeSpecifier, FString& OutMetadataId)
     {
         bool IsMetadataAdded = false;
-        const FString TypeName = EnumValueToString<EVoxelDatabaseType>(MetadataSpecifier.Type);
-        FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create(TypeName);
+        FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create(MetadataTypeSpecifier);
         if (MetaPtr != nullptr)
         {
-            check(!DatabaseMetadata.Contains(MetadataSpecifier.Name)); //TODO handle name clashes
-            DatabaseMetadata[MetadataSpecifier.Name] = MetaPtr;
+            TFunctionRef<bool(const FVoxelDatabaseMetadataTypeSpecifier&)> FindMetadataByName = [&](const FVoxelDatabaseMetadataTypeSpecifier& ms) { return MetadataTypeSpecifier.Name == ms.Name; };
+            FVoxelDatabaseMetadataTypeSpecifier* Specifier = Metadata.FindByPredicate(FindMetadataByName);
+            if (Specifier)
+            {
+                Specifier->NameCount++;
+            }
+            else
+            {
+                Metadata.Add(MetadataTypeSpecifier);
+            }
+
+            const FGuid UniqueId = FGuid::NewGuid();
+            OutMetadataId = UniqueId.ToString();
+
+            check(!DatabaseMetadata.Contains(OutMetadataId));
+            DatabaseMetadata.Add(OutMetadataId, MetaPtr);
             IsMetadataAdded = true;
         }
         return IsMetadataAdded;

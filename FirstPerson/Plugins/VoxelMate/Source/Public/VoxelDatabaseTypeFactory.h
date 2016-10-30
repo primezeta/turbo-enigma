@@ -17,15 +17,17 @@ struct FVoxelDatabaseTypeFactory
 
     static TArray<FString> RegisteredTypeNames;
     static TArray<FString> RegisteredTypeDisplayNames;
-    FString TypeName;
+    EVoxelDatabaseType Type;
     ValueTypePtr ValuePtr;
 
     FVoxelDatabaseTypeFactory()
     {}
 
-    FVoxelDatabaseTypeFactory(const FString& Type)
+    FVoxelDatabaseTypeFactory(const FVoxelDatabaseMetadataTypeSpecifier& TypeSpecifier)
         : TypeName(Type)
     {
+        bool IsGridAdded = false;
+        const FString TypeName = EnumValueToString<EVoxelDatabaseType>(TypeSpecifier.Type);
         FVoxelDatabaseTypeFactory::Register(TypeName);
     }
 

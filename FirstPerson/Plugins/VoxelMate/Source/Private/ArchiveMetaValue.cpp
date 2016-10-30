@@ -7,6 +7,7 @@ void FMetaValueFactory::Serialize(FArchive& Ar)
 {
     if (Ar.IsLoading())
     {
+        const FString TypeName = EnumValueToString<EVoxelDatabaseType>(Type);
         ValuePtr = FMetaValueFactory::Create(TypeName);
     }
 

@@ -2,6 +2,7 @@
 #include "EngineMinimal.h"
 #include "ArchiveMetaMap.h"
 #include "ArchiveTransformMap.h"
+#include "VoxelDatabaseGridTypeSpecifier.h"
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <vector>
 
@@ -26,6 +27,7 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
 
     static openvdb::GridBase::Ptr Create(const FString& TypeName)
     {
+        bool IsGridAdded = false;
         ValueTypePtr GridPtr;
         try
         {
@@ -37,6 +39,12 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
             (void)e;
         }
         return GridPtr;
+    }
+
+    static openvdb::GridBase::Ptr Create(const FVoxelDatabaseGridTypeSpecifier& GridTypeSpecifier)
+    {
+        const FString TypeName = GridTypeSpecifier.GetTypeName();
+        return Create(TypeName);
     }
 
     /* Register a grid containing voxels of DataType with tree topology Root, Internal, and Leaf

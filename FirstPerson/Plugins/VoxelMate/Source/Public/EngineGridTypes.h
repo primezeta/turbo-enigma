@@ -246,10 +246,10 @@ template<typename Type> inline const TCHAR* VoxelDatabaseTypeName()
 
 //////////////////////////////////
 //FVector2D
-static inline FVector2D Abs(const FVector2D& Vec);
-static inline std::ostream& operator<<(std::ostream& os, const FVector2D& Vec);
+inline FVector2D Abs(const FVector2D& Vec);
+inline std::ostream& operator<<(std::ostream& os, const FVector2D& Vec);
 
-template<> static inline FVector2D openvdb::zeroVal<FVector2D>()
+template<> inline FVector2D openvdb::zeroVal<FVector2D>()
 {
     return FVector2D::ZeroVector;
 }
@@ -261,12 +261,12 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FVector2D>()
 
 //////////////////////////////////
 //FVector
-static inline FVector Abs(const FVector &Vec);
-static inline std::ostream& operator<<(std::ostream& os, const FVector& Vec);
-static inline bool operator<(const FVector& Lhs, const FVector& Rhs);
-static inline bool operator>(const FVector& Lhs, const FVector& Rhs);
+inline FVector Abs(const FVector &Vec);
+inline std::ostream& operator<<(std::ostream& os, const FVector& Vec);
+inline bool operator<(const FVector& Lhs, const FVector& Rhs);
+inline bool operator>(const FVector& Lhs, const FVector& Rhs);
 
-template<> static inline FVector openvdb::zeroVal<FVector>()
+template<> inline FVector openvdb::zeroVal<FVector>()
 {
     return FVector::ZeroVector;
 }
@@ -278,13 +278,13 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FVector>()
 
 //////////////////////////////////
 //FVector4
-static inline FVector4 Abs(const FVector4 &Vec);
-static inline std::ostream& operator<<(std::ostream& os, const FVector4& Vec);
-static inline FVector4 operator+(const FVector4& Vec, const float& Val);
-static inline bool operator<(const FVector4& Lhs, const FVector4& Rhs);
-static inline bool operator>(const FVector4& Lhs, const FVector4& Rhs);
+inline FVector4 Abs(const FVector4 &Vec);
+inline std::ostream& operator<<(std::ostream& os, const FVector4& Vec);
+inline FVector4 operator+(const FVector4& Vec, const float& Val);
+inline bool operator<(const FVector4& Lhs, const FVector4& Rhs);
+inline bool operator>(const FVector4& Lhs, const FVector4& Rhs);
 
-template<> static inline FVector4 openvdb::zeroVal<FVector4>()
+template<> inline FVector4 openvdb::zeroVal<FVector4>()
 {
     return FVector4(ForceInitToZero);
 }
@@ -296,14 +296,14 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FVector4>()
 
 //////////////////////////////////
 //FIntVector2
-static inline FIntVector2 Abs(const FIntVector2 &IVec);
-static inline std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec);
-static inline FIntVector2 operator+(const FIntVector2& Vec, const float& Val);
-static inline FIntVector2 operator-(const FIntVector2& Vec);
-static inline bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs);
-static inline bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs);
+inline FIntVector2 Abs(const FIntVector2 &IVec);
+inline std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec);
+inline FIntVector2 operator+(const FIntVector2& Vec, const float& Val);
+inline FIntVector2 operator-(const FIntVector2& Vec);
+inline bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs);
+inline bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs);
 
-template<> static inline FIntVector2 openvdb::zeroVal<FIntVector2>()
+template<> inline FIntVector2 openvdb::zeroVal<FIntVector2>()
 {
     return FIntVector2::ZeroValue;
 }
@@ -315,14 +315,14 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FIntVector2>()
 
 //////////////////////////////////
 //FIntVector
-static inline FIntVector Abs(const FIntVector &IVec);
-static inline std::ostream& operator<<(std::ostream& os, const FIntVector& Vec);
-static inline FIntVector operator+(const FIntVector& Vec, const float& Val);
-static inline FIntVector operator-(const FIntVector& Vec);
-static inline bool operator<(const FIntVector& Lhs, const FIntVector& Rhs);
-static inline bool operator>(const FIntVector& Lhs, const FIntVector& Rhs);
+inline FIntVector Abs(const FIntVector &IVec);
+inline std::ostream& operator<<(std::ostream& os, const FIntVector& Vec);
+inline FIntVector operator+(const FIntVector& Vec, const float& Val);
+inline FIntVector operator-(const FIntVector& Vec);
+inline bool operator<(const FIntVector& Lhs, const FIntVector& Rhs);
+inline bool operator>(const FIntVector& Lhs, const FIntVector& Rhs);
 
-template<> static inline FIntVector openvdb::zeroVal<FIntVector>()
+template<> inline FIntVector openvdb::zeroVal<FIntVector>()
 {
     return FIntVector::ZeroValue;
 }
@@ -334,16 +334,16 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FIntVector>()
 
 //////////////////////////////////
 //FIntVector4
-static inline FIntVector4 Abs(const FIntVector4 &IVec);
-static inline std::ostream& operator<<(std::ostream& os, const FIntVector4& Vec);
-static inline FIntVector4 operator+(const FIntVector4& Vec, const float& Val);
-static inline FIntVector4 operator+(const FIntVector4& Lhs, const FIntVector4& Rhs);
-static inline FIntVector4 operator-(const FIntVector4& Lhs, const FIntVector4& Rhs);
-static inline FIntVector4 operator-(const FIntVector4& Vec);
-static inline bool operator<(const FIntVector4& Lhs, const FIntVector4& Rhs);
-static inline bool operator>(const FIntVector4& Lhs, const FIntVector4& Rhs);
+inline FIntVector4 Abs(const FIntVector4 &IVec);
+inline std::ostream& operator<<(std::ostream& os, const FIntVector4& Vec);
+inline FIntVector4 operator+(const FIntVector4& Vec, const float& Val);
+inline FIntVector4 operator+(const FIntVector4& Lhs, const FIntVector4& Rhs);
+inline FIntVector4 operator-(const FIntVector4& Lhs, const FIntVector4& Rhs);
+inline FIntVector4 operator-(const FIntVector4& Vec);
+inline bool operator<(const FIntVector4& Lhs, const FIntVector4& Rhs);
+inline bool operator>(const FIntVector4& Lhs, const FIntVector4& Rhs);
 
-template<> static inline FIntVector4 openvdb::zeroVal<FIntVector4>()
+template<> inline FIntVector4 openvdb::zeroVal<FIntVector4>()
 {
     return FIntVector4(ForceInitToZero);
 }
@@ -355,16 +355,16 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FIntVector4>()
 
 //////////////////////////////////
 //FUintVector4
-static inline FUintVector4 Abs(const FUintVector4 &UVec);
-static inline std::ostream& operator<<(std::ostream& os, const FUintVector4& Vec);
-static inline FUintVector4 operator+(const FUintVector4& Vec, const float& Val);
-static inline FUintVector4 operator+(const FUintVector4& Lhs, const FUintVector4& Rhs);
-static inline FUintVector4 operator-(const FUintVector4& Lhs, const FUintVector4& Rhs);
-static inline FUintVector4 operator-(const FUintVector4& Vec);
-static inline bool operator<(const FUintVector4& Lhs, const FUintVector4& Rhs);
-static inline bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs);
+inline FUintVector4 Abs(const FUintVector4 &UVec);
+inline std::ostream& operator<<(std::ostream& os, const FUintVector4& Vec);
+inline FUintVector4 operator+(const FUintVector4& Vec, const float& Val);
+inline FUintVector4 operator+(const FUintVector4& Lhs, const FUintVector4& Rhs);
+inline FUintVector4 operator-(const FUintVector4& Lhs, const FUintVector4& Rhs);
+inline FUintVector4 operator-(const FUintVector4& Vec);
+inline bool operator<(const FUintVector4& Lhs, const FUintVector4& Rhs);
+inline bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs);
 
-template<> static inline FUintVector4 openvdb::zeroVal<FUintVector4>()
+template<> inline FUintVector4 openvdb::zeroVal<FUintVector4>()
 {
     return FUintVector4(ForceInitToZero);
 }
@@ -376,9 +376,9 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FUintVector4>()
 
 //////////////////////////////////
 //FMatrix
-static inline std::ostream& operator<<(std::ostream& os, const FMatrix& Mat);
+inline std::ostream& operator<<(std::ostream& os, const FMatrix& Mat);
 
-template<> static inline FMatrix openvdb::zeroVal<FMatrix>()
+template<> inline FMatrix openvdb::zeroVal<FMatrix>()
 {
     return FMatrix(ForceInitToZero);
 }
@@ -390,9 +390,9 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FMatrix>()
 
 //////////////////////////////////
 //FString
-static inline std::ostream& operator<<(std::ostream& os, const FString& Str);
+inline std::ostream& operator<<(std::ostream& os, const FString& Str);
 
-template<> static inline FString openvdb::zeroVal<FString>()
+template<> inline FString openvdb::zeroVal<FString>()
 {
     return FString();
 }

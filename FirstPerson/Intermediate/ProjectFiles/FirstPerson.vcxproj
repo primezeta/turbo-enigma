@@ -587,13 +587,15 @@
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\ArchiveMetaValue.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\ArchiveTransformMap.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\EngineGridTypes.h" />
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\GridSpecifier.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\IntVector2.h" />
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\MetadataSpecifier.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelData.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabase.h" />
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseGridTypeSpecifier.h" />
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseMetadataTypeSpecifier.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseStatics.h" />
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseTransformMapTypeSpecifier.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseTypeFactory.h" />
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseTypeSpecifier.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelMate.h" />
 		<None Include="..\..\Plugins\VoxelMate\VoxelMate.uplugin" />
 		<None Include="..\..\Plugins\VoxelMate\Resources\Icon128.png" />

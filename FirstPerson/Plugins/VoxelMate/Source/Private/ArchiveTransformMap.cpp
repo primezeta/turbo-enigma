@@ -7,6 +7,7 @@ void FTransformMapFactory::Serialize(FArchive& Ar)
 {
     if (Ar.IsLoading())
     {
+        const FString TypeName = EnumValueToString<EVoxelDatabaseType>(Type);
         ValuePtr = FTransformMapFactory::Create(TypeName);
     }
 

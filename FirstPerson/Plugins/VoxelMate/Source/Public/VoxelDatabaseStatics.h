@@ -88,6 +88,7 @@ namespace VoxelDatabaseStatics
 
     struct GridStatics : private openvdb::GridBase
     {
+        const static FString MetaNameGridDisplayName;
         const static FString MetaNameGridClass;
         const static FString MetaNameGridCreator;
         const static FString MetaNameGridName;

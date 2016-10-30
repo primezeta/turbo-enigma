@@ -19,6 +19,7 @@ void FVoxelMateModule::ShutdownModule()
 	// we call this function before unloading the module.
 }
 
+const FString VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayName = TEXT("GridDisplayName");
 const FString VoxelDatabaseStatics::GridStatics::MetaNameGridClass       = UTF8_TO_TCHAR(openvdb::GridBase::META_GRID_CLASS);
 const FString VoxelDatabaseStatics::GridStatics::MetaNameGridCreator     = UTF8_TO_TCHAR(openvdb::GridBase::META_GRID_CREATOR);
 const FString VoxelDatabaseStatics::GridStatics::MetaNameGridName        = UTF8_TO_TCHAR(openvdb::GridBase::META_GRID_NAME);

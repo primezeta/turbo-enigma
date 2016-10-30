@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineMinimal.h"
+#include "VoxelDatabaseMetadataTypeSpecifier.h"
 #include "VoxelDatabaseTypeFactory.h"
 
 struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
@@ -21,6 +22,13 @@ struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
     static ValueTypePtr Create(const FString& TypeName)
     {
         return openvdb::Metadata::createMetadata(TCHAR_TO_UTF8(*TypeName));
+    }
+
+    static ValueTypePtr Create(const FVoxelDatabaseMetadataTypeSpecifier& MetadataTypeSpecifier)
+    {
+        //TODO exceptions
+        const FString TypeName = MetadataTypeSpecifier.GetTypeName();
+        return Create(TypeName);
     }
 
     static void Register(const FString& TypeName, openvdb::Metadata::Ptr(*createMetadata)())

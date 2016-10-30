@@ -8,6 +8,7 @@ void FGridFactory::Serialize(FArchive& Ar)
 {
     if (Ar.IsLoading())
     {
+        const FString TypeName = EnumValueToString<EVoxelDatabaseType>(Type);
         ValuePtr = FGridFactory::Create(TypeName);
     }
 
