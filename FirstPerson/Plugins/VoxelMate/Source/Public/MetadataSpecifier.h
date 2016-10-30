@@ -3,14 +3,14 @@
 #include "EngineGridTypes.h"
 #include "MetadataSpecifier.generated.h"
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FMetadataSpecifier
 {
     GENERATED_BODY()
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
         EVoxelDatabaseType Type;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
         FString Name;
 };

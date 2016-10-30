@@ -3,17 +3,17 @@
 #include "EngineGridTypes.h"
 #include "GridSpecifier.generated.h"
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FGridSpecifier
 {
     GENERATED_BODY()
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
         EVoxelDatabaseType Type;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
         FString Name;
 
-    UPROPERTY()
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
         bool SaveFloatAsHalf;
 };
