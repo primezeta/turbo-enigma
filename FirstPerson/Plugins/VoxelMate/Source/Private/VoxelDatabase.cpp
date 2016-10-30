@@ -49,9 +49,6 @@ void UVoxelDatabase::InitializeGridTypes()
     FGridFactory::RegisterGrid3<FPointIndex64>();
     FGridFactory::RegisterGrid4<FPointIndex64>();
     FGridFactory::RegisterGrid5<FPointIndex64>();
-    FGridFactory::RegisterGrid3<openvdb::Name>(); //TODO register FString instead?
-    FGridFactory::RegisterGrid4<openvdb::Name>(); //TODO register FString instead?
-    FGridFactory::RegisterGrid5<openvdb::Name>(); //TODO register FString instead?
 
     //Register metadata types per supported type
     FMetaValueFactory::ClearRegistry();
@@ -67,7 +64,7 @@ void UVoxelDatabase::InitializeGridTypes()
     FMetaValueFactory::RegisterMetaType<FMatrix>();
     FMetaValueFactory::RegisterMetaType<FPointIndex32>();
     FMetaValueFactory::RegisterMetaType<FPointIndex64>();
-    FMetaValueFactory::RegisterMetaType<openvdb::Name>();
+    FMetaValueFactory::RegisterMetaType<FString>();
 
     //Register transform map types per supported type
     FTransformMapFactory::ClearRegistry();

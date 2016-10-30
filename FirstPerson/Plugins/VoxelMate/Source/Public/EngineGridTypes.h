@@ -6,6 +6,7 @@
 #include "Math/Vector4.h"
 #include "Math/IntVector.h"
 #include "IntVector2.h"
+#include <typeinfo>
 
 #pragma warning(1:4211 4800 4503 4146)
 #include <openvdb/openvdb.h>
@@ -122,7 +123,7 @@ enum class EGridCompression : uint8
     GridCompressionBlosc      = 0x4
 };
 
-inline bool GridCompressionFlagsAreInRange(uint8 GridCompressionFlags)
+static inline bool GridCompressionFlagsAreInRange(uint8 GridCompressionFlags)
 {
     const uint8 AllCompressionFlagBits =
         (uint8)EGridCompression::GridCompressionNone       &
@@ -132,34 +133,42 @@ inline bool GridCompressionFlagsAreInRange(uint8 GridCompressionFlags)
     return (GridCompressionFlags & (~AllCompressionFlagBits)) == 0;
 }
 
-inline bool GridCompressionIsNone(uint8 GridCompressionFlags)
+static inline bool GridCompressionIsNone(uint8 GridCompressionFlags)
 {
     return GridCompressionFlags == (uint8)EGridCompression::GridCompressionNone;
 }
 
-inline bool GridCompressionIsZip(uint8 GridCompressionFlags)
+static inline bool GridCompressionIsZip(uint8 GridCompressionFlags)
 {
     return (GridCompressionFlags & (uint8)EGridCompression::GridCompressionZip) > 0;
 }
 
-inline bool GridCompressionHasActiveMask(uint8 GridCompressionFlags)
+static inline bool GridCompressionHasActiveMask(uint8 GridCompressionFlags)
 {
     return (GridCompressionFlags & (uint8)EGridCompression::GridCompressionActiveMask) > 0;
 }
 
-inline bool GridCompressionHasBlosc (uint8 GridCompressionFlags)
+static inline bool GridCompressionHasBlosc (uint8 GridCompressionFlags)
 {
     return (GridCompressionFlags & (uint8)EGridCompression::GridCompressionBlosc) > 0;
 }
 
-inline uint8 SetGridCompressionFlagOn(uint8 GridCompressionFlags, EGridCompression CompressionFlag)
+static inline uint8 SetGridCompressionFlagOn(uint8 GridCompressionFlags, EGridCompression CompressionFlag)
 {
     return GridCompressionFlags | (uint8)CompressionFlag;
 }
 
-inline uint8 SetGridCompressionFlagOff(uint8 GridCompressionFlags, EGridCompression CompressionFlag)
+static inline uint8 SetGridCompressionFlagOff(uint8 GridCompressionFlags, EGridCompression CompressionFlag)
 {
     return GridCompressionFlags & (~(uint8)CompressionFlag);
+}
+
+template<typename EnumType>
+FString EnumValueToString(EnumType Value)
+{
+    const UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, UTF8_TO_TCHAR(typeid(EnumType).name()));
+    check(Enum != nullptr);
+    return Enum->GetNameByValue((uint8)Value).ToString();
 }
 
 //openvdb::GRID_UNKNOWN
@@ -193,11 +202,23 @@ enum class EVectorTypeClass : uint8
 };
 
 UENUM(BlueprintType)
-enum class ETreeType : uint8
+enum class EVoxelDatabaseType : uint8
 {
-    Tree3,
-    Tree4,
-    Tree5
+    BoolType           UMETA(DisplayName = "bool"),
+    FloatType          UMETA(DisplayName = "float"),
+    DoubleType         UMETA(DisplayName = "double"),
+    Int32Type          UMETA(DisplayName = "int32"),
+    Int64Type          UMETA(DisplayName = "int64"),
+    FloatVector2DType  UMETA(DisplayName = "FVector2D"),
+    FloatVector3DType  UMETA(DisplayName = "FVector"),
+    FloatVector4DType  UMETA(DisplayName = "FVector4"),
+    Int32Vector2DType  UMETA(DisplayName = "FIntVector2"),
+    Int32Vector3DType  UMETA(DisplayName = "FIntVector"),
+    Int32Vector4DType  UMETA(DisplayName = "FIntVector4"),
+    Uint32Vector4DType UMETA(DisplayName = "FUintVector4"),
+    PointIndex32Type   UMETA(DisplayName = "FPointIndex32"),
+    PointIndex64Type   UMETA(DisplayName = "FPointIndex64"),
+    StringType         UMETA(DisplayName = "FString"),
 };
 
 namespace GridExceptions
@@ -215,9 +236,9 @@ namespace GridExceptions
     typedef openvdb::ValueError FValueError;
 }
 
-template<typename Type> inline FString VoxelDatabaseTypeName()
+template<typename Type> inline const TCHAR* VoxelDatabaseTypeName()
 {
-    return FString(UTF8_TO_TCHAR(openvdb::typeNameAsString<Type>()));
+    return UTF8_TO_TCHAR(typeid(Type).name());
 }
 
 //////////////////////////////////
@@ -225,200 +246,214 @@ template<typename Type> inline FString VoxelDatabaseTypeName()
 
 //////////////////////////////////
 //FVector2D
-inline FVector2D Abs(const FVector2D& Vec);
-inline std::ostream& operator<<(std::ostream& os, const FVector2D& Vec);
+static inline FVector2D Abs(const FVector2D& Vec);
+static inline std::ostream& operator<<(std::ostream& os, const FVector2D& Vec);
 
-template<> inline FVector2D openvdb::zeroVal<FVector2D>()
+template<> static inline FVector2D openvdb::zeroVal<FVector2D>()
 {
     return FVector2D::ZeroVector;
 }
 
-template<> inline const char* openvdb::typeNameAsString<FVector2D>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FVector2D>()
 {
-    return "Vector 2D";
+    return TEXT("Float Vector 2D");
 }
 
 //////////////////////////////////
 //FVector
-inline FVector Abs(const FVector &Vec);
-inline std::ostream& operator<<(std::ostream& os, const FVector& Vec);
-inline bool operator<(const FVector& Lhs, const FVector& Rhs);
-inline bool operator>(const FVector& Lhs, const FVector& Rhs);
+static inline FVector Abs(const FVector &Vec);
+static inline std::ostream& operator<<(std::ostream& os, const FVector& Vec);
+static inline bool operator<(const FVector& Lhs, const FVector& Rhs);
+static inline bool operator>(const FVector& Lhs, const FVector& Rhs);
 
-template<> inline FVector openvdb::zeroVal<FVector>()
+template<> static inline FVector openvdb::zeroVal<FVector>()
 {
     return FVector::ZeroVector;
 }
 
-template<> inline const char* openvdb::typeNameAsString<FVector>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FVector>()
 {
-    return "Vector 3D";
+    return TEXT("Float Vector 3D");
 }
 
 //////////////////////////////////
 //FVector4
-inline FVector4 Abs(const FVector4 &Vec);
-inline std::ostream& operator<<(std::ostream& os, const FVector4& Vec);
-inline FVector4 operator+(const FVector4& Vec, const float& Val);
-inline bool operator<(const FVector4& Lhs, const FVector4& Rhs);
-inline bool operator>(const FVector4& Lhs, const FVector4& Rhs);
+static inline FVector4 Abs(const FVector4 &Vec);
+static inline std::ostream& operator<<(std::ostream& os, const FVector4& Vec);
+static inline FVector4 operator+(const FVector4& Vec, const float& Val);
+static inline bool operator<(const FVector4& Lhs, const FVector4& Rhs);
+static inline bool operator>(const FVector4& Lhs, const FVector4& Rhs);
 
-template<> inline FVector4 openvdb::zeroVal<FVector4>()
+template<> static inline FVector4 openvdb::zeroVal<FVector4>()
 {
     return FVector4(ForceInitToZero);
 }
 
-template<> inline const char* openvdb::typeNameAsString<FVector4>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FVector4>()
 {
-    return "Vector 4D";
+    return TEXT("Float Vector 4D");
 }
 
 //////////////////////////////////
 //FIntVector2
-inline FIntVector2 Abs(const FIntVector2 &IVec);
-inline std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec);
-inline FIntVector2 operator+(const FIntVector2& Vec, const float& Val);
-inline FIntVector2 operator-(const FIntVector2& Vec);
-inline bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs);
-inline bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs);
+static inline FIntVector2 Abs(const FIntVector2 &IVec);
+static inline std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec);
+static inline FIntVector2 operator+(const FIntVector2& Vec, const float& Val);
+static inline FIntVector2 operator-(const FIntVector2& Vec);
+static inline bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs);
+static inline bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs);
 
-template<> inline FIntVector2 openvdb::zeroVal<FIntVector2>()
+template<> static inline FIntVector2 openvdb::zeroVal<FIntVector2>()
 {
     return FIntVector2::ZeroValue;
 }
 
-template<> inline const char* openvdb::typeNameAsString<FIntVector2>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FIntVector2>()
 {
-    return "IntVector 2D";
+    return TEXT("Int32 Vector 2D");
 }
 
 //////////////////////////////////
 //FIntVector
-inline FIntVector Abs(const FIntVector &IVec);
-inline std::ostream& operator<<(std::ostream& os, const FIntVector& Vec);
-inline FIntVector operator+(const FIntVector& Vec, const float& Val);
-inline FIntVector operator-(const FIntVector& Vec);
-inline bool operator<(const FIntVector& Lhs, const FIntVector& Rhs);
-inline bool operator>(const FIntVector& Lhs, const FIntVector& Rhs);
+static inline FIntVector Abs(const FIntVector &IVec);
+static inline std::ostream& operator<<(std::ostream& os, const FIntVector& Vec);
+static inline FIntVector operator+(const FIntVector& Vec, const float& Val);
+static inline FIntVector operator-(const FIntVector& Vec);
+static inline bool operator<(const FIntVector& Lhs, const FIntVector& Rhs);
+static inline bool operator>(const FIntVector& Lhs, const FIntVector& Rhs);
 
-template<> inline FIntVector openvdb::zeroVal<FIntVector>()
+template<> static inline FIntVector openvdb::zeroVal<FIntVector>()
 {
     return FIntVector::ZeroValue;
 }
 
-template<> inline const char* openvdb::typeNameAsString<FIntVector>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FIntVector>()
 {
-    return "IntVector 3D";
+    return TEXT("Int32 Vector 3D");
 }
 
 //////////////////////////////////
 //FIntVector4
-inline FIntVector4 Abs(const FIntVector4 &IVec);
-inline std::ostream& operator<<(std::ostream& os, const FIntVector4& Vec);
-inline FIntVector4 operator+(const FIntVector4& Vec, const float& Val);
-inline FIntVector4 operator+(const FIntVector4& Lhs, const FIntVector4& Rhs);
-inline FIntVector4 operator-(const FIntVector4& Lhs, const FIntVector4& Rhs);
-inline FIntVector4 operator-(const FIntVector4& Vec);
-inline bool operator<(const FIntVector4& Lhs, const FIntVector4& Rhs);
-inline bool operator>(const FIntVector4& Lhs, const FIntVector4& Rhs);
+static inline FIntVector4 Abs(const FIntVector4 &IVec);
+static inline std::ostream& operator<<(std::ostream& os, const FIntVector4& Vec);
+static inline FIntVector4 operator+(const FIntVector4& Vec, const float& Val);
+static inline FIntVector4 operator+(const FIntVector4& Lhs, const FIntVector4& Rhs);
+static inline FIntVector4 operator-(const FIntVector4& Lhs, const FIntVector4& Rhs);
+static inline FIntVector4 operator-(const FIntVector4& Vec);
+static inline bool operator<(const FIntVector4& Lhs, const FIntVector4& Rhs);
+static inline bool operator>(const FIntVector4& Lhs, const FIntVector4& Rhs);
 
-template<> inline FIntVector4 openvdb::zeroVal<FIntVector4>()
+template<> static inline FIntVector4 openvdb::zeroVal<FIntVector4>()
 {
     return FIntVector4(ForceInitToZero);
 }
 
-template<> inline const char* openvdb::typeNameAsString<FIntVector4>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FIntVector4>()
 {
-    return "IntVector 4D";
+    return TEXT("Int32 Vector 4D");
 }
 
 //////////////////////////////////
 //FUintVector4
-inline FUintVector4 Abs(const FUintVector4 &UVec);
-inline std::ostream& operator<<(std::ostream& os, const FUintVector4& Vec);
-inline FUintVector4 operator+(const FUintVector4& Vec, const float& Val);
-inline FUintVector4 operator+(const FUintVector4& Lhs, const FUintVector4& Rhs);
-inline FUintVector4 operator-(const FUintVector4& Lhs, const FUintVector4& Rhs);
-inline FUintVector4 operator-(const FUintVector4& Vec);
-inline bool operator<(const FUintVector4& Lhs, const FUintVector4& Rhs);
-inline bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs);
+static inline FUintVector4 Abs(const FUintVector4 &UVec);
+static inline std::ostream& operator<<(std::ostream& os, const FUintVector4& Vec);
+static inline FUintVector4 operator+(const FUintVector4& Vec, const float& Val);
+static inline FUintVector4 operator+(const FUintVector4& Lhs, const FUintVector4& Rhs);
+static inline FUintVector4 operator-(const FUintVector4& Lhs, const FUintVector4& Rhs);
+static inline FUintVector4 operator-(const FUintVector4& Vec);
+static inline bool operator<(const FUintVector4& Lhs, const FUintVector4& Rhs);
+static inline bool operator>(const FUintVector4& Lhs, const FUintVector4& Rhs);
 
-template<> inline FUintVector4 openvdb::zeroVal<FUintVector4>()
+template<> static inline FUintVector4 openvdb::zeroVal<FUintVector4>()
 {
     return FUintVector4(ForceInitToZero);
 }
 
-template<> inline const char* openvdb::typeNameAsString<FUintVector4>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FUintVector4>()
 {
-    return "UIntVector 4D";
+    return TEXT("UInt32 Vector 4D");
 }
 
 //////////////////////////////////
 //FMatrix
-inline std::ostream& operator<<(std::ostream& os, const FMatrix& Mat);
+static inline std::ostream& operator<<(std::ostream& os, const FMatrix& Mat);
 
-template<> inline FMatrix openvdb::zeroVal<FMatrix>()
+template<> static inline FMatrix openvdb::zeroVal<FMatrix>()
 {
     return FMatrix(ForceInitToZero);
 }
 
-template<> inline const char* openvdb::typeNameAsString<FMatrix>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FMatrix>()
 {
-    return "Matrix 4x4";
+    return TEXT("Matrix 4x4");
+}
+
+//////////////////////////////////
+//FString
+static inline std::ostream& operator<<(std::ostream& os, const FString& Str);
+
+template<> static inline FString openvdb::zeroVal<FString>()
+{
+    return FString();
+}
+
+template<> inline const TCHAR* VoxelDatabaseTypeName<FString>()
+{
+    return TEXT("FString");
 }
 
 //////////////////////////////////
 //FTransformAffineMap
-template<> inline const char* openvdb::typeNameAsString<FTransformAffineMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformAffineMap>()
 {
-    return "Affine";
+    return TEXT("Affine Transform");
 }
 
 //////////////////////////////////
 //FTransformUnitaryMap
-template<> inline const char* openvdb::typeNameAsString<FTransformUnitaryMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformUnitaryMap>()
 {
-    return "Unitary";
+    return TEXT("Unitary Transform");
 }
 
 //////////////////////////////////
 //FTransformScaleMap
-template<> inline const char* openvdb::typeNameAsString<FTransformScaleMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformScaleMap>()
 {
-    return "Scaling";
+    return TEXT("Scale Transform");
 }
 
 //////////////////////////////////
 //FTransformUniformScaleMap
-template<> inline const char* openvdb::typeNameAsString<FTransformUniformScaleMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformUniformScaleMap>()
 {
-    return "Uniform Scaling";
+    return TEXT("Uniform Scale Transform");
 }
 
 //////////////////////////////////
 //FTransformTranslationMap
-template<> inline const char* openvdb::typeNameAsString<FTransformTranslationMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformTranslationMap>()
 {
-    return "Translation";
+    return TEXT("Translation Transform");
 }
 
 //////////////////////////////////
 //FTransformScaleTranslateMap
-template<> inline const char* openvdb::typeNameAsString<FTransformScaleTranslateMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformScaleTranslateMap>()
 {
-    return "Scale and Translation";
+    return TEXT("Scale and Translation Transform");
 }
 
 //////////////////////////////////
 //FTransformUniformScaleTranslateMap
-template<> inline const char* openvdb::typeNameAsString<FTransformUniformScaleTranslateMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformUniformScaleTranslateMap>()
 {
-    return "Uniform Scaling and Translation";
+    return TEXT("Uniform Scaling and Translation Transform");
 }
 
 //////////////////////////////////
 //FTransformNonlinearFrustumMap
-template<> inline const char* openvdb::typeNameAsString<FTransformNonlinearFrustumMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformNonlinearFrustumMap>()
 {
-    return "Nonlinear Frustum";
+    return TEXT("Nonlinear Frustum Transform");
 }

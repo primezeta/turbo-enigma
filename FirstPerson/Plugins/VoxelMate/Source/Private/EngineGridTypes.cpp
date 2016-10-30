@@ -239,3 +239,9 @@ std::ostream& operator<<(std::ostream& os, const FMatrix& Mat)
 	os << Mat.M[3][0] << Mat.M[3][1] << Mat.M[3][2] << Mat.M[3][3];
 	return os;
 }
+
+std::ostream& operator<<(std::ostream& os, const FString& Str)
+{
+    os << *Str;
+    return os;
+}
