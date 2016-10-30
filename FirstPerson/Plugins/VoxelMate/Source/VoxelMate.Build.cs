@@ -9,6 +9,13 @@ public class VoxelMate : ModuleRules
         bUseRTTI = true;
         bEnableExceptions = true;
 
+        PublicSystemIncludePaths.AddRange(
+            new string[]
+            {
+                Path.Combine(ModuleDirectory, "Private"),
+            }
+            );
+
         PublicIncludePaths.AddRange(
 			new string[] {
 				"VoxelMate/Public"
