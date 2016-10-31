@@ -36,24 +36,4 @@ public:
             const FString TypeName = EnumValueToString<EVoxelDatabaseType>(Type);
             return TypeName;
         }
-
-#if WITH_EDITOR
-    virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
-    {
-        //if (PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Add       ||
-        //    PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Duplicate ||
-        //    PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Insert)
-        //{
-        //    const int32& Index = PropertyChangedEvent.GetArrayIndex();
-        //    const FString& GridName = Grids[Index];
-        //    AddGrid()
-        //}
-        //else if (PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Clear ||
-        //         PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Delete)
-        //{
-
-        //}
-        Super::PostEditChangeProperty(PropertyChangedEvent);
-    }
-#endif // WITH_EDITOR
 };
