@@ -48,7 +48,7 @@
 USTRUCT()
 struct FVoxelData
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 	typedef float DataType;
 

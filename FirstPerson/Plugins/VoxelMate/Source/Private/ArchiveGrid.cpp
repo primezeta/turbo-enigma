@@ -59,7 +59,7 @@ FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid)
     {
         check(!IsLoading); //If loading but the topology byte count was 0 then something went wrong while writing
 
-                           //Calculate the unknown topology size by writing to a back_inserter
+        //Calculate the unknown topology size by writing to a back_inserter
         std::vector<char> TopologyBytes;
         boost::iostreams::back_insert_device<std::vector<char>> TopologySink(TopologyBytes);
         boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char>>> TopologyStream(TopologySink);
