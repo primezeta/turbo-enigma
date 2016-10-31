@@ -24,7 +24,7 @@ struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
         return openvdb::Metadata::createMetadata(TCHAR_TO_UTF8(*TypeName));
     }
 
-    static ValueTypePtr Create(const FVoxelDatabaseMetadataTypeSpecifier& MetadataTypeSpecifier)
+    static ValueTypePtr Create(const UVoxelDatabaseMetadataTypeSpecifier& MetadataTypeSpecifier)
     {
         //TODO exceptions
         const FString TypeName = MetadataTypeSpecifier.GetTypeName();

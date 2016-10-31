@@ -44,7 +44,7 @@ namespace VoxelDatabaseStatics
         return 5 * SizeOf<openvdb::Vec3d>();
     }
 
-    template<> FORCEINLINE int32 SizeOf<FTransformTranslationMap>()
+    template<> FORCEINLINE int32 SizeOf<FTransformTranslateMap>()
     {
         //Size of the translation (is an openvdb::Vec3d)
         return SizeOf<openvdb::Vec3d>();
@@ -138,9 +138,9 @@ namespace VoxelDatabaseStatics
             {
                 MapSize = SizeOf<FTransformScaleMap>();
             }
-            else if (TypeStr == FTransformTranslationMap::mapType())
+            else if (TypeStr == FTransformTranslateMap::mapType())
             {
-                MapSize = SizeOf<FTransformTranslationMap>();
+                MapSize = SizeOf<FTransformTranslateMap>();
             }
             else if (TypeStr == FTransformScaleTranslateMap::mapType())
             {

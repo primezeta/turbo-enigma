@@ -25,7 +25,7 @@ struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::Ma
         return openvdb::math::MapRegistry::createMap(TCHAR_TO_UTF8(*TypeName));
     }
 
-    static ValueTypePtr Create(const FVoxelDatabaseTransformMapTypeSpecifier& TransformMapTypeSpecifier)
+    static ValueTypePtr Create(const UVoxelDatabaseTransformMapTypeSpecifier& TransformMapTypeSpecifier)
     {
         const FString TypeName = TransformMapTypeSpecifier.GetTypeName();
         return Create(TypeName);

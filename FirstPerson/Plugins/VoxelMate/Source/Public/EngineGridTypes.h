@@ -5,13 +5,12 @@
 #include "Math/Vector.h"
 #include "Math/Vector4.h"
 #include "Math/IntVector.h"
-#include "IntVector2.h"
 #include <typeinfo>
 
 #pragma warning(1:4211 4800 4503 4146)
 #include <openvdb/openvdb.h>
 
-struct FVoxelDatabaseHeader
+struct FVoxelDatabaseHeader //TODO
 {
     FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FVoxelDatabaseHeader& VoxelDatabaseHeaderHeader)
     {
@@ -19,66 +18,6 @@ struct FVoxelDatabaseHeader
         return Ar;
     }
 };
-
-//TODO: Reorganize .h files and move this definition
-FORCEINLINE FArchive& operator<<(FArchive& Ar, openvdb::Name& Name)
-{
-    if (Ar.IsLoading())
-    {
-        int32 SaveNum = -1;
-        Ar << SaveNum;
-
-        if (SaveNum < 0)
-        {
-            //Archive is corrupted
-            Ar.ArIsError = 1;
-            Ar.ArIsCriticalError = 1;
-            //UE_LOG(LogNetSerialization, Error, TEXT("Archive is corrupted")); TODO openvdb::Name logging
-            return Ar;
-        }
-
-        if (SaveNum > Name.max_size())
-        {
-            //Number of characters too large
-            Ar.ArIsError = 1;
-            Ar.ArIsCriticalError = 1;
-            //UE_LOG(LogNetSerialization, Error, TEXT("String is too large")); TODO openvdb::Name logging
-            return Ar;
-        }
-
-        auto MaxSerializeSize = Ar.GetMaxSerializeSize();
-        // Protect against network packets allocating too much memory
-        if ((MaxSerializeSize > 0) && (SaveNum > MaxSerializeSize))
-        {
-            Ar.ArIsError = 1;
-            Ar.ArIsCriticalError = 1;
-            //UE_LOG(LogNetSerialization, Error, TEXT("String is too large")); TODO openvdb::Name logging
-            return Ar;
-        }
-
-        // Resize the string only if it passes the above tests to prevent rogue packets from crashing
-        Name.clear();
-        if (SaveNum)
-        {
-            Name.resize(SaveNum);
-            if (SaveNum > 1)
-            {
-                //Serialized string contains characters. Read them in
-                Ar.Serialize((void*)&Name[0], SaveNum);
-            }
-        }
-    }
-    else
-    {
-        int32 SaveNum = Name.size();
-        Ar << SaveNum;
-        if (SaveNum)
-        {
-            Ar.Serialize((void*)&Name[0], SaveNum);
-        }
-    }
-    return Ar;
-}
 
 //////////////////////////////////
 //Type definitions
@@ -95,7 +34,7 @@ typedef openvdb::math::AffineMap FTransformAffineMap;
 typedef openvdb::math::UnitaryMap FTransformUnitaryMap;
 typedef openvdb::math::ScaleMap FTransformScaleMap;
 typedef openvdb::math::UniformScaleMap FTransformUniformScaleMap;
-typedef openvdb::math::TranslationMap FTransformTranslationMap;
+typedef openvdb::math::TranslationMap FTransformTranslateMap;
 typedef openvdb::math::ScaleTranslateMap FTransformScaleTranslateMap;
 typedef openvdb::math::UniformScaleTranslateMap FTransformUniformScaleTranslateMap;
 typedef openvdb::math::NonlinearFrustumMap FTransformNonlinearFrustumMap;
@@ -212,10 +151,7 @@ enum class EVoxelDatabaseType : uint8
     FloatVector2DType  UMETA(DisplayName = "FVector2D"),
     FloatVector3DType  UMETA(DisplayName = "FVector"),
     FloatVector4DType  UMETA(DisplayName = "FVector4"),
-    Int32Vector2DType  UMETA(DisplayName = "FIntVector2"),
     Int32Vector3DType  UMETA(DisplayName = "FIntVector"),
-    Int32Vector4DType  UMETA(DisplayName = "FIntVector4"),
-    Uint32Vector4DType UMETA(DisplayName = "FUintVector4"),
     PointIndex32Type   UMETA(DisplayName = "FPointIndex32"),
     PointIndex64Type   UMETA(DisplayName = "FPointIndex64"),
     StringType         UMETA(DisplayName = "FString"),
@@ -292,25 +228,6 @@ template<> inline FVector4 openvdb::zeroVal<FVector4>()
 template<> inline const TCHAR* VoxelDatabaseTypeName<FVector4>()
 {
     return TEXT("Float Vector 4D");
-}
-
-//////////////////////////////////
-//FIntVector2
-inline FIntVector2 Abs(const FIntVector2 &IVec);
-inline std::ostream& operator<<(std::ostream& os, const FIntVector2& Vec);
-inline FIntVector2 operator+(const FIntVector2& Vec, const float& Val);
-inline FIntVector2 operator-(const FIntVector2& Vec);
-inline bool operator<(const FIntVector2& Lhs, const FIntVector2& Rhs);
-inline bool operator>(const FIntVector2& Lhs, const FIntVector2& Rhs);
-
-template<> inline FIntVector2 openvdb::zeroVal<FIntVector2>()
-{
-    return FIntVector2::ZeroValue;
-}
-
-template<> inline const TCHAR* VoxelDatabaseTypeName<FIntVector2>()
-{
-    return TEXT("Int32 Vector 2D");
 }
 
 //////////////////////////////////
@@ -432,7 +349,7 @@ template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformUniformScaleMap>(
 
 //////////////////////////////////
 //FTransformTranslationMap
-template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformTranslationMap>()
+template<> inline const TCHAR* VoxelDatabaseTypeName<FTransformTranslateMap>()
 {
     return TEXT("Translation Transform");
 }

@@ -31,9 +31,6 @@ void UVoxelDatabase::InitializeGridTypes()
     FGridFactory::RegisterGrid3<FVector4>();
     FGridFactory::RegisterGrid4<FVector4>();
     FGridFactory::RegisterGrid5<FVector4>();
-    FGridFactory::RegisterGrid3<FIntVector2>();
-    FGridFactory::RegisterGrid4<FIntVector2>();
-    FGridFactory::RegisterGrid5<FIntVector2>();
     FGridFactory::RegisterGrid3<FIntVector>();
     FGridFactory::RegisterGrid4<FIntVector>();
     FGridFactory::RegisterGrid5<FIntVector>();
@@ -57,7 +54,6 @@ void UVoxelDatabase::InitializeGridTypes()
     FMetaValueFactory::RegisterMetaType<float>();
     FMetaValueFactory::RegisterMetaType<int32>();
     FMetaValueFactory::RegisterMetaType<int64>();
-    FMetaValueFactory::RegisterMetaType<FIntVector2>();
     FMetaValueFactory::RegisterMetaType<FVector2D>();
     FMetaValueFactory::RegisterMetaType<FIntVector>();
     FMetaValueFactory::RegisterMetaType<FVector>();
@@ -72,7 +68,7 @@ void UVoxelDatabase::InitializeGridTypes()
     FTransformMapFactory::RegisterTransformMapType<FTransformUnitaryMap>();
     FTransformMapFactory::RegisterTransformMapType<FTransformScaleMap>();
     FTransformMapFactory::RegisterTransformMapType<FTransformUniformScaleMap>();
-    FTransformMapFactory::RegisterTransformMapType<FTransformTranslationMap>();
+    FTransformMapFactory::RegisterTransformMapType<FTransformTranslateMap>();
     FTransformMapFactory::RegisterTransformMapType<FTransformScaleTranslateMap>();
     FTransformMapFactory::RegisterTransformMapType<FTransformUniformScaleTranslateMap>();
     FTransformMapFactory::RegisterTransformMapType<FTransformNonlinearFrustumMap>();

@@ -23,7 +23,7 @@ struct FVoxelDatabaseTypeFactory
     FVoxelDatabaseTypeFactory()
     {}
 
-    FVoxelDatabaseTypeFactory(const FVoxelDatabaseMetadataTypeSpecifier& TypeSpecifier)
+    FVoxelDatabaseTypeFactory(const UVoxelDatabaseMetadataTypeSpecifier& TypeSpecifier)
         : TypeName(Type)
     {
         bool IsGridAdded = false;

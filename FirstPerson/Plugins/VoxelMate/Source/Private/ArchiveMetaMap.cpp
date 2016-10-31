@@ -14,14 +14,14 @@ FArchive& operator<<(FArchive& Ar, openvdb::MetaMap& MetaMap)
         for (uint64 i = 0; i < NumMetadata; ++i)
         {
             //Deserialize the meta value
-            openvdb::Name MetaName;
+            FString MetaName;
             Ar << MetaName;
-            check(MetaName.size() > 0);
+            check(MetaName.Len() > 0);
 
             MetaValueFactory.Serialize(Ar);
             try
             {
-                MetaMap.insertMeta(MetaName, *MetaValueFactory.ValuePtr);
+                MetaMap.insertMeta(TCHAR_TO_UTF8(*MetaName), *MetaValueFactory.ValuePtr);
             }
             catch (const openvdb::ValueError& e)
             {
@@ -41,7 +41,7 @@ FArchive& operator<<(FArchive& Ar, openvdb::MetaMap& MetaMap)
         for (openvdb::MetaMap::MetaIterator i = MetaMap.beginMeta(); i != MetaMap.endMeta(); ++i)
         {
             //Serialize the meta name and value
-            openvdb::Name MetaName = i->first;
+            FString MetaName = UTF8_TO_TCHAR(i->first.c_str());
             Ar << MetaName;
 
             openvdb::Metadata::Ptr& MetaValuePtr = i->second;

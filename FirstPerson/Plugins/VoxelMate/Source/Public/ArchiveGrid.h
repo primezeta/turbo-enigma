@@ -41,7 +41,7 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         return GridPtr;
     }
 
-    static openvdb::GridBase::Ptr Create(const FVoxelDatabaseGridTypeSpecifier& GridTypeSpecifier)
+    static openvdb::GridBase::Ptr Create(const UVoxelDatabaseGridTypeSpecifier& GridTypeSpecifier)
     {
         const FString TypeName = GridTypeSpecifier.GetTypeName();
         return Create(TypeName);

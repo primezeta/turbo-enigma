@@ -576,7 +576,6 @@
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\EngineGridTypes.cpp" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\GridDescriptorInOut.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Private\GridRenderResource.h" />
-		<ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\IntVector2.cpp" />
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\VoxelData.cpp" />
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\VoxelDatabase.cpp" />
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\Private\VoxelMate.cpp" />
@@ -587,7 +586,6 @@
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\ArchiveMetaValue.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\ArchiveTransformMap.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\EngineGridTypes.h" />
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\IntVector2.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelData.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabase.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseGridTypeSpecifier.h" />
@@ -595,6 +593,7 @@
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseStatics.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseTransformMapTypeSpecifier.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseTypeFactory.h" />
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseTypeProperty.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelDatabaseTypeSpecifier.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\Public\VoxelMate.h" />
 		<None Include="..\..\Plugins\VoxelMate\VoxelMate.uplugin" />
