@@ -12,7 +12,11 @@ class UVoxelDatabaseTypeSpecifier : public UObject
 public:
     UVoxelDatabaseTypeSpecifier(const FObjectInitializer& ObjectInitializer)
         : Type((EVoxelDatabaseType)0), Name(TEXT("")), NameCount(-1)
-    {}
+    {
+        Type = (EVoxelDatabaseType)0;
+        Name = TEXT("");
+        NameCount = 0;
+    }
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         EVoxelDatabaseType Type;

@@ -10,6 +10,12 @@ class UVoxelDatabaseGridTypeSpecifier : public UVoxelDatabaseTypeSpecifier
     GENERATED_BODY()
 
 public:
+    UVoxelDatabaseGridTypeSpecifier(const FObjectInitializer& ObjectInitializer)
+        : Super(ObjectInitializer)
+    {
+        SaveFloatAsHalf = false;
+    }
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         bool SaveFloatAsHalf;
 };
