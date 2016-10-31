@@ -4,7 +4,7 @@
 #include "VoxelDatabaseTypeSpecifier.h"
 #include "VoxelDatabaseMetadataTypeSpecifier.generated.h"
 
-UCLASS(BlueprintType)
+UCLASS(ClassGroup = VoxelMate, Blueprintable)
 class UVoxelDatabaseMetadataTypeSpecifier : public UVoxelDatabaseTypeSpecifier
 {
     GENERATED_BODY()

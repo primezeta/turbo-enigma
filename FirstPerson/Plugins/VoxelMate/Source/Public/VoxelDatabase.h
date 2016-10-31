@@ -9,35 +9,36 @@
 #include "VoxelDatabaseGridTypeSpecifier.h"
 #include "VoxelDatabaseMetadataTypeSpecifier.h"
 #include "VoxelDatabaseTransformMapTypeSpecifier.h"
+#include "VoxelDatabaseProxy.h"
 #include "VoxelDatabase.generated.h"
 
-UCLASS(ClassGroup=VoxelMate, BlueprintType, Blueprintable, Config=Editor)
-class VOXELMATE_API UVoxelDatabase : public UObject
+USTRUCT(BlueprintType) //TODO Maybe use Atomic = "Indicates that this struct should always be serialized as a single unit."
+struct VOXELMATE_API FVoxelDatabase
 {
     GENERATED_BODY()
 
-public:
-    UPROPERTY(Config)
+    UPROPERTY()
         FString DatabaseName;
-    UPROPERTY(Config)
+    UPROPERTY()
         bool IsGridInstancingEnabled;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) //TODO investigate making Grids NonTransactional
         TArray<UVoxelDatabaseGridTypeSpecifier*> Grids;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         TArray<UVoxelDatabaseMetadataTypeSpecifier*> Metadata;
 
-    UVoxelDatabase(const FObjectInitializer& ObjectInitializer)
-	{
-        DatabaseName = TEXT("Voxel Database");
-        IsGridInstancingEnabled = true;
-	}
+    FVoxelDatabase()
+    {}
+
+    FVoxelDatabase(const FString& Name, bool EnableGridInstancing)
+        : DatabaseName(Name), IsGridInstancingEnabled(EnableGridInstancing)
+    {}
 
     void Init(FGridRenderResource* InResource, bool bInstanced)
     {
         //TODO
     }
 
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, UVoxelDatabase& VoxelDatabase)
+    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FVoxelDatabase& VoxelDatabase)
     {
         Ar << VoxelDatabase.DatabaseHeader;
         Ar << VoxelDatabase.DatabaseMetadata;
@@ -75,129 +76,80 @@ public:
         return FTransformMapFactory::RegisteredTypeNames;
     }
 
-    void InitializeGridTypes();
+    static void InitializeTypes();
 
-    UFUNCTION()
-        bool AddGrid(UVoxelDatabaseGridTypeSpecifier* GridTypeSpecifier, FString& OutGridId)
+    bool AddGrid(UVoxelDatabaseGridTypeSpecifier* GridTypeSpecifier, FString& OutGridId)
+    {
+        check(GridTypeSpecifier); //TODO
+
+        bool IsGridAdded = false;
+        FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create(*GridTypeSpecifier);
+        if (GridPtr != nullptr)
         {
-            check(GridTypeSpecifier); //TODO
+            TFunctionRef<bool(UVoxelDatabaseGridTypeSpecifier*)> FindGridByName = [&](UVoxelDatabaseGridTypeSpecifier* Gs)
+                {
+                    return Gs && GridTypeSpecifier->Name == Gs->Name;
+                };
 
-            bool IsGridAdded = false;
-            FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create(*GridTypeSpecifier);
-            if (GridPtr != nullptr)
+            UVoxelDatabaseGridTypeSpecifier** Specifier = Grids.FindByPredicate(FindGridByName);
+            if (Specifier)
             {
-                TFunctionRef<bool(UVoxelDatabaseGridTypeSpecifier*)> FindGridByName = [&](UVoxelDatabaseGridTypeSpecifier* Gs)
-                    {
-                        return Gs && GridTypeSpecifier->Name == Gs->Name;
-                    };
-
-                UVoxelDatabaseGridTypeSpecifier** Specifier = Grids.FindByPredicate(FindGridByName);
-                if (Specifier)
-                {
-                    check(*Specifier);
-                    (*Specifier)->NameCount++;
-                }
-                else
-                {
-                    Grids.Add(GridTypeSpecifier);
-                }
-
-                const FGuid UniqueId = FGuid::NewGuid();
-                OutGridId = UniqueId.ToString();
-                GridPtr->setName(TCHAR_TO_UTF8(*OutGridId));
-                GridPtr->setSaveFloatAsHalf(GridTypeSpecifier->SaveFloatAsHalf);
-                GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayName), openvdb::TypedMetadata<FString>(GridTypeSpecifier->Name));
-
-                check(!GridData.Contains(OutGridId));
-                GridData.Add(OutGridId, GridPtr);
-                IsGridAdded = true;
+                check(*Specifier);
+                (*Specifier)->NameCount++;
             }
-            return IsGridAdded;
+            else
+            {
+                Grids.Add(GridTypeSpecifier);
+            }
+
+            const FGuid UniqueId = FGuid::NewGuid();
+            OutGridId = UniqueId.ToString();
+            GridPtr->setName(TCHAR_TO_UTF8(*OutGridId));
+            GridPtr->setSaveFloatAsHalf(GridTypeSpecifier->SaveFloatAsHalf);
+            GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayName), openvdb::TypedMetadata<FString>(GridTypeSpecifier->Name));
+
+            check(!GridData.Contains(OutGridId));
+            GridData.Add(OutGridId, GridPtr);
+            IsGridAdded = true;
         }
+        return IsGridAdded;
+    }
 
     //TODO
     //bool AddGridInstance
 
-    UFUNCTION()
-        bool AddMetadata(UVoxelDatabaseMetadataTypeSpecifier* MetadataTypeSpecifier, FString& OutMetadataId)
+    bool AddMetadata(UVoxelDatabaseMetadataTypeSpecifier* MetadataTypeSpecifier, FString& OutMetadataId)
+    {
+        check(MetadataTypeSpecifier); //TODO
+
+        bool IsMetadataAdded = false;
+        FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create(*MetadataTypeSpecifier);
+        if (MetaPtr != nullptr)
         {
-            check(MetadataTypeSpecifier); //TODO
-
-            bool IsMetadataAdded = false;
-            FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create(*MetadataTypeSpecifier);
-            if (MetaPtr != nullptr)
+            TFunctionRef<bool(UVoxelDatabaseMetadataTypeSpecifier*)> FindMetadataByName = [&](UVoxelDatabaseMetadataTypeSpecifier* Ms)
             {
-                TFunctionRef<bool(UVoxelDatabaseMetadataTypeSpecifier*)> FindMetadataByName = [&](UVoxelDatabaseMetadataTypeSpecifier* Ms)
-                    {
-                        return Ms && MetadataTypeSpecifier->Name == Ms->Name;
-                    };
+                return Ms && MetadataTypeSpecifier->Name == Ms->Name;
+            };
 
-                UVoxelDatabaseMetadataTypeSpecifier** Specifier = Metadata.FindByPredicate(FindMetadataByName);
-                if (Specifier)
-                {
-                    check(*Specifier);
-                    (*Specifier)->NameCount++;
-                }
-                else
-                {
-                    Metadata.Add(MetadataTypeSpecifier);
-                }
-
-                const FGuid UniqueId = FGuid::NewGuid();
-                OutMetadataId = UniqueId.ToString();
-
-                check(!DatabaseMetadata.Contains(OutMetadataId));
-                DatabaseMetadata.Add(OutMetadataId, MetaPtr);
-                IsMetadataAdded = true;
+            UVoxelDatabaseMetadataTypeSpecifier** Specifier = Metadata.FindByPredicate(FindMetadataByName);
+            if (Specifier)
+            {
+                check(*Specifier);
+                (*Specifier)->NameCount++;
             }
-            return IsMetadataAdded;
+            else
+            {
+                Metadata.Add(MetadataTypeSpecifier);
+            }
+
+            const FGuid UniqueId = FGuid::NewGuid();
+            OutMetadataId = UniqueId.ToString();
+
+            check(!DatabaseMetadata.Contains(OutMetadataId));
+            DatabaseMetadata.Add(OutMetadataId, MetaPtr);
+            IsMetadataAdded = true;
         }
-
-    //UObject interface
-    virtual void Serialize(FArchive& Ar) override
-    {
-        Ar << *this;
-        Super::Serialize(Ar);
-    }
-
-    virtual void BeginDestroy() override
-    {
-        Super::BeginDestroy();
-    }
-
-#if WITH_EDITOR
-    virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
-    {
-        //if (PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Add       ||
-        //    PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Duplicate ||
-        //    PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Insert)
-        //{
-        //    const int32& Index = PropertyChangedEvent.GetArrayIndex();
-        //    const FString& GridName = Grids[Index];
-        //    AddGrid()
-        //}
-        //else if (PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Clear ||
-        //         PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Delete)
-        //{
-
-        //}
-        Super::PostEditChangeProperty(PropertyChangedEvent);
-    }
-#endif // WITH_EDITOR
-
-    virtual void PostInitProperties() override
-    {
-        Super::PostInitProperties();
-    }
-
-    virtual void PreSave(const class ITargetPlatform* TargetPlatform) override
-    {
-        Super::PreSave(TargetPlatform);
-    }
-
-    virtual void PostLoad() override
-    {
-        Super::PostLoad();
+        return IsMetadataAdded;
     }
 
 protected:

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "VoxelDatabaseProxy.h"
 #include "ModuleManager.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogVoxelMate, Log, All)
@@ -14,5 +15,7 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-private:
+    static UVoxelDatabaseProxy* OpenDatabaseProxy(UObject* ProxyOwner, const FString& DatabaseName, const FString& ProxyName);
+    static void OpenDatabaseProxy(UVoxelDatabaseProxy* Proxy);
+    static void SerializeDatabase(UVoxelDatabaseProxy* Proxy, FArchive& Ar);
 };

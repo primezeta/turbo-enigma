@@ -4,7 +4,7 @@
 #include "VoxelDatabaseTypeSpecifier.h"
 #include "VoxelDatabaseTransformMapTypeSpecifier.generated.h"
 
-UCLASS(BlueprintType)
+UCLASS(ClassGroup = VoxelMate, Blueprintable)
 class UVoxelDatabaseTransformMapTypeSpecifier : public UVoxelDatabaseTypeSpecifier
 {
     GENERATED_BODY()

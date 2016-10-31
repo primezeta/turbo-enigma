@@ -3,7 +3,7 @@
 #include "EngineGridTypes.h"
 #include "VoxelDatabaseTypeProperty.generated.h"
 
-UCLASS(AutoCollapseCategories=(VoxelValue, MetadataValue, TransformMapValue))
+UCLASS(ClassGroup = VoxelMate, HideCategories=(VoxelValue, MetadataValue, TransformMapValue))
 class UVoxelDatabaseTypeProperty : public UObject
 {
     GENERATED_BODY()
@@ -30,10 +30,6 @@ public:
         FVector4 VoxelVector4D;
     UPROPERTY(Category = "VoxelValue | FIntVector", EditAnywhere)
         FIntVector VoxelIntVector3D;
-    //UPROPERTY(Category = "VoxelValue | FPointIndex32", EditAnywhere)
-    //    FPointIndex32 VoxelPointIndex32;
-    //UPROPERTY(Category = "VoxelValue | FPointIndex64", EditAnywhere)
-    //    FPointIndex64 VoxelPointIndex64;
 
     UPROPERTY(Category = "MetadataValue | Bool", EditAnywhere)
         bool MetadataBool;
@@ -51,15 +47,10 @@ public:
         FVector MetadataVector3D;
     UPROPERTY(Category = "MetadataValue | FIntVector", EditAnywhere)
         FIntVector MetadataIntVector3D;
-    //UPROPERTY(Category = "MetadataValue | FMatrix", EditAnywhere)
-    //    FMatrix MetadataMatrix;
-    //UPROPERTY(Category = "MetadataValue | FPointIndex32", EditAnywhere)
-    //    FPointIndex32 MetadataPointIndex32;
-    //UPROPERTY(Category = "MetadataValue | FPointIndex64", EditAnywhere)
-    //    FPointIndex64 MetadataPointIndex64;
-    //UPROPERTY(Category = "MetadataValue | FString", EditAnywhere)
-    //    FString MetadataString;
+    UPROPERTY(Category = "MetadataValue | FString", EditAnywhere)
+        FString MetadataString;
 
+    //TODO
     //UPROPERTY(Category = "TransformMapValue | FTransformAffineMap", EditAnywhere)
     //    FTransformAffineMap MapAffine;
     //UPROPERTY(Category = "TransformMapValue | FTransformUnitaryMap", EditAnywhere)

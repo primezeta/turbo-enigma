@@ -4,7 +4,7 @@
 #include "VoxelDatabaseTypeSpecifier.h"
 #include "VoxelDatabaseGridTypeSpecifier.generated.h"
 
-UCLASS(BlueprintType)
+UCLASS(ClassGroup = VoxelMate, Blueprintable)
 class UVoxelDatabaseGridTypeSpecifier : public UVoxelDatabaseTypeSpecifier
 {
     GENERATED_BODY()

@@ -3,7 +3,7 @@
 #include "ArchiveMetaMap.h"
 #include "VoxelDatabase.h"
 
-void UVoxelDatabase::InitializeGridTypes()
+void FVoxelDatabase::InitializeTypes()
 {
     //Register the grid types per supported type and tree
     FGridFactory::ClearRegistry();

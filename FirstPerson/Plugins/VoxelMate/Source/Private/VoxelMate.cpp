@@ -8,15 +8,71 @@
 
 #define LOCTEXT_NAMESPACE "FVoxelMateModule"
 
+TArray<TSharedRef<FVoxelDatabase>> VoxelDatabases;
+
+static FVoxelDatabase& FindOrAddDatabase(const FString& DatabaseName)
+{
+    //Search for the database by name as specified by the proxy and create a new database if it was not found
+    TFunctionRef<bool(TSharedRef<FVoxelDatabase>&)> FindDbByName = [&](TSharedRef<FVoxelDatabase>& DbRef)
+    {
+        return DbRef->DatabaseName == DatabaseName;
+    };
+
+    check(!DatabaseName.IsEmpty());
+    TSharedRef<FVoxelDatabase> DbRef;
+    TSharedRef<FVoxelDatabase>* DbRefPtr = VoxelDatabases.FindByPredicate(FindDbByName);
+    if (!DbRefPtr)
+    {
+        const bool EnableGridInstancing = true; //TODO where to change instancing option?
+        const int32 Index = VoxelDatabases.Add(TSharedRef<FVoxelDatabase>(new FVoxelDatabase(DatabaseName, EnableGridInstancing)));
+        DbRef = VoxelDatabases[Index];
+    }
+    else
+    {
+        DbRef = *DbRefPtr;
+    }
+
+    return DbRef.Get();
+}
+
 void FVoxelMateModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+    FVoxelDatabase::InitializeTypes();
 }
 
 void FVoxelMateModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+}
+
+UVoxelDatabaseProxy* FVoxelMateModule::OpenDatabaseProxy(UObject* ProxyOwner, const FString& DatabaseName, const FString& ProxyName)
+{
+    //Create the proxy which only knows the database by name
+    UVoxelDatabaseProxy* Proxy = NewObject<UVoxelDatabaseProxy>(ProxyOwner);
+    check(Proxy);
+    Proxy->ProxyName = ProxyName;
+    Proxy->DatabaseName = DatabaseName;
+    FindOrAddDatabase(Proxy->DatabaseName);
+    return Proxy;
+}
+
+void FVoxelMateModule::OpenDatabaseProxy(UVoxelDatabaseProxy* Proxy)
+{
+    if (Proxy) //TODO handle when proxy database name is bad
+    {
+        FindOrAddDatabase(Proxy->DatabaseName);
+    }
+}
+
+void FVoxelMateModule::SerializeDatabase(UVoxelDatabaseProxy* Proxy, FArchive& Ar)
+{
+    if (Proxy)
+    {
+        FVoxelDatabase& Database = FindOrAddDatabase(Proxy->DatabaseName);
+        Ar << Database;
+    }
 }
 
 const FString VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayName = TEXT("GridDisplayName");
