@@ -42,8 +42,8 @@ void FVoxelMateModule::StartupModule()
     FVoxelDatabase::InitializeTypes();
 
 #if WITH_EDITOR
-    FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
-    PropertyModule.RegisterCustomPropertyTypeLayout("FTypedProperty", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FTypedPropertyCustomization::MakeInstance));
+    FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor"));
+    PropertyModule.RegisterCustomPropertyTypeLayout(TEXT("TypedProperty"), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FTypedPropertyCustomization::MakeInstance));
 #endif
 }
 

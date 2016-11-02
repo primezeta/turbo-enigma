@@ -4,7 +4,7 @@
 #include "SlateBasics.h"
 #include "PropertyEditing.h"
 
-#define LOCTEXT_NAMESPACE "FTypedPropertyCustomization"
+#define LOCTEXT_NAMESPACE "TypedPropertyCustomization"
 
 class FTypedPropertyCustomization : public IPropertyTypeCustomization
 {
@@ -50,3 +50,5 @@ public:
 private:
     TSharedPtr<IPropertyHandle> PropertyHandle;
 };
+
+#undef LOCTEXT_NAMESPACE
