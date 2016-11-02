@@ -29,10 +29,6 @@ public:
 #if WITH_EDITOR
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
     {
-        //FMyStructCustomization : IPropertyTypeCustomization
-        //void FMyStructCustomization::CustomizeHeader(TSharedRef<class IPropertyHandle> StructPropertyHandle, class FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
-        //void FMyStructCustomization::CustomizeChildren(TSharedRef<class IPropertyHandle> StructPropertyHandle, class IDetailChildrenBuilder& StructBuilder, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
-
         Super::PostEditChangeProperty(PropertyChangedEvent);
         //UProperty* Property = PropertyChangedEvent.Property;
         //const FString& PropertyName = Property->GetName();

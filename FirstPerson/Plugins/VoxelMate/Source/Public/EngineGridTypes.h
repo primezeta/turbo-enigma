@@ -107,7 +107,15 @@ FString EnumValueToString(EnumType Value)
 {
     const UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, UTF8_TO_TCHAR(typeid(EnumType).name()));
     check(Enum != nullptr);
-    return Enum->GetNameByValue((uint8)Value).ToString();
+    return Enum->GetEnumNameStringByValue((int32)Value);
+}
+
+template<typename EnumType>
+FText EnumValueToDisplayText(EnumType Value)
+{
+    const UEnum* Enum = FindObject<UEnum>(ANY_PACKAGE, UTF8_TO_TCHAR(typeid(EnumType).name()));
+    check(Enum != nullptr);
+    return Enum->GetDisplayNameTextByValue((int32)Value);
 }
 
 //openvdb::GRID_UNKNOWN
@@ -144,18 +152,18 @@ UENUM(BlueprintType)
 enum class EVoxelDatabaseType : uint8
 {
     NoneType           UMETA(DisplayName = "None"),
-    BoolType           UMETA(DisplayName = "bool"),
-    FloatType          UMETA(DisplayName = "float"),
-    DoubleType         UMETA(DisplayName = "double"),
-    Int32Type          UMETA(DisplayName = "int32"),
-    Int64Type          UMETA(DisplayName = "int64"),
-    FloatVector2DType  UMETA(DisplayName = "FVector2D"),
-    FloatVector3DType  UMETA(DisplayName = "FVector"),
-    FloatVector4DType  UMETA(DisplayName = "FVector4"),
-    Int32Vector3DType  UMETA(DisplayName = "FIntVector"),
-    //PointIndex32Type   UMETA(DisplayName = "FPointIndex32"),
-    //PointIndex64Type   UMETA(DisplayName = "FPointIndex64"),
-    StringType         UMETA(DisplayName = "FString"),
+    BoolType           UMETA(DisplayName = "Bool"),
+    FloatType          UMETA(DisplayName = "Float"),
+    DoubleType         UMETA(DisplayName = "Double"),
+    Int32Type          UMETA(DisplayName = "Int32"),
+    Int64Type          UMETA(DisplayName = "Int64"),
+    FloatVector2DType  UMETA(DisplayName = "Vector2D"),
+    FloatVector3DType  UMETA(DisplayName = "Vector"),
+    FloatVector4DType  UMETA(DisplayName = "Vector4"),
+    Int32Vector3DType  UMETA(DisplayName = "IntVector"),
+    //PointIndex32Type   UMETA(DisplayName = "PointIndex32"),
+    //PointIndex64Type   UMETA(DisplayName = "PointIndex64"),
+    StringType         UMETA(DisplayName = "String"),
 };
 
 namespace GridExceptions
