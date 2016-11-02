@@ -32,7 +32,7 @@ public:
         check(PropertyHandle.IsValid());
 
         FDetailWidgetDecl& NameContent = HeaderRow.NameContent();
-        TSharedRef<SWidget> NameWidget = StructPropertyHandle->CreatePropertyNameWidget(FText::FromString(FString(TEXT("***TODO*** Property header name"))));
+        TSharedRef<SWidget> NameWidget = StructPropertyHandle->CreatePropertyNameWidget(LOCTEXT("Property header", "***TODO*** Some name"));
         FDetailWidgetDecl& ValueContent = NameContent[NameWidget].ValueContent();
 
         FDetailWidgetDecl& Pane = ValueContent.MinDesiredWidth(500.0f);
