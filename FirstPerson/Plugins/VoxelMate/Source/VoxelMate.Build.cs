@@ -28,8 +28,6 @@ public class VoxelMate : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				"VoxelMate/Private",
-                "Slate",
-                "SlateCore",
 				// ... add other private include paths required here ...
 			}
             );
@@ -44,7 +42,6 @@ public class VoxelMate : ModuleRules
                 "Engine",
                 "InputCore",
                 "UEOpenVdb",
-                "PropertyEditor",
 				// ... add other public dependencies that you statically link with here ...
 			}
             );
@@ -56,9 +53,14 @@ public class VoxelMate : ModuleRules
                 "LibNoise",
                 //"FastNoise",
                 //"FastNoiseSIMD",
+                "Slate",
+                "SlateCore",
+                "UnrealEd",
+                "EditorStyle",
+                "PropertyEditor",
 				// ... add private dependencies that you statically link with here ...	
 			}
-			);
+            );
 		
 		
 		DynamicallyLoadedModuleNames.AddRange(
