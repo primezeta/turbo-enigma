@@ -143,6 +143,7 @@ enum class EVectorTypeClass : uint8
 UENUM(BlueprintType)
 enum class EVoxelDatabaseType : uint8
 {
+    NoneType           UMETA(DisplayName = "None"),
     BoolType           UMETA(DisplayName = "bool"),
     FloatType          UMETA(DisplayName = "float"),
     DoubleType         UMETA(DisplayName = "double"),
@@ -152,8 +153,8 @@ enum class EVoxelDatabaseType : uint8
     FloatVector3DType  UMETA(DisplayName = "FVector"),
     FloatVector4DType  UMETA(DisplayName = "FVector4"),
     Int32Vector3DType  UMETA(DisplayName = "FIntVector"),
-    PointIndex32Type   UMETA(DisplayName = "FPointIndex32"),
-    PointIndex64Type   UMETA(DisplayName = "FPointIndex64"),
+    //PointIndex32Type   UMETA(DisplayName = "FPointIndex32"),
+    //PointIndex64Type   UMETA(DisplayName = "FPointIndex64"),
     StringType         UMETA(DisplayName = "FString"),
 };
 

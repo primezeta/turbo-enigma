@@ -5,7 +5,7 @@
 #include "VoxelDatabaseTransformMapTypeSpecifier.h"
 #include "VoxelDatabaseProxy.generated.h"
 
-UCLASS(ClassGroup = VoxelMate) //TODO specifiers
+UCLASS(ClassGroup = VoxelMate, Blueprintable) //TODO specifiers
 class UVoxelDatabaseProxy : public UObject
 {
     GENERATED_BODY()
@@ -19,19 +19,28 @@ public:
         FString ProxyName;
     UPROPERTY()
         FString DatabaseName;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite) //TODO investigate making Grids NonTransactional
-        TArray<UVoxelDatabaseGridTypeSpecifier*> Grids;
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        TArray<UVoxelDatabaseMetadataTypeSpecifier*> Metadata;
+        TArray<FTypedProperty> Grids;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        TArray<FTypedProperty> Metadata;
 
-    FString Test;
     virtual void Serialize(FArchive& Ar) override;
 
 #if WITH_EDITOR
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override
     {
-        Test = PropertyChangedEvent.Property->GetMetaData(TEXT("HideCategories"));
+        //FMyStructCustomization : IPropertyTypeCustomization
+        //void FMyStructCustomization::CustomizeHeader(TSharedRef<class IPropertyHandle> StructPropertyHandle, class FDetailWidgetRow& HeaderRow, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
+        //void FMyStructCustomization::CustomizeChildren(TSharedRef<class IPropertyHandle> StructPropertyHandle, class IDetailChildrenBuilder& StructBuilder, IPropertyTypeCustomizationUtils& StructCustomizationUtils)
 
+        Super::PostEditChangeProperty(PropertyChangedEvent);
+        //UProperty* Property = PropertyChangedEvent.Property;
+        //const FString& PropertyName = Property->GetName();
+        //if (PropertyName == TEXT("Grids"))
+        //{
+        //    const int32 Index = PropertyChangedEvent.GetArrayIndex(TEXT("Grids"));
+        //    const EVoxelDatabaseType Type = Grids[Index];
+        //}
         //if (PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Add       ||
         //    PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Duplicate ||
         //    PropertyChangedEvent.ChangeType == EPropertyArrayChangeType::Insert)
@@ -45,7 +54,6 @@ public:
         //{
 
         //}
-        Super::PostEditChangeProperty(PropertyChangedEvent);
     }
 #endif // WITH_EDITOR
 };

@@ -5,6 +5,7 @@
 #include "ModuleManager.h"
 #include "IPluginManager.h"
 #include "VoxelDatabase.h"
+#include "TypedPropertyCustomization.h"
 
 #define LOCTEXT_NAMESPACE "FVoxelMateModule"
 
@@ -39,6 +40,11 @@ void FVoxelMateModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
     FVoxelDatabase::InitializeTypes();
+
+#if WITH_EDITOR
+    FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
+    PropertyModule.RegisterCustomPropertyTypeLayout("FTypedProperty", FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FTypedPropertyCustomization::MakeInstance));
+#endif
 }
 
 void FVoxelMateModule::ShutdownModule()
@@ -68,7 +74,7 @@ void FVoxelMateModule::OpenDatabaseProxy(UVoxelDatabaseProxy* Proxy)
 
 void FVoxelMateModule::SerializeDatabase(UVoxelDatabaseProxy* Proxy, FArchive& Ar)
 {
-    if (Proxy)
+    if (Proxy && !Proxy->DatabaseName.IsEmpty())
     {
         FVoxelDatabase& Database = FindOrAddDatabase(Proxy->DatabaseName);
         Ar << Database;

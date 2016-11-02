@@ -9,6 +9,9 @@
 #include "ArchiveTransformMap.h"
 #include "VoxelDatabase.generated.h"
 
+//TODO Use FText for any strings displayed to the user
+//see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
+
 USTRUCT(BlueprintType) //TODO Maybe use Atomic = "Indicates that this struct should always be serialized as a single unit."
 struct VOXELMATE_API FVoxelDatabase
 {
