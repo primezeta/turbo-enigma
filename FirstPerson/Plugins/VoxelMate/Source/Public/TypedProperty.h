@@ -9,44 +9,26 @@ struct FTypedProperty
 
     UPROPERTY(EditAnywhere)
         EVoxelDatabaseType Type;
-
-    UPROPERTY(Category = "VoxelValue|Bool", EditAnywhere)
-        bool VoxelBool;
-    UPROPERTY(Category = "VoxelValue|Float", EditAnywhere)
-        float VoxelFloat;
-    UPROPERTY(Category = "VoxelValue|Double", EditAnywhere)
-        double VoxelDouble;
-    UPROPERTY(Category = "VoxelValue|Int32", EditAnywhere)
-        int32 VoxelInt32;
-    UPROPERTY(Category = "VoxelValue|Int64", EditAnywhere)
-        int64 VoxelInt64;
-    UPROPERTY(Category = "VoxelValue|FVector2D", EditAnywhere)
-        FVector2D VoxelVector2D;
-    UPROPERTY(Category = "VoxelValue|FVector", EditAnywhere)
-        FVector VoxelVector3D;
-    UPROPERTY(Category = "VoxelValue|FVector4", EditAnywhere)
-        FVector4 VoxelVector4D;
-    UPROPERTY(Category = "VoxelValue|FIntVector", EditAnywhere)
-        FIntVector VoxelIntVector3D;
-
-    UPROPERTY(Category = "MetadataValue|Bool", EditAnywhere)
-        bool MetadataBool;
-    UPROPERTY(Category = "MetadataValue|Float", EditAnywhere)
-        float MetadataFloat;
-    UPROPERTY(Category = "MetadataValue|Double", EditAnywhere)
-        double MetadataDouble;
-    UPROPERTY(Category = "MetadataValue|Int32", EditAnywhere)
-        int32 MetadataInt32;
-    UPROPERTY(Category = "MetadataValue|Int64", EditAnywhere)
-        int64 MetadataInt64;
-    UPROPERTY(Category = "MetadataValue|FVector2D", EditAnywhere)
-        FVector2D MetadataVector2D;
-    UPROPERTY(Category = "MetadataValue|FVector", EditAnywhere)
-        FVector MetadataVector3D;
-    UPROPERTY(Category = "MetadataValue|FIntVector", EditAnywhere)
-        FIntVector MetadataIntVector3D;
-    UPROPERTY(Category = "MetadataValue|FString", EditAnywhere)
-        FString MetadataString;
+    UPROPERTY(Category = "VoxelDatabaseValue|Bool", EditAnywhere)
+        bool BoolValue;
+    UPROPERTY(Category = "VoxelDatabaseValue|Float", EditAnywhere)
+        float FloatValue;
+    UPROPERTY(Category = "VoxelDatabaseValue|Double", EditAnywhere)
+        double DoubleValue;
+    UPROPERTY(Category = "VoxelDatabaseValue|Int32", EditAnywhere)
+        int32 Int32Value;
+    UPROPERTY(Category = "VoxelDatabaseValue|Int64", EditAnywhere)
+        int64 Int64Value;
+    UPROPERTY(Category = "VoxelDatabaseValue|Vector2D", EditAnywhere)
+        FVector2D Vector2DValue;
+    UPROPERTY(Category = "VoxelDatabaseValue|Vector", EditAnywhere)
+        FVector VectorValue;
+    UPROPERTY(Category = "VoxelDatabaseValue|Vector4", EditAnywhere)
+        FVector4 Vector4Value;
+    UPROPERTY(Category = "VoxelDatabaseValue|IntVector", EditAnywhere)
+        FIntVector IntVectorValue;
+    UPROPERTY(Category = "VoxelDatabaseValue|String", EditAnywhere)
+        FString StringValue;
 
     //TODO
     //UPROPERTY(Category = "TransformMapValue|FTransformAffineMap", EditAnywhere)

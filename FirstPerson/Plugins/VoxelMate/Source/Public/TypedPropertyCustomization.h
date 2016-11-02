@@ -13,7 +13,7 @@ class FTypedPropertyCustomization : public IPropertyTypeCustomization
 public:
     FTypedPropertyCustomization()
     {
-        FillEnumOptions(TypeSelectionOptions, GetEnum(TEXT("EVoxelDatabaseType")));
+        FillEnumOptions(TypeSelectionOptions, GetEnum(FName(TEXT("EVoxelDatabaseType::NoneType"))));
     }
 
     static TSharedRef<IPropertyTypeCustomization> MakeInstance()
@@ -36,9 +36,15 @@ public:
     static void FillEnumOptions(TArray<TSharedPtr<FString>>& OutStrings, UEnum& InEnum)
     {
         const int32& NumEnums = InEnum.NumEnums();
+        check(NumEnums < (int32)UINT8_MAX);
+
         for (int32 EnumIndex = 0; EnumIndex < NumEnums - 1; ++EnumIndex)
         {
-            OutStrings.Add(MakeShareable(new FString(InEnum.GetEnumName(EnumIndex))));
+            if (InEnum.GetValueByIndex(EnumIndex) != (uint8)EVoxelDatabaseType::NoneType)
+            {
+                const FString& EnumOptionDisplay = InEnum.GetMetaData(TEXT("DisplayName"), EnumIndex);
+                OutStrings.Add(MakeShareable(new FString(EnumOptionDisplay)));
+            }
         }
     }
 
