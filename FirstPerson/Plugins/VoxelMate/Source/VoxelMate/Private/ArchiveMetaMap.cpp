@@ -1,5 +1,9 @@
-#include "VoxelMatePrivatePCH.h"
+#include "VoxelMatePCH.h"
+#include "EngineGridTypes.h"
 #include "ArchiveMetaMap.h"
+#include "ArchiveMetaValue.h"
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/array.hpp>
 
 FArchive& operator<<(FArchive& Ar, openvdb::MetaMap& MetaMap)
 {
@@ -21,7 +25,10 @@ FArchive& operator<<(FArchive& Ar, openvdb::MetaMap& MetaMap)
             MetaValueFactory.Serialize(Ar);
             try
             {
-                MetaMap.insertMeta(TCHAR_TO_UTF8(*MetaName), *MetaValueFactory.ValuePtr);
+                if (MetaValueFactory.ValuePtr != nullptr)
+                {
+                    MetaMap.insertMeta(TCHAR_TO_UTF8(*MetaName), *MetaValueFactory.ValuePtr);
+                }
             }
             catch (const openvdb::ValueError& e)
             {
@@ -40,13 +47,16 @@ FArchive& operator<<(FArchive& Ar, openvdb::MetaMap& MetaMap)
         //Serialize metadata for all non-null metadata items
         for (openvdb::MetaMap::MetaIterator i = MetaMap.beginMeta(); i != MetaMap.endMeta(); ++i)
         {
-            //Serialize the meta name and value
-            FString MetaName = UTF8_TO_TCHAR(i->first.c_str());
-            Ar << MetaName;
-
             openvdb::Metadata::Ptr& MetaValuePtr = i->second;
-            MetaValueFactory.ValuePtr = MetaValuePtr;
-            MetaValueFactory.Serialize(Ar);
+            if (MetaValuePtr != nullptr)
+            {
+                //Serialize the meta name and value
+                FString MetaName = UTF8_TO_TCHAR(i->first.c_str());
+                Ar << MetaName;
+
+                MetaValueFactory.ValuePtr = MetaValuePtr;
+                MetaValueFactory.Serialize(Ar);
+            }
         }
     }
     return Ar;

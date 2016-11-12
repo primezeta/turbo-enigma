@@ -1,25 +1,37 @@
-#include "VoxelMatePrivatePCH.h"
+#include "VoxelMatePCH.h"
+#include "EngineGridTypes.h"
 #include "ArchiveTransformMap.h"
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/array.hpp>
 
 TArray<FString> FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::RegisteredTypeNames;
 
-void FTransformMapFactory::Serialize(FArchive& Ar)
+FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& TransformMapPtr)
 {
+    FString TypeName;
     if (Ar.IsLoading())
     {
-        const FString TypeName = EnumValueToString<EVoxelDatabaseType>(Type);
-        ValuePtr = FTransformMapFactory::Create(TypeName);
+        Ar << TypeName;
+        TransformMapPtr = FTransformMapFactory::Create(TypeName);
+        if (TransformMapPtr != nullptr)
+        {
+            Ar << *TransformMapPtr;
+        }
+        //else {//TODO: need to seek past the unregistered data?}
     }
-
-    check(ValuePtr != nullptr);
-    openvdb::math::MapBase& Value = *ValuePtr;
-    Ar << Value;
+    else if (TransformMapPtr != nullptr)
+    {
+        TypeName = UTF8_TO_TCHAR(TransformMapPtr->type().c_str());
+        Ar << TypeName;
+        Ar << *TransformMapPtr;
+    }
+    return Ar;
 }
 
 FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap)
 {
     //De/serialize the tarray containing the transform map
-    TArray<char> DataBytes;
+    TArray<ANSICHAR> DataBytes;
     if (Ar.IsLoading())
     {
         DataBytes.BulkSerialize(Ar);
@@ -27,6 +39,7 @@ FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap)
     else
     {
         const FString TypeName = UTF8_TO_TCHAR(TransformMap.type().c_str());
+        check(FTransformMapFactory::IsRegistered(TypeName));
         const int32 MapSize = VoxelDatabaseStatics::TransformMapStatics::SizeOfMap(TypeName);
         DataBytes.SetNumUninitialized(MapSize > 0 ? MapSize : 0, false);
     }
@@ -35,8 +48,8 @@ FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap)
     check(DataArraySize > 0);
 
     //Create an i/o stream for reading/writing the tarray
-    char* BufferStart = DataBytes.GetData();
-    char* BufferEnd = DataBytes.GetData() + DataArraySize - 1;
+    ANSICHAR* BufferStart = DataBytes.GetData();
+    ANSICHAR* BufferEnd = DataBytes.GetData() + DataArraySize - 1;
     boost::iostreams::array BufferDevice(BufferStart, BufferEnd);
     boost::iostreams::stream<boost::iostreams::array> IOStream;
 
