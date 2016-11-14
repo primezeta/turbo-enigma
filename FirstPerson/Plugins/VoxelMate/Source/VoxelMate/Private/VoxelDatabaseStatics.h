@@ -1,9 +1,6 @@
 #pragma once
 #include "EngineGridTypes.h"
 
-#pragma warning(push)
-#pragma warning(once:4211 4800 4503 4146)
-
 namespace VoxelDatabaseStatics
 {
     template<typename Type> FORCEINLINE CONSTEXPR int32 SizeOf();
@@ -164,87 +161,4 @@ namespace GridIOStatics
         FileVersionBloscCompression        = openvdb::OPENVDB_FILE_VERSION_BLOSC_COMPRESSION,
         FileVersionPointIndexGrid          = openvdb::OPENVDB_FILE_VERSION_POINT_INDEX_GRID,
     };
-
-    static const TCHAR* GetMapTypeName(const openvdb::Name& MapType)
-    {
-        if (MapType == openvdb::math::AffineMap::mapType())
-        {
-            return TEXT("FAffineMap");
-        }
-        else if (MapType == openvdb::math::UnitaryMap::mapType())
-        {
-            return TEXT("FUnitaryMap");
-        }
-        else if (MapType == openvdb::math::ScaleMap::mapType())
-        {
-            return TEXT("FScaleMap");
-        }
-        else if (MapType == openvdb::math::UniformScaleMap::mapType())
-        {
-            return TEXT("FUniformScaleMap");
-        }
-        else if (MapType == openvdb::math::TranslationMap::mapType())
-        {
-            return TEXT("FTranslationMap");
-        }
-        else if (MapType == openvdb::math::ScaleTranslateMap::mapType())
-        {
-            return TEXT("FScaleTranslationMap");
-        }
-        else if (MapType == openvdb::math::UniformScaleTranslateMap::mapType())
-        {
-            return TEXT("FUniformScaleTranslationMap");
-        }
-        else if (MapType == openvdb::math::NonlinearFrustumMap::mapType())
-        {
-            return TEXT("FNonlinearFrustumMap");
-        }
-        else
-        {
-            return TEXT("");
-        }
-    }
-
-    static const ANSICHAR* GetMapTypeName(const FString& MapType)
-    {
-        openvdb::Name OpenVdbMapTypeName;
-        if (MapType == TEXT("FAffineMap"))
-        {
-            return openvdb::math::AffineMap::mapType().c_str();
-        }
-        else if (MapType == TEXT("FUnitaryMap"))
-        {
-            return openvdb::math::UnitaryMap::mapType().c_str();
-        }
-        else if (MapType == TEXT("FScaleMap"))
-        {
-            return openvdb::math::ScaleMap::mapType().c_str();
-        }
-        else if (MapType == TEXT("FUniformScaleMap"))
-        {
-            return openvdb::math::UniformScaleMap::mapType().c_str();
-        }
-        else if (MapType == TEXT("FTranslationMap"))
-        {
-            return openvdb::math::TranslationMap::mapType().c_str();
-        }
-        else if (MapType == TEXT("FScaleTranslationMap"))
-        {
-            return openvdb::math::ScaleTranslateMap::mapType().c_str();
-        }
-        else if (MapType == TEXT("FUniformScaleTranslationMap"))
-        {
-            return openvdb::math::UniformScaleTranslateMap::mapType().c_str();
-        }
-        else if (MapType == TEXT("FNonlinearFrustumMap"))
-        {
-            return openvdb::math::NonlinearFrustumMap::mapType().c_str();
-        }
-        else
-        {
-            return "";
-        }
-    }
 } //namespace VoxelDatabaseStatics
-
-#pragma warning(pop)
