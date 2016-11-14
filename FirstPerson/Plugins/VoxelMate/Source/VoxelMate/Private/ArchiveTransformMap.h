@@ -14,26 +14,57 @@ struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::Ma
     template<typename MapType>
     static inline void RegisterTransformMapType()
     {
-        if (!MapType::isRegistered())
+        try
         {
-            //Translate the type name from the openvdb map type to the UE4 map type
-            const FString MapTypeName = GridIOStatics::GetMapTypeName(MapType::mapType());
-            if (!MapTypeName.IsEmpty())
+            MapType::registerMap();
+            const openvdb::Name& MapTypeName = MapType::mapType();
+            if (MapTypeName == openvdb::math::AffineMap::mapType())
             {
-                MapType::registerMap();
-                FTransformMapFactory::RegisteredTypeNames.Add(MapTypeName);
+                FTransformMapFactory::RegisteredTypeNames.Add(TEXT("FAffineMap"));
             }
+            else if (MapTypeName == openvdb::math::UnitaryMap::mapType())
+            {
+                FTransformMapFactory::RegisteredTypeNames.Add(TEXT("FUnitaryMap"));
+            }
+            else if (MapTypeName == openvdb::math::ScaleMap::mapType())
+            {
+                FTransformMapFactory::RegisteredTypeNames.Add(TEXT("FScaleMap"));
+            }
+            else if (MapTypeName == openvdb::math::UniformScaleMap::mapType())
+            {
+                FTransformMapFactory::RegisteredTypeNames.Add(TEXT("FUniformScaleMap"));
+            }
+            else if (MapTypeName == openvdb::math::TranslationMap::mapType())
+            {
+                FTransformMapFactory::RegisteredTypeNames.Add(TEXT("FTranslationMap"));
+            }
+            else if (MapTypeName == openvdb::math::ScaleTranslateMap::mapType())
+            {
+                FTransformMapFactory::RegisteredTypeNames.Add(TEXT("FScaleTranslationMap"));
+            }
+            else if (MapTypeName == openvdb::math::UniformScaleTranslateMap::mapType())
+            {
+                FTransformMapFactory::RegisteredTypeNames.Add(TEXT("FUniformScaleTranslationMap"));
+            }
+            else if (MapTypeName == openvdb::math::NonlinearFrustumMap::mapType())
+            {
+                FTransformMapFactory::RegisteredTypeNames.Add(TEXT("FNonlinearFrustumMap"));
+            }
+            else
+            {
+                check(false);
+            }
+        }
+        catch (const openvdb::KeyError& e)
+        {
+            (void)e; //TODO log error (map type already registered)
         }
     }
 
     static bool IsRegistered(const FString& TypeName)
     {
         bool TypeIsRegistered = false;
-        const openvdb::Name MapTypeName = GridIOStatics::GetMapTypeName(TypeName);
-        if (!MapTypeName.empty())
-        {
-            TypeIsRegistered = openvdb::math::MapRegistry::isRegistered(MapTypeName);
-        }
+        TypeIsRegistered = openvdb::math::MapRegistry::isRegistered(TCHAR_TO_UTF8(*TypeName));
         return TypeIsRegistered;
     }
 
@@ -43,11 +74,7 @@ struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::Ma
         ValueTypePtr TransformMapPtr = nullptr;
         try
         {
-            const openvdb::Name MapTypeName = GridIOStatics::GetMapTypeName(TypeName);
-            if (!MapTypeName.empty())
-            {
-                TransformMapPtr = openvdb::math::MapRegistry::createMap(MapTypeName);
-            }
+            TransformMapPtr = openvdb::math::MapRegistry::createMap(TCHAR_TO_UTF8(*TypeName));
         }
         catch (const openvdb::LookupError& e)
         {

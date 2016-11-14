@@ -120,14 +120,6 @@ void FVoxelDatabase::InitializeTypes()
 
     //Register transform map types per supported type
     FTransformMapFactory::ClearRegistry();
-    //FTransformMapFactory::RegisterTransformMapType<FAffineMap>();
-    //FTransformMapFactory::RegisterTransformMapType<FUnitaryMap>();
-    //FTransformMapFactory::RegisterTransformMapType<FScaleMap>();
-    //FTransformMapFactory::RegisterTransformMapType<FUniformScaleMap>();
-    //FTransformMapFactory::RegisterTransformMapType<FTranslationMap>();
-    //FTransformMapFactory::RegisterTransformMapType<FScaleTranslationMap>();
-    //FTransformMapFactory::RegisterTransformMapType<FUniformScaleTranslationMap>();
-    //FTransformMapFactory::RegisterTransformMapType<FNonlinearFrustumMap>();
     FTransformMapFactory::RegisterTransformMapType<openvdb::math::AffineMap>();
     FTransformMapFactory::RegisterTransformMapType<openvdb::math::UnitaryMap>();
     FTransformMapFactory::RegisterTransformMapType<openvdb::math::ScaleMap>();

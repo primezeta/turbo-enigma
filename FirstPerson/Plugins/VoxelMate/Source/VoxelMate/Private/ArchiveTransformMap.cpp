@@ -21,7 +21,43 @@ FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& Transform
     }
     else if (TransformMapPtr != nullptr)
     {
-        TypeName = UTF8_TO_TCHAR(TransformMapPtr->type().c_str());
+        const openvdb::Name& MapTypeName = TransformMapPtr->type();
+        if (MapTypeName == openvdb::math::AffineMap::mapType())
+        {
+            TypeName = TEXT("FAffineMap");
+        }
+        else if (MapTypeName == openvdb::math::UnitaryMap::mapType())
+        {
+            TypeName = TEXT("FUnitaryMap");
+        }
+        else if (MapTypeName == openvdb::math::ScaleMap::mapType())
+        {
+            TypeName = TEXT("FScaleMap");
+        }
+        else if (MapTypeName == openvdb::math::UniformScaleMap::mapType())
+        {
+            TypeName = TEXT("FUniformScaleMap");
+        }
+        else if (MapTypeName == openvdb::math::TranslationMap::mapType())
+        {
+            TypeName = TEXT("FTranslationMap");
+        }
+        else if (MapTypeName == openvdb::math::ScaleTranslateMap::mapType())
+        {
+            TypeName = TEXT("FScaleTranslationMap");
+        }
+        else if (MapTypeName == openvdb::math::UniformScaleTranslateMap::mapType())
+        {
+            TypeName = TEXT("FUniformScaleTranslationMap");
+        }
+        else if (MapTypeName == openvdb::math::NonlinearFrustumMap::mapType())
+        {
+            TypeName = TEXT("FNonlinearFrustumMap");
+        }
+        else
+        {
+            check(false);
+        }
         Ar << TypeName;
         Ar << *TransformMapPtr;
     }
@@ -38,9 +74,7 @@ FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap)
     }
     else
     {
-        const FString TypeName = UTF8_TO_TCHAR(TransformMap.type().c_str());
-        check(FTransformMapFactory::IsRegistered(TypeName));
-        const int32 MapSize = VoxelDatabaseStatics::TransformMapStatics::SizeOfMap(TypeName);
+        const int32 MapSize = VoxelDatabaseStatics::TransformMapStatics::SizeOfMap(TransformMap.type());
         DataBytes.SetNumUninitialized(MapSize > 0 ? MapSize : 0, false);
     }
 

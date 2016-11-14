@@ -102,39 +102,38 @@ namespace VoxelDatabaseStatics
 
     namespace TransformMapStatics
     {
-        static int32 SizeOfMap(const FString& TypeName)
+        static int32 SizeOfMap(const openvdb::Name& TypeName)
         {
             int32 MapSize = 0;
-            const openvdb::Name TypeStr = TCHAR_TO_UTF8(*TypeName);
-            if (TypeStr == openvdb::math::ScaleMap::mapType())
+            if (TypeName == openvdb::math::ScaleMap::mapType())
             {
                 MapSize = SizeOf<openvdb::math::ScaleMap>();
             }
-            else if (TypeStr == openvdb::math::TranslationMap::mapType())
+            else if (TypeName == openvdb::math::TranslationMap::mapType())
             {
                 MapSize = SizeOf<openvdb::math::TranslationMap>();
             }
-            else if (TypeStr == openvdb::math::ScaleTranslateMap::mapType())
+            else if (TypeName == openvdb::math::ScaleTranslateMap::mapType())
             {
                 MapSize = SizeOf<openvdb::math::ScaleTranslateMap>();
             }
-            else if (TypeStr == openvdb::math::UniformScaleMap::mapType())
+            else if (TypeName == openvdb::math::UniformScaleMap::mapType())
             {
                 MapSize = SizeOf<openvdb::math::UniformScaleMap>();
             }
-            else if (TypeStr == openvdb::math::UniformScaleTranslateMap::mapType())
+            else if (TypeName == openvdb::math::UniformScaleTranslateMap::mapType())
             {
                 MapSize = SizeOf<openvdb::math::UniformScaleTranslateMap>();
             }
-            else if (TypeStr == openvdb::math::AffineMap::mapType())
+            else if (TypeName == openvdb::math::AffineMap::mapType())
             {
                 MapSize = SizeOf<openvdb::math::AffineMap>();
             }
-            else if (TypeStr == openvdb::math::UnitaryMap::mapType())
+            else if (TypeName == openvdb::math::UnitaryMap::mapType())
             {
                 MapSize = SizeOf<openvdb::math::UnitaryMap>();
             }
-            else if (TypeStr == openvdb::math::NonlinearFrustumMap::mapType())
+            else if (TypeName == openvdb::math::NonlinearFrustumMap::mapType())
             {
                 MapSize = SizeOf<openvdb::math::NonlinearFrustumMap>();
             }
