@@ -3,25 +3,21 @@
 #include "VoxelGridProxy.h"
 #include "VoxelDatabaseProxy.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, Blueprintable) //TODO specifiers
+UCLASS(ClassGroup = VoxelMate, NotBlueprintable, NotPlaceable, CustomConstructor)
 class UVoxelDatabaseProxy : public UObject
 {
     GENERATED_BODY()
 
 public:
-    UVoxelDatabaseProxy(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {}
-
-    UPROPERTY()
-        FString ProxyName;
     UPROPERTY()
         FString DatabaseName;
+    UPROPERTY()
+        TArray<UVoxelGridProxy*> GridProxies;
+    //UPROPERTY()
+        //UVoxelMetadataProxy* DatabaseMetadataProxy; //TODO
 
     virtual void Serialize(FArchive& Ar) override;
-    UVoxelGridProxy* GetGridProxy(const FGuid& GridId);
-    UVoxelGridProxy* ActiveGrid;
 
-private:
-    TMap<FGuid, UVoxelGridProxy*> GridProxies;
+    UFUNCTION()
+        void AddGridBool(const FText& InGridName);
 };

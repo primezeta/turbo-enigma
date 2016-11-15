@@ -1,25 +1,24 @@
 #include "VoxelMatePCH.h"
 #include "EngineGridTypes.h"
 
+extern FVoxelDatabase VoxelDatabase;
+
 void UVoxelDatabaseProxy::Serialize(FArchive& Ar)
 {
-    Ar << ProxyName;
     Ar << DatabaseName;
-    FVoxelMateModule::SerializeDatabase(this, Ar);
+    FVoxelMateModule::GetChecked().SerializeDatabase(Ar);
 }
 
-UVoxelGridProxy* UVoxelDatabaseProxy::GetGridProxy(const FGuid& GridId)
+void UVoxelDatabaseProxy::AddGridBool(const FText& InGridName)
 {
-    UVoxelGridProxy* GridProxy = GridProxies.FindOrAdd(GridId);
-    if (GridProxy == nullptr)
+    check(FVoxelMateModule::IsLoaded());
+    FGuid GridId;
+    if (VoxelDatabase.AddGrid<bool>(InGridName, false, GridId))
     {
-        //TODO need to add this to GC tree?
-        GridProxy = NewObject<UVoxelGridProxy>(this);
+        UVoxelGridProxy* GridProxy = NewObject<UVoxelGridProxyBool>(this);
+        if (GridProxy)
+        {
+            GridProxies.Add(GridProxy);
+        }
     }
-
-    //if (GridProxy->GridMeshComponent == nullptr)
-    //{
-        //GridProxy->GridMeshComponent = NewObject<UProceduralMeshComponent>(GridProxy);
-    //}
-    return GridProxy;
 }

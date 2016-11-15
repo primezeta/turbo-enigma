@@ -2,11 +2,19 @@
 #include "VoxelDatabaseStatics.h"
 #include "VoxelDatabase.h"
 #include "ArchiveTransformMap.h"
+#include "VoxelGridProxyBool.h"
+
+#if WITH_EDITOR
+#include "Editor.h" //For GEditor
+#elif WITH_ENGINE
+#include "EngineGlobals.h" //For GEngine
+#endif
 
 static bool IsInitialized;
 
 FArchive& operator<<(FArchive& Ar, FVoxelDatabase& VoxelDatabase)
 {
+    Ar << VoxelDatabase.IsGridInstancingEnabled;
     Ar << VoxelDatabase.Metadata;
     Ar << VoxelDatabase.Grids;
     return Ar;
@@ -182,21 +190,45 @@ void FVoxelDatabase::GetMetadataDisplay(TMap<FGuid, FText>& OutMetadataDisplay) 
     }
 }
 
-bool FVoxelDatabase::AddGrid(const FString& TypeName, const FText& GridDisplayText, bool SaveFloatAsHalf, FGuid& OutGridId)
+void FVoxelDatabase::InitializeDatabaseProxy()
 {
-    bool IsGridAdded = false;
-    FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create(TypeName);
-    if (GridPtr != nullptr)
+#if WITH_EDITOR
+    VoxelDatabaseProxy = NewObject<UVoxelDatabaseProxy>(GEditor->GetEditorWorldContext().World());
+#elif WITH_ENGINE
+    VoxelDatabaseProxy = NewObject<UVoxelDatabaseProxy>(GEngine->GetWorld());
+#endif
+    check(VoxelDatabaseProxy);
+
+    for (auto i = Grids.CreateConstIterator(); i; ++i)
     {
-        OutGridId = FGuid::NewGuid();
-        check(!Grids.Contains(OutGridId));
-        GridPtr->setName(TCHAR_TO_UTF8(*OutGridId.ToString()));
-        GridPtr->setSaveFloatAsHalf(SaveFloatAsHalf);
-        GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseText>(GridDisplayText));
-        Grids.Add(OutGridId, GridPtr);
-        IsGridAdded = true;
+        FGridFactory::ValueTypePtr GridPtr = i.Value();
+        if (GridPtr != nullptr)
+        {
+            UVoxelGridProxy* GridProxy = nullptr;
+            if (GridPtr->isType<openvdb::Grid<openvdb::tree::Tree4<bool>::Type>>())
+            {
+                GridProxy = NewObject<UVoxelGridProxyBool>(VoxelDatabaseProxy);
+            }
+            //TODO other types
+
+            if (GridProxy)
+            {
+                GridProxy->GridId = i.Key();
+                const openvdb::Name GridDisplayTextMetaName = TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText);
+                openvdb::TypedMetadata<FVoxelDatabaseText>::ConstPtr GridDisplayTextMetaPtr = GridPtr->getMetadata<openvdb::TypedMetadata<FVoxelDatabaseText>>(GridDisplayTextMetaName);
+                if (GridDisplayTextMetaPtr != nullptr)
+                {
+                    GridProxy->GridDisplayText = GridDisplayTextMetaPtr->value().Value;
+                }
+                else
+                {
+                    GridProxy->GridDisplayText = FText::FromString(FString(UTF8_TO_TCHAR(GridPtr->getName().c_str())));
+                }
+
+                VoxelDatabaseProxy->GridProxies.Add(GridProxy);
+            }
+        }
     }
-    return IsGridAdded;
 }
 
 bool FVoxelDatabase::AddMetadata(const FString& TypeName, FGuid& OutMetadataId)

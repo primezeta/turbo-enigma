@@ -15,26 +15,23 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
     template<typename ValueType>
     static void RegisterGridType()
     {
-        if (!openvdb::Grid<openvdb::tree::Tree3<ValueType>::Type>::isRegistered())
-        {
-            const static openvdb::tree::Tree3<ValueType>::Type DummyTree3;
-            openvdb::Grid<openvdb::tree::Tree3<ValueType>::Type>::registerGrid();
-            FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(DummyTree3.type().c_str()));
-        }
+        //if (!openvdb::Grid<openvdb::tree::Tree3<ValueType>::Type>::isRegistered())
+        //{
+        //    openvdb::Grid<openvdb::tree::Tree3<ValueType>::Type>::registerGrid();
+        //    FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(openvdb::Grid<openvdb::tree::Tree3<ValueType>::Type>::gridType().c_str()));
+        //}
 
         if (!openvdb::Grid<openvdb::tree::Tree4<ValueType>::Type>::isRegistered())
         {
-            const static openvdb::tree::Tree4<ValueType>::Type DummyTree4;
             openvdb::Grid<openvdb::tree::Tree4<ValueType>::Type>::registerGrid();
-            FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(DummyTree4.type().c_str()));
+            FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(openvdb::Grid<openvdb::tree::Tree4<ValueType>::Type>::gridType().c_str()));
         }
 
-        if (!openvdb::Grid<openvdb::tree::Tree5<ValueType>::Type>::isRegistered())
-        {
-            const static openvdb::tree::Tree5<ValueType>::Type DummyTree5;
-            openvdb::Grid<openvdb::tree::Tree5<ValueType>::Type>::registerGrid();
-            FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(DummyTree5.type().c_str()));
-        }
+        //if (!openvdb::Grid<openvdb::tree::Tree5<ValueType>::Type>::isRegistered())
+        //{
+        //    openvdb::Grid<openvdb::tree::Tree5<ValueType>::Type>::registerGrid();
+        //    FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(openvdb::Grid<openvdb::tree::Tree5<ValueType>::Type>::gridType().c_str()));
+        //}
     }
 
     static bool IsRegistered(const FString& TypeName)

@@ -57,7 +57,7 @@ struct FVoxelData
 
 	FVoxelData()
 	{
-		Data = (float)0;
+		Data = 0.0f;
 		//VoxelType = EVoxelType::VOXEL_NONE;
 		VoxelType = 0;
 	}

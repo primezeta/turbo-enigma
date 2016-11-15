@@ -39,6 +39,7 @@ public class VoxelMate : ModuleRules
                 "UEOpenVdb",
                 "LibNoise",
                 "RenderCore", //For GVectorPackingConstants
+                "UnrealEd", //For linking to GEditor extern
                 //"FastNoise",
                 //"FastNoiseSIMD",
 			}
