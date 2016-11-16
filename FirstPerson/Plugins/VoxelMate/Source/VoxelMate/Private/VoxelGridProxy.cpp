@@ -1,42 +1,50 @@
 #include "VoxelMatePCH.h"
-#include "EngineGridTypes.h"
-#include "VoxelDatabase.h"
+#include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelGridProxyBool.h"
+#include "VoxelDatabase.h"
 
-extern FVoxelDatabase VoxelDatabase;
-
-const bool& UVoxelGridProxyBool::GetVoxelValue(const FIntVector& IndexCoord)
+FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy)
 {
-    check(FVoxelMateModule::IsLoaded());
-    return VoxelDatabase.GetVoxelValue<bool>(GridId, IndexCoord);
+    if (!GridProxy.IsDefaultSubobject())
+    {
+        Ar << GridProxy.GridId;
+        Ar << GridProxy.GridDisplayText;
+    }
+    return Ar;
 }
 
-const bool UVoxelGridProxyBool::GetVoxelIsActive(const FIntVector& IndexCoord)
+void AVoxelGridProxy::Serialize(FArchive& Ar)
 {
-    check(FVoxelMateModule::IsLoaded());
-    return VoxelDatabase.GetVoxelIsActive<bool>(GridId, IndexCoord);
+    Super::Serialize(Ar);
+    Ar << *this;
 }
 
-const bool& UVoxelGridProxyBool::GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive)
+const bool& AVoxelGridProxyBool::GetVoxelValue(const FIntVector& IndexCoord)
 {
-    check(FVoxelMateModule::IsLoaded());
-    return VoxelDatabase.GetVoxelValue<bool>(GridId, IndexCoord, OutIsActive);
+    return UVoxelDatabase::Get().GetVoxelValue<bool>(GridId, IndexCoord);
 }
 
-void UVoxelGridProxyBool::SetVoxelValue(const FIntVector& IndexCoord, const bool& InValue)
+const bool AVoxelGridProxyBool::GetVoxelIsActive(const FIntVector& IndexCoord)
 {
-    check(FVoxelMateModule::IsLoaded());
-    VoxelDatabase.SetVoxelValue<bool>(GridId, IndexCoord, InValue);
+    return UVoxelDatabase::Get().GetVoxelIsActive<bool>(GridId, IndexCoord);
 }
 
-void UVoxelGridProxyBool::SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive)
+const bool& AVoxelGridProxyBool::GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive)
 {
-    check(FVoxelMateModule::IsLoaded());
-    VoxelDatabase.SetVoxelIsActive<bool>(GridId, IndexCoord, InIsActive);
+    return UVoxelDatabase::Get().GetVoxelValue<bool>(GridId, IndexCoord, OutIsActive);
 }
 
-void UVoxelGridProxyBool::SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const bool& InValue, const bool& InIsActive)
+void AVoxelGridProxyBool::SetVoxelValue(const FIntVector& IndexCoord, const bool& InValue)
 {
-    check(FVoxelMateModule::IsLoaded());
-    VoxelDatabase.SetVoxelValue<bool>(GridId, IndexCoord, InValue, InIsActive);
+    UVoxelDatabase::Get().SetVoxelValue<bool>(GridId, IndexCoord, InValue);
+}
+
+void AVoxelGridProxyBool::SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive)
+{
+    UVoxelDatabase::Get().SetVoxelIsActive<bool>(GridId, IndexCoord, InIsActive);
+}
+
+void AVoxelGridProxyBool::SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const bool& InValue, const bool& InIsActive)
+{
+    UVoxelDatabase::Get().SetVoxelValue<bool>(GridId, IndexCoord, InValue, InIsActive);
 }

@@ -43,7 +43,7 @@
 *
 */
 USTRUCT()
-struct FVoxelData
+struct VOXELMATE_API FVoxelData
 {
 	GENERATED_BODY()
 

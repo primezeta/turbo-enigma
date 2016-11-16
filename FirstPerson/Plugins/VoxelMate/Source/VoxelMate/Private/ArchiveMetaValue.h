@@ -1,13 +1,19 @@
 #pragma once
-#include "EngineGridTypes.h"
+#include "VoxelDatabaseCommonPrivate.h"
+#include "VoxelDatabaseTypeFactory.h"
 
 #pragma warning(push)
 #pragma warning(once:4211 4800 4503 4146)
 
 struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
 {
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FMetaValueFactory::ValueTypePtr& MetaValuePtr);
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::Metadata& MetaValue);
+    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, FMetaValueFactory::ValueTypePtr& MetaValuePtr);
+    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::Metadata& MetaValue);
+    VOXELMATEINLINE bool Serialize(FArchive& Ar)
+    {
+        Ar << ValuePtr;
+        return true;
+    }
 
     template<typename MetaType>
     static inline void RegisterMetaType()

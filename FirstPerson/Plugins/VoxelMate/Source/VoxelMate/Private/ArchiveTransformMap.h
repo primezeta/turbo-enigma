@@ -1,6 +1,7 @@
 #pragma once
-#include "EngineGridTypes.h"
+#include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabaseStatics.h"
+#include "VoxelDatabaseTypeFactory.h"
 
 #pragma warning(push)
 #pragma warning(once:4211 4800 4503 4146)
@@ -8,8 +9,13 @@
 
 struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::MapBase>
 {
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& TransformMapPtr);
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap);
+    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& TransformMapPtr);
+    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap);
+    VOXELMATEINLINE bool Serialize(FArchive& Ar)
+    {
+        Ar << ValuePtr;
+        return true;
+    }
 
     template<typename MapType>
     static inline void RegisterTransformMapType()

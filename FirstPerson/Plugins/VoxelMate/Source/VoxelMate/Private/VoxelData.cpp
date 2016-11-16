@@ -1,5 +1,5 @@
 #include "VoxelMatePCH.h"
-#include "EngineGridTypes.h"
+#include "VoxelDatabaseCommonPrivate.h"
 
 //std::ostream& operator<<(std::ostream& os, const FVoxelData& voxelData)
 //{

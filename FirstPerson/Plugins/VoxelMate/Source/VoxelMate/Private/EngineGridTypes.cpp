@@ -40,8 +40,8 @@ const FVoxelDatabaseInterpCurvePointLinearColor::ValueType FVoxelDatabaseInterpC
 const FVoxelDatabaseInterpCurveLinearColor::ValueType FVoxelDatabaseInterpCurveLinearColor::ZeroValue = FInterpCurveLinearColor();
 const FVoxelDatabaseTransform::ValueType FVoxelDatabaseTransform::ZeroValue = FTransform(FVoxelDatabaseVector::ZeroValue, FVoxelDatabaseVector::ZeroValue, FVoxelDatabaseVector::ZeroValue, FVoxelDatabaseVector::ZeroValue);
 const FVoxelDatabaseRandomStream::ValueType FVoxelDatabaseRandomStream::ZeroValue = FRandomStream(0);
-const FVoxelDatabaseDateTime::ValueType FVoxelDatabaseDateTime::ZeroValue = FDateTime(0, 0, 0);
-const FVoxelDatabaseTimespan::ValueType FVoxelDatabaseTimespan::ZeroValue = FTimespan(0, 0, 0, 0, 0, 0);
+const FVoxelDatabaseDateTime::ValueType FVoxelDatabaseDateTime::ZeroValue = FDateTime(0);
+const FVoxelDatabaseTimespan::ValueType FVoxelDatabaseTimespan::ZeroValue = FTimespan(0);
 const FVoxelDatabaseStringAssetReference::ValueType FVoxelDatabaseStringAssetReference::ZeroValue = FStringAssetReference();
 const FVoxelDatabaseStringClassReference::ValueType FVoxelDatabaseStringClassReference::ZeroValue = FStringClassReference();
 const FVoxelDatabaseString::ValueType FVoxelDatabaseString::ZeroValue = FString(TEXT(""));

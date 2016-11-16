@@ -2,23 +2,52 @@
 #include "ArchiveGrid.h"
 #include "ArchiveMetaValue.h"
 #include "VoxelDatabaseProxy.h"
+#include "VoxelDatabase.generated.h"
 
 //TODO Use FText for any strings displayed to the user
 //see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
-
 //DECLARE_MULTICAST_DELEGATE_OneParam(FVoxelDatabaseOnMetadataChanged, class UVoxelDatabaseProxy*, const FGuid&);
 
-struct VOXELMATE_API FVoxelDatabase
+UCLASS(ClassGroup = VoxelMate, NotPlaceable, NotBlueprintable, CustomConstructor)
+class VOXELMATE_API UVoxelDatabase : public UObject
 {
-    FVoxelDatabase()
-    {}
+    GENERATED_BODY()
 
-    bool IsGridInstancingEnabled;
-    UVoxelDatabaseProxy* VoxelDatabaseProxy;
+public:
+    static UVoxelDatabase& Get()
+    {
+        extern UVoxelDatabase* VoxelMateVoxelDatabase;
+        check(VoxelMateVoxelDatabase);
+        return *VoxelMateVoxelDatabase;
+    }
 
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FVoxelDatabase& VoxelDatabase);
-    static void InitializeTypes();
-    static void UninitializeTypes();
+    UPROPERTY(BlueprintReadOnly)
+        UVoxelDatabase* VoxelDatabase;
+    UPROPERTY()
+        bool IsGridInstancingEnabled;
+    UPROPERTY()
+        UVoxelDatabaseProxy* VoxelDatabaseProxy;
+    
+    friend FArchive& operator<<(FArchive& Ar, UVoxelDatabase& VoxelDatabase)
+    {
+        Ar << VoxelDatabase.IsGridInstancingEnabled;
+        Ar << VoxelDatabase.Metadata;
+        Ar << VoxelDatabase.Grids;
+        return Ar;
+    }
+
+    virtual void Serialize(FArchive& Ar) override
+    {
+        Ar << *this;
+    }
+
+    virtual void BeginDestroy() override
+    {
+        Super::BeginDestroy();
+    }
+
+    void InitializeTypes();
+    void UninitializeTypes();
 
     const TArray<FString>& GetRegisteredGridTypeNames() const;
     const TArray<FString>& GetRegisteredMetadataTypeNames() const;
@@ -26,12 +55,12 @@ struct VOXELMATE_API FVoxelDatabase
 
     void GetGridsDisplay(TMap<FGuid, FText>& OutGridsDisplay) const;
     void GetMetadataDisplay(TMap<FGuid, FText>& OutMetadataDisplay) const;
-    void InitializeDatabaseProxy();
+    UVoxelDatabaseProxy* GetDatabaseProxy();
     bool AddMetadata(const FString& TypeName, FGuid& OutMetadataId);
     //TODO bool AddGridInstance
 
     template<typename ValueType>
-    bool FVoxelDatabase::AddGrid(const FText& GridDisplayText, bool SaveFloatAsHalf, FGuid& OutGridId)
+    bool UVoxelDatabase::AddGrid(const FText& GridDisplayText, bool SaveFloatAsHalf, FGuid& OutGridId)
     {
         bool IsGridAdded = false;
         FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create(UTF8_TO_TCHAR(openvdb::Grid<openvdb::tree::Tree4<ValueType>::Type>::gridType().c_str()));
@@ -49,7 +78,7 @@ struct VOXELMATE_API FVoxelDatabase
     }
 
     template<typename ValueType>
-    FORCEINLINE const ValueType& GetVoxelValue(const FGuid& GridId, const FIntVector& VoxelIndexCoord) const
+    VOXELMATEINLINE const ValueType& GetVoxelValue(const FGuid& GridId, const FIntVector& VoxelIndexCoord) const
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -68,7 +97,7 @@ struct VOXELMATE_API FVoxelDatabase
     }
 
     template<typename ValueType>
-    FORCEINLINE const ValueType& GetVoxelValue(const FGuid& GridId, const FIntVector& VoxelIndexCoord, bool& OutIsVoxelActive) const
+    VOXELMATEINLINE const ValueType& GetVoxelValue(const FGuid& GridId, const FIntVector& VoxelIndexCoord, bool& OutIsVoxelActive) const
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -89,7 +118,7 @@ struct VOXELMATE_API FVoxelDatabase
     }
 
     template<typename ValueType>
-    FORCEINLINE bool GetVoxelIsActive(const FGuid& GridId, const FIntVector& VoxelIndexCoord) const
+    VOXELMATEINLINE bool GetVoxelIsActive(const FGuid& GridId, const FIntVector& VoxelIndexCoord) const
     {
         bool IsActive = false;
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
@@ -108,7 +137,7 @@ struct VOXELMATE_API FVoxelDatabase
     }
 
     template<typename ValueType>
-    FORCEINLINE void SetVoxelValue(const FGuid& GridId, const FIntVector& VoxelIndexCoord, const ValueType& InVoxelValue)
+    VOXELMATEINLINE void SetVoxelValue(const FGuid& GridId, const FIntVector& VoxelIndexCoord, const ValueType& InVoxelValue)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -124,7 +153,7 @@ struct VOXELMATE_API FVoxelDatabase
     }
 
     template<typename ValueType>
-    FORCEINLINE void SetVoxelValue(const FGuid& GridId, const FIntVector& VoxelIndexCoord, const ValueType& InVoxelValue, const bool& InIsActive)
+    VOXELMATEINLINE void SetVoxelValue(const FGuid& GridId, const FIntVector& VoxelIndexCoord, const ValueType& InVoxelValue, const bool& InIsActive)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -148,7 +177,7 @@ struct VOXELMATE_API FVoxelDatabase
     }
 
     template<typename ValueType>
-    FORCEINLINE void SetVoxelIsActive(const FGuid& GridId, const FIntVector& VoxelIndexCoord, const bool& InIsActive)
+    VOXELMATEINLINE void SetVoxelIsActive(const FGuid& GridId, const FIntVector& VoxelIndexCoord, const bool& InIsActive)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -164,6 +193,16 @@ struct VOXELMATE_API FVoxelDatabase
     }
 
 private:
+    friend class FVoxelMateModule;
+
+    UVoxelDatabase()
+        : IsDatabaseInitialized(false)
+    {
+        VoxelDatabase = this;
+        AddToRoot();
+    }
+
+    bool IsDatabaseInitialized;
     TMap<FGuid, FGridFactory::ValueTypePtr> Grids;
     TMap<FGuid, FMetaValueFactory::ValueTypePtr> Metadata;
 };

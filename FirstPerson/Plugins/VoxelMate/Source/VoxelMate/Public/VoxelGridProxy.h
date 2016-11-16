@@ -6,12 +6,21 @@
 #include "ProceduralMeshComponent.h"
 #include "VoxelGridProxy.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, Abstract, NotBlueprintable, NotPlaceable)
-class UVoxelGridProxy : public UObject
+UCLASS(ClassGroup = VoxelMate, NotPlaceable)
+class VOXELMATE_API AVoxelGridProxy : public AActor
 {
     GENERATED_BODY()
 
 public:
+    AVoxelGridProxy(const FObjectInitializer& ObjectInitializer)
+        : Super(ObjectInitializer)
+    {
+        GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
+    }
+
+    friend FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy);
+    virtual void Serialize(FArchive& Ar) override;
+
     UPROPERTY()
         FGuid GridId;
     UPROPERTY()

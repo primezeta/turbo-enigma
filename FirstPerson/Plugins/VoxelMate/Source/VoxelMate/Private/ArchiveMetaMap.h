@@ -1,7 +1,7 @@
 #pragma once
-#include "EngineGridTypes.h"
+#include "VoxelDatabaseCommonPrivate.h"
 
 struct FMetaMapFactory
 {
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::MetaMap& MetaMap);
+    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::MetaMap& MetaMap);
 };

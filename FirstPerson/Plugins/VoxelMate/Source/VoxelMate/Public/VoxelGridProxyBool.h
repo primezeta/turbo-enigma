@@ -3,18 +3,18 @@
 #include "VoxelGridProxy.h"
 #include "VoxelGridProxyBool.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, NotBlueprintable, NotPlaceable)
-class UVoxelGridProxyBool : public UVoxelGridProxy
+UCLASS(ClassGroup = VoxelMate, NotPlaceable)
+class VOXELMATE_API AVoxelGridProxyBool : public AVoxelGridProxy
 {
     GENERATED_BODY()
 
 public:
-    UVoxelGridProxyBool(const FObjectInitializer& ObjectInitializer)
+    AVoxelGridProxyBool(const FObjectInitializer& ObjectInitializer)
         : Super(ObjectInitializer)
     {
         if (GridMeshComponent == nullptr)
         {
-            GridMeshComponent = NewObject<UProceduralMeshComponent>(this);
+            GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
         }
     }
 

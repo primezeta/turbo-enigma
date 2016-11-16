@@ -1,24 +1,64 @@
 #include "VoxelMatePCH.h"
-#include "EngineGridTypes.h"
+#include "VoxelDatabaseCommonPrivate.h"
+#include "VoxelDatabase.h"
 
-extern FVoxelDatabase VoxelDatabase;
+FArchive& operator<<(FArchive& Ar, UVoxelDatabaseProxy& DatabaseProxy)
+{
+    if (!DatabaseProxy.IsDefaultSubobject())
+    {
+        Ar << DatabaseProxy.GridProxies;
+    }
+    return Ar;
+}
 
 void UVoxelDatabaseProxy::Serialize(FArchive& Ar)
 {
-    Ar << DatabaseName;
-    FVoxelMateModule::GetChecked().SerializeDatabase(Ar);
+    Super::Serialize(Ar);
+    Ar << *this;
+}
+
+void UVoxelDatabaseProxy::PostInitProperties()
+{
+    Super::PostInitProperties();
+}
+
+bool UVoxelDatabaseProxy::IsReadyForFinishDestroy()
+{
+    //TODO: Return true when UVoxelDatabase async serialization is complete
+    return Super::IsReadyForFinishDestroy();
+}
+
+void UVoxelDatabaseProxy::BeginDestroy()
+{
+    //TODO: Serialize UVoxelDatabase asyncronously
+    Super::BeginDestroy();
+}
+
+void UVoxelDatabaseProxy::PreSave(const class ITargetPlatform* TargetPlatform)
+{
+    Super::PreSave(TargetPlatform);
+}
+
+void UVoxelDatabaseProxy::PostLoad()
+{
+    Super::PostLoad();
+}
+
+UVoxelDatabaseProxy* UVoxelDatabaseProxy::OpenDatabaseProxy()
+{
+    return UVoxelDatabase::Get().GetDatabaseProxy();
 }
 
 void UVoxelDatabaseProxy::AddGridBool(const FText& InGridName)
 {
-    check(FVoxelMateModule::IsLoaded());
     FGuid GridId;
-    if (VoxelDatabase.AddGrid<bool>(InGridName, false, GridId))
+    if (UVoxelDatabase::Get().AddGrid<bool>(InGridName, false, GridId))
     {
-        UVoxelGridProxy* GridProxy = NewObject<UVoxelGridProxyBool>(this);
-        if (GridProxy)
-        {
-            GridProxies.Add(GridProxy);
-        }
+        //MarkPackageDirty();
+        AVoxelGridProxy* GridProxy = NewObject<AVoxelGridProxy>(this);
+        check(GridProxy);
+        GridProxy->GridId = GridId;
+        GridProxy->GridDisplayText = InGridName;
+        GridProxies.Add(GridProxy);
     }
 }

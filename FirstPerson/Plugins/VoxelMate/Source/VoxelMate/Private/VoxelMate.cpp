@@ -5,19 +5,21 @@
 #include "ModuleManager.h"
 #include "IPluginManager.h"
 
-#include "EngineGridTypes.h"
+#include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabase.h"
 #include "VoxelDatabaseStatics.h"
 #include "VoxelDatabaseProxy.h"
 
 #define LOCTEXT_NAMESPACE "FVoxelMateModule"
 
-FVoxelDatabase VoxelDatabase;
+UVoxelDatabase* VoxelMateVoxelDatabase;
 
 void FVoxelMateModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-    FVoxelDatabase::InitializeTypes();
+    VoxelMateVoxelDatabase = NewObject<UVoxelDatabase>();
+    check(VoxelMateVoxelDatabase);
+    VoxelMateVoxelDatabase->InitializeTypes();
 
 //#if WITH_EDITOR
 //    FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor"));
@@ -29,18 +31,8 @@ void FVoxelMateModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
-    FVoxelDatabase::UninitializeTypes();
-}
-
-UVoxelDatabaseProxy* FVoxelMateModule::OpenDatabaseProxy()
-{
-    VoxelDatabase.InitializeDatabaseProxy();
-    return VoxelDatabase.VoxelDatabaseProxy;
-}
-
-void FVoxelMateModule::SerializeDatabase(FArchive& Ar)
-{
-    Ar << VoxelDatabase;
+    VoxelMateVoxelDatabase->UninitializeTypes();
+    VoxelMateVoxelDatabase->BeginDestroy();
 }
 
 const FString VoxelDatabaseStatics::GridStatics::HalfFloatTypenameSuffix = TEXT("_HalfFloat");

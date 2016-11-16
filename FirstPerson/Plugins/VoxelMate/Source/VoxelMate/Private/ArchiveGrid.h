@@ -1,5 +1,6 @@
 #pragma once
-#include "EngineGridTypes.h"
+#include "VoxelDatabaseCommonPrivate.h"
+#include "VoxelDatabaseTypeFactory.h"
 
 #pragma warning(push)
 #pragma warning(once:4211 4800 4503 4146)
@@ -9,8 +10,13 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
     static TMap<FString, int32> CachedTopologySizeByTreeType;
     uint8 CompressionFlags;
 
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, FGridFactory::ValueTypePtr& GridPtr);
-    FORCEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid);
+    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, FGridFactory::ValueTypePtr& GridPtr);
+    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid);
+    VOXELMATEINLINE bool Serialize(FArchive& Ar)
+    {
+        Ar << ValuePtr;
+        return true;
+    }
 
     template<typename ValueType>
     static void RegisterGridType()

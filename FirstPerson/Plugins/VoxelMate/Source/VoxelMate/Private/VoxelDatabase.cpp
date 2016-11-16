@@ -1,28 +1,13 @@
 #include "VoxelMatePCH.h"
+#include "EngineGridTypes.h"
 #include "VoxelDatabaseStatics.h"
 #include "VoxelDatabase.h"
 #include "ArchiveTransformMap.h"
 #include "VoxelGridProxyBool.h"
 
-#if WITH_EDITOR
-#include "Editor.h" //For GEditor
-#elif WITH_ENGINE
-#include "EngineGlobals.h" //For GEngine
-#endif
-
-static bool IsInitialized;
-
-FArchive& operator<<(FArchive& Ar, FVoxelDatabase& VoxelDatabase)
+void UVoxelDatabase::InitializeTypes()
 {
-    Ar << VoxelDatabase.IsGridInstancingEnabled;
-    Ar << VoxelDatabase.Metadata;
-    Ar << VoxelDatabase.Grids;
-    return Ar;
-}
-
-void FVoxelDatabase::InitializeTypes()
-{
-    if (IsInitialized)
+    if (IsDatabaseInitialized)
     {
         return;
     }
@@ -137,33 +122,33 @@ void FVoxelDatabase::InitializeTypes()
     FTransformMapFactory::RegisterTransformMapType<openvdb::math::UniformScaleTranslateMap>();
     FTransformMapFactory::RegisterTransformMapType<openvdb::math::NonlinearFrustumMap>();
 
-    IsInitialized = true;
+    IsDatabaseInitialized = true;
 }
 
-void FVoxelDatabase::UninitializeTypes()
+void UVoxelDatabase::UninitializeTypes()
 {
     FGridFactory::ClearRegistry();
     FMetaValueFactory::ClearRegistry();
     FTransformMapFactory::ClearRegistry();
-    IsInitialized = false;
+    IsDatabaseInitialized = false;
 }
 
-const TArray<FString>& FVoxelDatabase::GetRegisteredGridTypeNames() const
+const TArray<FString>& UVoxelDatabase::GetRegisteredGridTypeNames() const
 {
     return FGridFactory::RegisteredTypeNames;
 }
 
-const TArray<FString>& FVoxelDatabase::GetRegisteredMetadataTypeNames() const
+const TArray<FString>& UVoxelDatabase::GetRegisteredMetadataTypeNames() const
 {
     return FMetaValueFactory::RegisteredTypeNames;
 }
 
-const TArray<FString>& FVoxelDatabase::GetRegisteredTransformMapTypeNames() const
+const TArray<FString>& UVoxelDatabase::GetRegisteredTransformMapTypeNames() const
 {
     return FTransformMapFactory::RegisteredTypeNames;
 }
 
-void FVoxelDatabase::GetGridsDisplay(TMap<FGuid, FText>& OutGridsDisplay) const
+void UVoxelDatabase::GetGridsDisplay(TMap<FGuid, FText>& OutGridsDisplay) const
 {
     for (auto i = Grids.CreateConstIterator(); i; ++i)
     {
@@ -177,7 +162,7 @@ void FVoxelDatabase::GetGridsDisplay(TMap<FGuid, FText>& OutGridsDisplay) const
     }
 }
 
-void FVoxelDatabase::GetMetadataDisplay(TMap<FGuid, FText>& OutMetadataDisplay) const
+void UVoxelDatabase::GetMetadataDisplay(TMap<FGuid, FText>& OutMetadataDisplay) const
 {
     for (auto i = Metadata.CreateConstIterator(); i; ++i)
     {
@@ -190,48 +175,51 @@ void FVoxelDatabase::GetMetadataDisplay(TMap<FGuid, FText>& OutMetadataDisplay) 
     }
 }
 
-void FVoxelDatabase::InitializeDatabaseProxy()
+UVoxelDatabaseProxy* UVoxelDatabase::GetDatabaseProxy()
 {
-#if WITH_EDITOR
-    VoxelDatabaseProxy = NewObject<UVoxelDatabaseProxy>(GEditor->GetEditorWorldContext().World());
-#elif WITH_ENGINE
-    VoxelDatabaseProxy = NewObject<UVoxelDatabaseProxy>(GEngine->GetWorld());
-#endif
+    if (VoxelDatabaseProxy && VoxelDatabaseProxy->IsValidLowLevel())
+    {
+        return VoxelDatabaseProxy;
+    }
+
+    VoxelDatabaseProxy = NewObject<UVoxelDatabaseProxy>(this);
     check(VoxelDatabaseProxy);
 
-    for (auto i = Grids.CreateConstIterator(); i; ++i)
-    {
-        FGridFactory::ValueTypePtr GridPtr = i.Value();
-        if (GridPtr != nullptr)
-        {
-            UVoxelGridProxy* GridProxy = nullptr;
-            if (GridPtr->isType<openvdb::Grid<openvdb::tree::Tree4<bool>::Type>>())
-            {
-                GridProxy = NewObject<UVoxelGridProxyBool>(VoxelDatabaseProxy);
-            }
-            //TODO other types
+    //for (auto i = Grids.CreateConstIterator(); i; ++i)
+    //{
+    //    FGridFactory::ValueTypePtr GridPtr = i.Value();
+    //    if (GridPtr != nullptr)
+    //    {
+    //        AVoxelGridProxy* GridProxy = nullptr;
+    //        if (GridPtr->isType<openvdb::Grid<openvdb::tree::Tree4<bool>::Type>>())
+    //        {
+    //            GridProxy = NewObject<AVoxelGridProxyBool>(VoxelDatabaseProxy);
+    //        }
+    //        //TODO other types
 
-            if (GridProxy)
-            {
-                GridProxy->GridId = i.Key();
-                const openvdb::Name GridDisplayTextMetaName = TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText);
-                openvdb::TypedMetadata<FVoxelDatabaseText>::ConstPtr GridDisplayTextMetaPtr = GridPtr->getMetadata<openvdb::TypedMetadata<FVoxelDatabaseText>>(GridDisplayTextMetaName);
-                if (GridDisplayTextMetaPtr != nullptr)
-                {
-                    GridProxy->GridDisplayText = GridDisplayTextMetaPtr->value().Value;
-                }
-                else
-                {
-                    GridProxy->GridDisplayText = FText::FromString(FString(UTF8_TO_TCHAR(GridPtr->getName().c_str())));
-                }
+    //        if (GridProxy)
+    //        {
+    //            GridProxy->GridId = i.Key();
+    //            const openvdb::Name GridDisplayTextMetaName = TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText);
+    //            openvdb::TypedMetadata<FVoxelDatabaseText>::ConstPtr GridDisplayTextMetaPtr = GridPtr->getMetadata<openvdb::TypedMetadata<FVoxelDatabaseText>>(GridDisplayTextMetaName);
+    //            if (GridDisplayTextMetaPtr != nullptr)
+    //            {
+    //                GridProxy->GridDisplayText = GridDisplayTextMetaPtr->value().Value;
+    //            }
+    //            else
+    //            {
+    //                GridProxy->GridDisplayText = FText::FromString(FString(UTF8_TO_TCHAR(GridPtr->getName().c_str())));
+    //            }
 
-                VoxelDatabaseProxy->GridProxies.Add(GridProxy);
-            }
-        }
-    }
+    //            VoxelDatabaseProxy->GridProxies.Add(GridProxy);
+    //        }
+    //    }
+    //}
+
+    return VoxelDatabaseProxy;
 }
 
-bool FVoxelDatabase::AddMetadata(const FString& TypeName, FGuid& OutMetadataId)
+bool UVoxelDatabase::AddMetadata(const FString& TypeName, FGuid& OutMetadataId)
 {
     bool IsMetadataAdded = false;
     FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create(TypeName);

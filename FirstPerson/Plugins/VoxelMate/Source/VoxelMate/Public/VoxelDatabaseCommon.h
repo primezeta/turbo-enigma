@@ -1,6 +1,12 @@
 #pragma once
 #include "EngineMinimal.h"
 
+#ifdef UE_BUILD_DEBUG
+    #define VOXELMATEINLINE
+#else
+    #define VOXELMATEINLINE FORCEINLINE
+#endif
+
 UENUM(BlueprintType)
 enum class EGridCompression : uint8
 {

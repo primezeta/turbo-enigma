@@ -8,7 +8,7 @@
 #include "Math/TranslationMatrix.h"
 #include "Math/RotationTranslationMatrix.h"
 
-struct FAffineMap : public FMatrix
+struct VOXELMATE_API FAffineMap : public FMatrix
 {
     FAffineMap()
         : FMatrix(FPlane(EForceInit::ForceInitToZero), FPlane(EForceInit::ForceInitToZero), FPlane(EForceInit::ForceInitToZero), FPlane(EForceInit::ForceInitToZero))
@@ -19,7 +19,7 @@ struct FAffineMap : public FMatrix
     {}
 };
 
-struct FUnitaryMap : public FQuat
+struct VOXELMATE_API FUnitaryMap : public FQuat
 {
     FUnitaryMap()
         : FQuat(FVector::ZeroVector, 0.0f)
@@ -30,7 +30,7 @@ struct FUnitaryMap : public FQuat
     {}
 };
 
-struct FScaleMap : public FScaleMatrix
+struct VOXELMATE_API FScaleMap : public FScaleMatrix
 {
     FScaleMap()
         : FScaleMatrix(FVector::ZeroVector)
@@ -41,7 +41,7 @@ struct FScaleMap : public FScaleMatrix
     {}
 };
 
-struct FUniformScaleMap : public FScaleMatrix
+struct VOXELMATE_API FUniformScaleMap : public FScaleMatrix
 {
     FUniformScaleMap()
         : FScaleMatrix(0.0f)
@@ -52,7 +52,7 @@ struct FUniformScaleMap : public FScaleMatrix
     {}
 };
 
-struct FTranslationMap : public FTranslationMatrix
+struct VOXELMATE_API FTranslationMap : public FTranslationMatrix
 {
     FTranslationMap()
         : FTranslationMatrix(FVector::ZeroVector)
@@ -63,7 +63,7 @@ struct FTranslationMap : public FTranslationMatrix
     {}
 };
 
-struct FScaleTranslationMap : public FScaleMatrix, public FTranslationMatrix
+struct VOXELMATE_API FScaleTranslationMap : public FScaleMatrix, public FTranslationMatrix
 {
     FScaleTranslationMap()
         : FScaleMatrix(FVector::ZeroVector), FTranslationMatrix(FVector::ZeroVector)
@@ -74,7 +74,7 @@ struct FScaleTranslationMap : public FScaleMatrix, public FTranslationMatrix
     {}
 };
 
-struct FUniformScaleTranslationMap : public FScaleMatrix, public FTranslationMatrix
+struct VOXELMATE_API FUniformScaleTranslationMap : public FScaleMatrix, public FTranslationMatrix
 {
     FUniformScaleTranslationMap()
         : FScaleMatrix(0.0f), FTranslationMatrix(FVector::ZeroVector)
@@ -85,7 +85,7 @@ struct FUniformScaleTranslationMap : public FScaleMatrix, public FTranslationMat
     {}
 };
 
-struct FNonlinearFrustumMap : public FBox
+struct VOXELMATE_API FNonlinearFrustumMap : public FBox
 {
     FNonlinearFrustumMap()
         : FBox(FVector::ZeroVector, FVector::ZeroVector), Taper(0.0f), Depth(0.0f)

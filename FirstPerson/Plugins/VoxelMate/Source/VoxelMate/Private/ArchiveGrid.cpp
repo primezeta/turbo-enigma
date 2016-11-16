@@ -1,5 +1,4 @@
 #include "VoxelMatePCH.h"
-#include "EngineGridTypes.h"
 #include "ArchiveGrid.h"
 #include "ArchiveMetaMap.h"
 #include "ArchiveTransformMap.h"
@@ -24,7 +23,7 @@ FArchive& operator<<(FArchive& Ar, FGridFactory::ValueTypePtr& GridPtr)
         }
         //else {//TODO: need to seek past the unregistered data?}
     }
-    else if(GridPtr != nullptr)
+    else if (GridPtr != nullptr)
     {
         TypeName = UTF8_TO_TCHAR(GridPtr->type().c_str());
         Ar << TypeName;
@@ -72,25 +71,26 @@ FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid)
     //Peek at the byte count of the array (if saving and the size is currently unknown, write an initial 0)
     const int64 TopologyByteCountPos = Ar.Tell();
     Ar << TopologyByteCount;
-    Ar.Seek(TopologyByteCountPos);
 
     if (TopologyByteCount == 0)
     {
-        check(!IsLoading); //If loading but the topology byte count was 0 then something went wrong while writing
+        check(!IsLoading); //If loading but the topology byte count was 0 then something went wrong while saving
 
         //Calculate the unknown topology size by writing to a back_inserter
         std::vector<ANSICHAR> TopologyBytes;
         boost::iostreams::back_insert_device<std::vector<ANSICHAR>> TopologySink(TopologyBytes);
-        boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<ANSICHAR>>> TempTopologyStream(TopologySink);
+        boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<ANSICHAR>>> TempTopologyStream;
 
-        //Estimate the topology size as double the memory usage, then reserve that amount to reduce the chance of vector reallocation
-        const size_t TopologySizeEstimate = Grid.memUsage() * 2;
-        TopologyBytes.reserve(TopologySizeEstimate);
+        ////Estimate the topology size as double the memory usage, then reserve that amount to reduce the chance of vector reallocation
+        //const size_t TopologySizeEstimate = Grid.memUsage() * 2;
+        //TopologyBytes.reserve(TopologySizeEstimate);
 
         //Write the topology to the temporary stream in order to determine the topology byte count
+        TempTopologyStream.open(TopologySink);
         Grid.writeTopology(static_cast<OutputStreamType&>(TempTopologyStream));
+        TempTopologyStream.close();
+
         const size_t ByteCount = TopologyBytes.size();
-        check(ByteCount > 0 && ByteCount <= INT32_MAX);
         TopologyByteCount = ByteCount;
     }
 
