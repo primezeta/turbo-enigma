@@ -32,7 +32,6 @@ void FVoxelMateModule::ShutdownModule()
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
     VoxelMateVoxelDatabase->UninitializeTypes();
-    VoxelMateVoxelDatabase->BeginDestroy();
 }
 
 const FString VoxelDatabaseStatics::GridStatics::HalfFloatTypenameSuffix = TEXT("_HalfFloat");
