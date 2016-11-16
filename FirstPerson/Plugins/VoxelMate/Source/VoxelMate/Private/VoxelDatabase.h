@@ -30,9 +30,12 @@ public:
     
     friend FArchive& operator<<(FArchive& Ar, UVoxelDatabase& VoxelDatabase)
     {
-        Ar << VoxelDatabase.IsGridInstancingEnabled;
-        Ar << VoxelDatabase.Metadata;
-        Ar << VoxelDatabase.Grids;
+        if (!VoxelDatabase.IsDefaultSubobject())
+        {
+            Ar << VoxelDatabase.IsGridInstancingEnabled;
+            Ar << VoxelDatabase.Metadata;
+            Ar << VoxelDatabase.Grids;
+        }
         return Ar;
     }
 
