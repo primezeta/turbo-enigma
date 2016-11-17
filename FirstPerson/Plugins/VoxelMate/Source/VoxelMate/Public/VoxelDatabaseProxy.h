@@ -23,6 +23,6 @@ public:
         //UVoxelMetadataProxy* DatabaseMetadataProxy; //TODO
     UFUNCTION(Category = VoxelMate, BlueprintCallable)
         static UVoxelDatabaseProxy* OpenDatabaseProxy();
-    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+    UFUNCTION(Category = VoxelMate, BlueprintCallable, meta = (ExpandEnumAsExecs = "VoxelType"))
         AVoxelGridProxy* AddGridProxy(EVoxelDatabaseVoxelType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf);
 };
