@@ -14,16 +14,16 @@ public:
     {
     }
 
-    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FVector4& GetVoxelValue(const FIntVector& IndexCoord) const;
-    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const bool GetVoxelIsActive(const FIntVector& IndexCoord) const;
-    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FVector4& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
-    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValue(const FIntVector& IndexCoord, const FVector4& InValue) const;
-    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const;
-    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector4& InValue, const bool& InIsActive) const;
 };

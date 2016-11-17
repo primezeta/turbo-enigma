@@ -15,16 +15,16 @@ public:
     }
 
     //double is not a supported blueprint type
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         const double& GetVoxelValue(const FIntVector& IndexCoord) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         const bool GetVoxelIsActive(const FIntVector& IndexCoord) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         const double& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValue(const FIntVector& IndexCoord, const double& InValue) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const double& InValue, const bool& InIsActive) const;
 };

@@ -15,16 +15,16 @@ public:
     }
 
     //int8 is not a supported blueprint type
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         const int8& GetVoxelValue(const FIntVector& IndexCoord) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         const bool GetVoxelIsActive(const FIntVector& IndexCoord) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         const int8& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValue(const FIntVector& IndexCoord, const int8& InValue) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const;
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int8& InValue, const bool& InIsActive) const;
 };
