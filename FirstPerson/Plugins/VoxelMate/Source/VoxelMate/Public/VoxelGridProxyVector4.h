@@ -3,7 +3,7 @@
 #include "VoxelGridProxy.h"
 #include "VoxelGridProxyVector4.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, NotPlaceable)
+UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
 class VOXELMATE_API AVoxelGridProxyVector4 : public AVoxelGridProxy
 {
     GENERATED_BODY()

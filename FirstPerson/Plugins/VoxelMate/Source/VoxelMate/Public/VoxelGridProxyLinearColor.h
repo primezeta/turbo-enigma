@@ -3,7 +3,7 @@
 #include "VoxelGridProxy.h"
 #include "VoxelGridProxyLinearColor.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, NotPlaceable)
+UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
 class VOXELMATE_API AVoxelGridProxyLinearColor : public AVoxelGridProxy
 {
     GENERATED_BODY()

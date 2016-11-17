@@ -603,6 +603,8 @@
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyInt32.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyInt64.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyInt8.h" />
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyIntPoint.h" />
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyIntVector.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyLinearColor.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyPackedNormal.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyPackedRGB10A2N.h" />

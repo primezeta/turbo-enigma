@@ -12,21 +12,23 @@ class VOXELMATE_API AVoxelGridProxy : public AActor
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxy(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-        GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
-    }
+    AVoxelGridProxy(const FObjectInitializer& ObjectInitializer);
 
     friend FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy);
     virtual void Serialize(FArchive& Ar) override;
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly)
         FGuid GridId;
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly)
+        bool IsFloatSavedAsHalf;
+    UPROPERTY(BlueprintReadWrite)
         FText GridDisplayText;
     //UPROPERTY()
     //    TArray<UVoxelMetadataProxy*> MetadataProxies; //TODO
     UPROPERTY()
         UProceduralMeshComponent* GridMeshComponent;
+
+protected:
+    //TODO idea for faster grid lookup
+    //int32 CacheIndex;
 };
