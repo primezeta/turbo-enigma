@@ -21,8 +21,8 @@ public:
         TArray<AVoxelGridProxy*> GridProxies;
     //UPROPERTY()
         //UVoxelMetadataProxy* DatabaseMetadataProxy; //TODO
-    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+    UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
         static UVoxelDatabaseProxy* OpenDatabaseProxy();
-    UFUNCTION(Category = VoxelMate, BlueprintCallable, meta = (ExpandEnumAsExecs = "VoxelType"))
+    UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
         AVoxelGridProxy* AddGridProxy(EVoxelDatabaseVoxelType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf);
 };
