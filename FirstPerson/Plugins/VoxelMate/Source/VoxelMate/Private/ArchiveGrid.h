@@ -59,6 +59,62 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         return GridPtr;
     }
 
+    template<typename GridType>
+    static ValueTypePtr Create()
+    {
+        ValueTypePtr GridPtr = nullptr;
+        try
+        {
+            GridPtr = openvdb::createGrid<GridType>();
+        }
+        catch (const openvdb::LookupError& e)
+        {
+            (void)e; //TODO log error (grid type name is not registered)
+        }
+        return GridPtr;
+    }
+
+    template<typename GridType>
+    static typename GridType::Ptr ShallowCopyGrid(ValueTypeConstPtr& InGridPtr)
+    {
+        typename GridType::Ptr GridPtr = nullptr;
+        if (InGridPtr != nullptr)
+        {
+            if (InGridPtr->isType<GridType>())
+            {
+                GridPtr = GridType(*InGridPtr, openvdb::ShallowCopy);
+                check(GridPtr != nullptr);
+                GridPtr->setTransform(InGridPtr->transform().copy());
+                //TODO allow changing float-as-half under certain circumstances?
+            }
+            else
+            {
+                //TODO log error (tried to shallow copy a grid of different type)
+            }
+        }
+        return GridPtr;
+    }
+
+    template<typename GridType>
+    static typename GridType::Ptr DeepCopyGrid(ValueTypeConstPtr& InGridPtr)
+    {
+        typename GridType::Ptr GridPtr = nullptr;
+        if (InGridPtr != nullptr)
+        {
+            if (InGridPtr->isType<GridType>())
+            {
+                GridPtr = InGridPtr->deepCopyGrid();
+                check(GridPtr != nullptr);
+                //TODO allow changing float-as-half under certain circumstances?
+            }
+            else
+            {
+                //TODO log error (tried to shallow copy a grid of different type)
+            }
+        }
+        return GridPtr;
+    }
+
     static void ClearRegistry()
     {
         openvdb::GridBase::clearRegistry();
