@@ -12,10 +12,6 @@ public:
     AVoxelGridProxyBool(const FObjectInitializer& ObjectInitializer)
         : Super(ObjectInitializer)
     {
-        if (GridMeshComponent == nullptr)
-        {
-            GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
-        }
     }
 
     UFUNCTION()

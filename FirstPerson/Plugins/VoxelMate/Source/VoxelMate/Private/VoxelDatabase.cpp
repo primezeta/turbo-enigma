@@ -23,17 +23,17 @@ void UVoxelDatabase::InitializeTypes()
 
     //Register the grid types per supported type and tree
     FGridFactory::ClearRegistry();
-    FGridFactory::RegisterGridType<bool>();
-    FGridFactory::RegisterGridType<float>();
-    FGridFactory::RegisterGridType<double>();
-    FGridFactory::RegisterGridType<uint8>();
-    FGridFactory::RegisterGridType<uint16>();
-    FGridFactory::RegisterGridType<uint32>();
-    FGridFactory::RegisterGridType<uint64>();
-    FGridFactory::RegisterGridType<int8>();
-    FGridFactory::RegisterGridType<int16>();
-    FGridFactory::RegisterGridType<int32>();
-    FGridFactory::RegisterGridType<int64>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseBool>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseFloat>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseDouble>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseUInt8>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseUInt16>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseUInt32>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseUInt64>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseInt8>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseInt16>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseInt32>();
+    FGridFactory::RegisterGridType<FVoxelDatabaseInt64>();
     FGridFactory::RegisterGridType<FVoxelDatabaseVector>();
     FGridFactory::RegisterGridType<FVoxelDatabaseVector4>();
     FGridFactory::RegisterGridType<FVoxelDatabaseVector2D>();
@@ -45,17 +45,17 @@ void UVoxelDatabase::InitializeTypes()
 
     //Register metadata types per supported type
     FMetaValueFactory::ClearRegistry();
-    FMetaValueFactory::RegisterMetaType<bool>();
-    FMetaValueFactory::RegisterMetaType<float>();
-    FMetaValueFactory::RegisterMetaType<double>();
-    FMetaValueFactory::RegisterMetaType<uint8>();
-    FMetaValueFactory::RegisterMetaType<uint16>();
-    FMetaValueFactory::RegisterMetaType<uint32>();
-    FMetaValueFactory::RegisterMetaType<uint64>();
-    FMetaValueFactory::RegisterMetaType<int8>();
-    FMetaValueFactory::RegisterMetaType<int16>();
-    FMetaValueFactory::RegisterMetaType<int32>();
-    FMetaValueFactory::RegisterMetaType<int64>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseBool>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseFloat>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseDouble>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUInt8>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUInt16>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUInt32>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUInt64>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt8>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt16>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt32>();
+    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt64>();
     FMetaValueFactory::RegisterMetaType<FVoxelDatabaseVector>();
     FMetaValueFactory::RegisterMetaType<FVoxelDatabaseVector4>();
     FMetaValueFactory::RegisterMetaType<FVoxelDatabaseVector2D>();

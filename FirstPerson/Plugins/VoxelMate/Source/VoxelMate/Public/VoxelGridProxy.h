@@ -6,7 +6,7 @@
 #include "ProceduralMeshComponent.h"
 #include "VoxelGridProxy.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, NotPlaceable)
+UCLASS(ClassGroup = VoxelMate, Abstract, NotPlaceable, Blueprintable)
 class VOXELMATE_API AVoxelGridProxy : public AActor
 {
     GENERATED_BODY()

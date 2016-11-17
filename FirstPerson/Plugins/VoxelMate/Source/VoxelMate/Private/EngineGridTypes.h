@@ -19,49 +19,99 @@
 
 typedef std::ostream OutputStreamType;
 
-template<typename Ue4Type> VOXELMATEINLINE void WriteValue(OutputStreamType& os, const Ue4Type& InValue)
+template<typename Ue4Type>
+VOXELMATEINLINE void WriteValue(OutputStreamType& os, const Ue4Type& InValue)
 {
     static_assert(false, "WriteValue not implemented");
 }
 
-template<> VOXELMATEINLINE void WriteValue<float>(OutputStreamType& os, const float& InValue)
-{
-    const char* Bytes = reinterpret_cast<const char*>(&InValue);
-    os.write(Bytes, sizeof(float));
-}
-
-template<> VOXELMATEINLINE void WriteValue<uint8>(OutputStreamType& os, const uint8& InValue)
-{
-    const char* Bytes = reinterpret_cast<const char*>(&InValue);
-    os.write(Bytes, sizeof(uint8));
-}
-
-template<> VOXELMATEINLINE void WriteValue<int32>(OutputStreamType& os, const int32& InValue)
-{
-    const char* Bytes = reinterpret_cast<const char*>(&InValue);
-    os.write(Bytes, sizeof(int32));
-}
-
-template<> VOXELMATEINLINE void WriteValue<int64>(OutputStreamType& os, const int64& InValue)
-{
-    const char* Bytes = reinterpret_cast<const char*>(&InValue);
-    os.write(Bytes, sizeof(int64));
-}
-
-template<> VOXELMATEINLINE void WriteValue<bool>(OutputStreamType& os, const bool& InValue)
+template<>
+VOXELMATEINLINE void WriteValue<bool>(OutputStreamType& os, const bool& InValue)
 {
     const char* Bytes = reinterpret_cast<const char*>(&InValue);
     os.write(Bytes, sizeof(bool));
 }
 
-template<> VOXELMATEINLINE void WriteValue<FVector>(OutputStreamType& os, const FVector& InValue)
+template<>
+VOXELMATEINLINE void WriteValue<double>(OutputStreamType& os, const double& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(double));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<float>(OutputStreamType& os, const float& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(float));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<int8>(OutputStreamType& os, const int8& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(int8));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<int16>(OutputStreamType& os, const int16& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(int16));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<int32>(OutputStreamType& os, const int32& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(int32));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<int64>(OutputStreamType& os, const int64& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(int64));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<uint8>(OutputStreamType& os, const uint8& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(uint8));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<uint16>(OutputStreamType& os, const uint16& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(uint16));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<uint32>(OutputStreamType& os, const uint32& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(uint32));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<uint64>(OutputStreamType& os, const uint64& InValue)
+{
+    const char* Bytes = reinterpret_cast<const char*>(&InValue);
+    os.write(Bytes, sizeof(uint64));
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<FVector>(OutputStreamType& os, const FVector& InValue)
 {
     WriteValue<float>(os, InValue.X);
     WriteValue<float>(os, InValue.Y);
     WriteValue<float>(os, InValue.Z);
 }
 
-template<> VOXELMATEINLINE void WriteValue<FVector4>(OutputStreamType& os, const FVector4& InValue)
+template<>
+VOXELMATEINLINE void WriteValue<FVector4>(OutputStreamType& os, const FVector4& InValue)
 {
     WriteValue<float>(os, InValue.X);
     WriteValue<float>(os, InValue.Y);
@@ -69,13 +119,15 @@ template<> VOXELMATEINLINE void WriteValue<FVector4>(OutputStreamType& os, const
     WriteValue<float>(os, InValue.W);
 }
 
-template<> VOXELMATEINLINE void WriteValue<FVector2D>(OutputStreamType& os, const FVector2D& InValue)
+template<>
+VOXELMATEINLINE void WriteValue<FVector2D>(OutputStreamType& os, const FVector2D& InValue)
 {
     WriteValue<float>(os, InValue.X);
     WriteValue<float>(os, InValue.Y);
 }
 
-template<> VOXELMATEINLINE void WriteValue<FColor>(OutputStreamType& os, const FColor& InValue)
+template<>
+VOXELMATEINLINE void WriteValue<FColor>(OutputStreamType& os, const FColor& InValue)
 {
     WriteValue<uint8>(os, InValue.R);
     WriteValue<uint8>(os, InValue.G);
@@ -83,7 +135,8 @@ template<> VOXELMATEINLINE void WriteValue<FColor>(OutputStreamType& os, const F
     WriteValue<uint8>(os, InValue.A);
 }
 
-template<> VOXELMATEINLINE void WriteValue<FLinearColor>(OutputStreamType& os, const FLinearColor& InValue)
+template<>
+VOXELMATEINLINE void WriteValue<FLinearColor>(OutputStreamType& os, const FLinearColor& InValue)
 {
     WriteValue<float>(os, InValue.R);
     WriteValue<float>(os, InValue.G);
@@ -525,6 +578,72 @@ template<typename Ue4Type>
 VOXELMATEINLINE bool AreValuesEqual(const Ue4Type& InLhs, const Ue4Type& InRhs)
 {
     static_assert(false, "AreValuesEqual not implemented");
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<bool>(const bool& InLhs, const bool& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<double>(const double& InLhs, const double& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<float>(const float& InLhs, const float& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<int8>(const int8& InLhs, const int8& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<int16>(const int16& InLhs, const int16& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<int32>(const int32& InLhs, const int32& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<int64>(const int64& InLhs, const int64& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<uint8>(const uint8& InLhs, const uint8& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<uint16>(const uint16& InLhs, const uint16& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<uint32>(const uint32& InLhs, const uint32& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<uint64>(const uint64& InLhs, const uint64& InRhs)
+{
+    return InLhs == InRhs;
 }
 
 template<>
@@ -974,6 +1093,72 @@ VOXELMATEINLINE bool IsValueLessThan(const Ue4Type& InLhs, const Ue4Type& InRhs)
 }
 
 template<>
+VOXELMATEINLINE bool IsValueLessThan<bool>(const bool& InLhs, const bool& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<double>(const double& InLhs, const double& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<float>(const float& InLhs, const float& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<int8>(const int8& InLhs, const int8& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<int16>(const int16& InLhs, const int16& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<int32>(const int32& InLhs, const int32& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<int64>(const int64& InLhs, const int64& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<uint8>(const uint8& InLhs, const uint8& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<uint16>(const uint16& InLhs, const uint16& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<uint32>(const uint32& InLhs, const uint32& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<uint64>(const uint64& InLhs, const uint64& InRhs)
+{
+    return InLhs < InRhs;
+}
+
+template<>
 VOXELMATEINLINE bool IsValueLessThan<FLinearColor>(const FLinearColor& InLhs, const FLinearColor& InRhs)
 {
     return FVector4(InLhs.R, InLhs.G, InLhs.G, InLhs.A).SizeSquared3() < FVector4(InRhs.R, InRhs.G, InRhs.G, InRhs.A).SizeSquared3();
@@ -1028,6 +1213,72 @@ VOXELMATEINLINE bool IsValueGreaterThan(const Ue4Type& InLhs, const Ue4Type& InR
 }
 
 template<>
+VOXELMATEINLINE bool IsValueGreaterThan<bool>(const bool& InLhs, const bool& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<double>(const double& InLhs, const double& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<float>(const float& InLhs, const float& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<int8>(const int8& InLhs, const int8& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<int16>(const int16& InLhs, const int16& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<int32>(const int32& InLhs, const int32& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<int64>(const int64& InLhs, const int64& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<uint8>(const uint8& InLhs, const uint8& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<uint16>(const uint16& InLhs, const uint16& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<uint32>(const uint32& InLhs, const uint32& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<uint64>(const uint64& InLhs, const uint64& InRhs)
+{
+    return InLhs > InRhs;
+}
+
+template<>
 VOXELMATEINLINE bool IsValueGreaterThan<FLinearColor>(const FLinearColor& InLhs, const FLinearColor& InRhs)
 {
     return FVector4(InLhs.R, InLhs.G, InLhs.G, InLhs.A).SizeSquared3() > FVector4(InRhs.R, InRhs.G, InRhs.G, InRhs.A).SizeSquared3();
@@ -1079,6 +1330,72 @@ template<typename Ue4Type>
 VOXELMATEINLINE Ue4Type AddValues(const Ue4Type& InLhs, const Ue4Type& InRhs)
 {
     static_assert(false, "AddValues not implemented");
+}
+
+template<>
+VOXELMATEINLINE bool AddValues<bool>(const bool& InLhs, const bool& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE double AddValues<double>(const double& InLhs, const double& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE float AddValues<float>(const float& InLhs, const float& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE int8 AddValues<int8>(const int8& InLhs, const int8& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE int16 AddValues<int16>(const int16& InLhs, const int16& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE int32 AddValues<int32>(const int32& InLhs, const int32& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE int64 AddValues<int64>(const int64& InLhs, const int64& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE uint8 AddValues<uint8>(const uint8& InLhs, const uint8& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE uint16 AddValues<uint16>(const uint16& InLhs, const uint16& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE uint32 AddValues<uint32>(const uint32& InLhs, const uint32& InRhs)
+{
+    return InLhs + InRhs;
+}
+
+template<>
+VOXELMATEINLINE uint64 AddValues<uint64>(const uint64& InLhs, const uint64& InRhs)
+{
+    return InLhs + InRhs;
 }
 
 template<>
@@ -1154,6 +1471,72 @@ VOXELMATEINLINE Ue4Type SubValues(const Ue4Type& InLhs, const Ue4Type& InRhs)
 }
 
 template<>
+VOXELMATEINLINE bool SubValues<bool>(const bool& InLhs, const bool& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE double SubValues<double>(const double& InLhs, const double& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE float SubValues<float>(const float& InLhs, const float& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE int8 SubValues<int8>(const int8& InLhs, const int8& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE int16 SubValues<int16>(const int16& InLhs, const int16& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE int32 SubValues<int32>(const int32& InLhs, const int32& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE int64 SubValues<int64>(const int64& InLhs, const int64& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE uint8 SubValues<uint8>(const uint8& InLhs, const uint8& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE uint16 SubValues<uint16>(const uint16& InLhs, const uint16& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE uint32 SubValues<uint32>(const uint32& InLhs, const uint32& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
+VOXELMATEINLINE uint64 SubValues<uint64>(const uint64& InLhs, const uint64& InRhs)
+{
+    return InLhs - InRhs;
+}
+
+template<>
 VOXELMATEINLINE FVector SubValues<FVector>(const FVector& InLhs, const FVector& InRhs)
 {
     return InLhs - InRhs;
@@ -1226,6 +1609,72 @@ VOXELMATEINLINE Ue4Type AbsValue(const Ue4Type& InValue)
 }
 
 template<>
+VOXELMATEINLINE bool AbsValue<bool>(const bool& InValue)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE double AbsValue<double>(const double& InValue)
+{
+    return FMath::Abs(InValue);
+}
+
+template<>
+VOXELMATEINLINE float AbsValue<float>(const float& InValue)
+{
+    return FMath::Abs(InValue);
+}
+
+template<>
+VOXELMATEINLINE int8 AbsValue<int8>(const int8& InValue)
+{
+    return FMath::Abs<int64>(InValue);
+}
+
+template<>
+VOXELMATEINLINE int16 AbsValue<int16>(const int16& InValue)
+{
+    return FMath::Abs<int64>(InValue);
+}
+
+template<>
+VOXELMATEINLINE int32 AbsValue<int32>(const int32& InValue)
+{
+    return FMath::Abs<int64>(InValue);
+}
+
+template<>
+VOXELMATEINLINE int64 AbsValue<int64>(const int64& InValue)
+{
+    return FMath::Abs<int64>(InValue);
+}
+
+template<>
+VOXELMATEINLINE uint8 AbsValue<uint8>(const uint8& InValue)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint16 AbsValue<uint16>(const uint16& InValue)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint32 AbsValue<uint32>(const uint32& InValue)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint64 AbsValue<uint64>(const uint64& InValue)
+{
+    return InValue;
+}
+
+template<>
 VOXELMATEINLINE FVector AbsValue<FVector>(const FVector& InValue)
 {
     return InValue.GetAbs();
@@ -1295,6 +1744,72 @@ VOXELMATEINLINE Ue4Type AddFloat(const Ue4Type& InValue, const float& InFloat)
 }
 
 template<>
+VOXELMATEINLINE bool AddFloat<bool>(const bool& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE double AddFloat<double>(const double& InValue, const float& InFloat)
+{
+    return InValue + (double)InFloat;
+}
+
+template<>
+VOXELMATEINLINE float AddFloat<float>(const float& InValue, const float& InFloat)
+{
+    return InValue + InFloat;
+}
+
+template<>
+VOXELMATEINLINE int8 AddFloat<int8>(const int8& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE int16 AddFloat<int16>(const int16& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE int32 AddFloat<int32>(const int32& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE int64 AddFloat<int64>(const int64& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint8 AddFloat<uint8>(const uint8& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint16 AddFloat<uint16>(const uint16& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint32 AddFloat<uint32>(const uint32& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint64 AddFloat<uint64>(const uint64& InValue, const float& InFloat)
+{
+    return InValue;
+}
+
+template<>
 VOXELMATEINLINE FVector AddFloat<FVector>(const FVector& InValue, const float& InFloat)
 {
     return InValue + InFloat;
@@ -1361,6 +1876,72 @@ template<typename Ue4Type>
 VOXELMATEINLINE Ue4Type NegValue(const Ue4Type& InValue)
 {
     static_assert(false, "NegValue not implemented");
+}
+
+template<>
+VOXELMATEINLINE bool NegValue<bool>(const bool& InValue)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE double NegValue<double>(const double& InValue)
+{
+    return -InValue;
+}
+
+template<>
+VOXELMATEINLINE float NegValue<float>(const float& InValue)
+{
+    return -InValue;
+}
+
+template<>
+VOXELMATEINLINE int8 NegValue<int8>(const int8& InValue)
+{
+    return -InValue;
+}
+
+template<>
+VOXELMATEINLINE int16 NegValue<int16>(const int16& InValue)
+{
+    return -InValue;
+}
+
+template<>
+VOXELMATEINLINE int32 NegValue<int32>(const int32& InValue)
+{
+    return -InValue;
+}
+
+template<>
+VOXELMATEINLINE int64 NegValue<int64>(const int64& InValue)
+{
+    return -InValue;
+}
+
+template<>
+VOXELMATEINLINE uint8 NegValue<uint8>(const uint8& InValue)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint16 NegValue<uint16>(const uint16& InValue)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint32 NegValue<uint32>(const uint32& InValue)
+{
+    return InValue;
+}
+
+template<>
+VOXELMATEINLINE uint64 NegValue<uint64>(const uint64& InValue)
+{
+    return InValue;
 }
 
 template<>
@@ -1541,6 +2122,17 @@ struct TVoxelDatabaseMetadataType
     }
 };
 
+typedef TVoxelDatabaseVoxelType<bool> FVoxelDatabaseBool;
+typedef TVoxelDatabaseVoxelType<double> FVoxelDatabaseDouble;
+typedef TVoxelDatabaseVoxelType<float> FVoxelDatabaseFloat;
+typedef TVoxelDatabaseVoxelType<int8> FVoxelDatabaseInt8;
+typedef TVoxelDatabaseVoxelType<int16> FVoxelDatabaseInt16;
+typedef TVoxelDatabaseVoxelType<int32> FVoxelDatabaseInt32;
+typedef TVoxelDatabaseVoxelType<int64> FVoxelDatabaseInt64;
+typedef TVoxelDatabaseVoxelType<uint8> FVoxelDatabaseUInt8;
+typedef TVoxelDatabaseVoxelType<uint16> FVoxelDatabaseUInt16;
+typedef TVoxelDatabaseVoxelType<uint32> FVoxelDatabaseUInt32;
+typedef TVoxelDatabaseVoxelType<uint64> FVoxelDatabaseUInt64;
 typedef TVoxelDatabaseVoxelType<FVector> FVoxelDatabaseVector;
 typedef TVoxelDatabaseVoxelType<FVector4> FVoxelDatabaseVector4;
 typedef TVoxelDatabaseVoxelType<FVector2D> FVoxelDatabaseVector2D;
@@ -1595,6 +2187,61 @@ typedef TVoxelDatabaseMetadataType<FTranslationMap> FVoxelDatabaseTranslationMap
 typedef TVoxelDatabaseMetadataType<FScaleTranslationMap> FVoxelDatabaseScaleTranslationMap;
 typedef TVoxelDatabaseMetadataType<FUniformScaleTranslationMap> FVoxelDatabaseUniformScaleTranslationMap;
 typedef TVoxelDatabaseMetadataType<FNonlinearFrustumMap> FVoxelDatabaseNonlinearFrustumMap;
+
+template<> VOXELMATEINLINE FVoxelDatabaseBool openvdb::zeroVal<FVoxelDatabaseBool>()
+{
+    return FVoxelDatabaseBool::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseDouble openvdb::zeroVal<FVoxelDatabaseDouble>()
+{
+    return FVoxelDatabaseDouble::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseFloat openvdb::zeroVal<FVoxelDatabaseFloat>()
+{
+    return FVoxelDatabaseFloat::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseInt8 openvdb::zeroVal<FVoxelDatabaseInt8>()
+{
+    return FVoxelDatabaseInt8::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseInt16 openvdb::zeroVal<FVoxelDatabaseInt16>()
+{
+    return FVoxelDatabaseInt16::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseInt32 openvdb::zeroVal<FVoxelDatabaseInt32>()
+{
+    return FVoxelDatabaseInt32::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseInt64 openvdb::zeroVal<FVoxelDatabaseInt64>()
+{
+    return FVoxelDatabaseInt64::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseUInt8 openvdb::zeroVal<FVoxelDatabaseUInt8>()
+{
+    return FVoxelDatabaseUInt8::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseUInt16 openvdb::zeroVal<FVoxelDatabaseUInt16>()
+{
+    return FVoxelDatabaseUInt16::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseUInt32 openvdb::zeroVal<FVoxelDatabaseUInt32>()
+{
+    return FVoxelDatabaseUInt32::ZeroValue;
+}
+
+template<> VOXELMATEINLINE FVoxelDatabaseUInt64 openvdb::zeroVal<FVoxelDatabaseUInt64>()
+{
+    return FVoxelDatabaseUInt64::ZeroValue;
+}
 
 template<> VOXELMATEINLINE FVoxelDatabaseVector2D openvdb::zeroVal<FVoxelDatabaseVector2D>()
 {
@@ -1866,6 +2513,61 @@ template<> VOXELMATEINLINE FVoxelDatabaseNonlinearFrustumMap openvdb::zeroVal<FV
     return FVoxelDatabaseNonlinearFrustumMap::ZeroValue;
 }
 
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseBool>
+{
+    VOXELMATEINLINE static FVoxelDatabaseBool value() { return openvdb::math::Tolerance<bool>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseDouble>
+{
+    VOXELMATEINLINE static FVoxelDatabaseDouble value() { return openvdb::math::Tolerance<double>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseFloat>
+{
+    VOXELMATEINLINE static FVoxelDatabaseFloat value() { return openvdb::math::Tolerance<float>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt8>
+{
+    VOXELMATEINLINE static FVoxelDatabaseInt8 value() { return openvdb::math::Tolerance<int8>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt16>
+{
+    VOXELMATEINLINE static FVoxelDatabaseInt16 value() { return openvdb::math::Tolerance<int16>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt32>
+{
+    VOXELMATEINLINE static FVoxelDatabaseInt32 value() { return openvdb::math::Tolerance<int32>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt64>
+{
+    VOXELMATEINLINE static FVoxelDatabaseInt64 value() { return openvdb::math::Tolerance<int64>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt8>
+{
+    VOXELMATEINLINE static FVoxelDatabaseUInt8 value() { return openvdb::math::Tolerance<uint8>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt16>
+{
+    VOXELMATEINLINE static FVoxelDatabaseUInt16 value() { return openvdb::math::Tolerance<uint16>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt32>
+{
+    VOXELMATEINLINE static FVoxelDatabaseUInt32 value() { return openvdb::math::Tolerance<uint32>::value(); }
+};
+
+template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt64>
+{
+    VOXELMATEINLINE static FVoxelDatabaseUInt64 value() { return openvdb::math::Tolerance<uint64>::value(); }
+};
+
 template<> struct openvdb::math::Tolerance<FVoxelDatabaseVector>
 {
     VOXELMATEINLINE static FVoxelDatabaseVector value() { return FVector(openvdb::math::Tolerance<float>::value()); }
@@ -1899,6 +2601,61 @@ template<> struct openvdb::math::Tolerance<FVoxelDatabasePackedRGB10A2N>
 template<> struct openvdb::math::Tolerance<FVoxelDatabasePackedRGBA16N>
 {
     VOXELMATEINLINE static FVoxelDatabasePackedRGBA16N value() { return FVoxelDatabasePackedRGBA16N(FVector4(openvdb::math::Tolerance<float>::value())); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseBool>
+{
+    VOXELMATEINLINE static FVoxelDatabaseBool value() { return openvdb::math::Delta<bool>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseDouble>
+{
+    VOXELMATEINLINE static FVoxelDatabaseDouble value() { return openvdb::math::Delta<double>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseFloat>
+{
+    VOXELMATEINLINE static FVoxelDatabaseFloat value() { return openvdb::math::Delta<float>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseInt8>
+{
+    VOXELMATEINLINE static FVoxelDatabaseInt8 value() { return openvdb::math::Delta<int8>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseInt16>
+{
+    VOXELMATEINLINE static FVoxelDatabaseInt16 value() { return openvdb::math::Delta<int16>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseInt32>
+{
+    VOXELMATEINLINE static FVoxelDatabaseInt32 value() { return openvdb::math::Delta<int32>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseInt64>
+{
+    VOXELMATEINLINE static FVoxelDatabaseInt64 value() { return openvdb::math::Delta<int64>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseUInt8>
+{
+    VOXELMATEINLINE static FVoxelDatabaseUInt8 value() { return openvdb::math::Delta<uint8>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseUInt16>
+{
+    VOXELMATEINLINE static FVoxelDatabaseUInt16 value() { return openvdb::math::Delta<uint16>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseUInt32>
+{
+    VOXELMATEINLINE static FVoxelDatabaseUInt32 value() { return openvdb::math::Delta<uint32>::value(); }
+};
+
+template<> struct openvdb::math::Delta<FVoxelDatabaseUInt64>
+{
+    VOXELMATEINLINE static FVoxelDatabaseUInt64 value() { return openvdb::math::Delta<uint64>::value(); }
 };
 
 template<> struct openvdb::math::Delta<FVoxelDatabaseVector>

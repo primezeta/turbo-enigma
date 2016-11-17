@@ -4,7 +4,7 @@
 	<ItemGroup>
 		<None Include="..\..\FirstPerson.uproject" />
 		<Filter Include="Source">
-			<UniqueIdentifier>{A49F48F5-2E02-448A-8711-3ECB805849CA}</UniqueIdentifier>
+			<UniqueIdentifier>{F38F41C8-B8C2-4ADB-9AA9-A06CA0EF6374}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\FirstPerson.Target.cs">
 			<Filter>Source</Filter>
@@ -13,7 +13,7 @@
 			<Filter>Source</Filter>
 		</None >
 		<Filter Include="Config">
-			<UniqueIdentifier>{00200CFC-C57B-4EB9-8DC9-41E72055FDA3}</UniqueIdentifier>
+			<UniqueIdentifier>{BEFB4C36-3504-42F1-A0B2-2D42454B9031}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Config\DefaultEditor.ini">
 			<Filter>Config</Filter>
@@ -31,22 +31,22 @@
 			<Filter>Config</Filter>
 		</None >
 		<Filter Include="Plugins">
-			<UniqueIdentifier>{A8BBC3B0-7D75-454B-9574-4E405CF50432}</UniqueIdentifier>
+			<UniqueIdentifier>{27830AC7-F818-4623-9D1B-4EDF8754FF4C}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Plugins\VoxelMate">
-			<UniqueIdentifier>{E27652C6-7557-4928-BC3D-D86910826C30}</UniqueIdentifier>
+			<UniqueIdentifier>{07EBA176-0A83-489F-B0CB-69A87092DEFB}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Plugins\VoxelMate\Source">
-			<UniqueIdentifier>{2ECD1AF5-A5F4-4B89-AFFF-079006BCC482}</UniqueIdentifier>
+			<UniqueIdentifier>{1F83F596-4C08-490D-ABF3-40D3428C38AF}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Plugins\VoxelMate\Source\VoxelMate">
-			<UniqueIdentifier>{7EFC5227-4880-4E8D-BDDC-8EA6ACBACA2E}</UniqueIdentifier>
+			<UniqueIdentifier>{08D494F1-C6BB-45EF-A729-B082108B5654}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Plugins\VoxelMate\Source\VoxelMate\VoxelMate.Build.cs">
 			<Filter>Plugins\VoxelMate\Source\VoxelMate</Filter>
 		</None >
 		<Filter Include="Plugins\VoxelMate\Source\VoxelMate\Private">
-			<UniqueIdentifier>{3127D9CC-6E99-47D3-9F5F-D07E2F7914C5}</UniqueIdentifier>
+			<UniqueIdentifier>{402ADF64-BA6E-4836-B801-58DD1886B513}</UniqueIdentifier>
 		</Filter>
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\ArchiveGrid.cpp">
 			<Filter>Plugins\VoxelMate\Source\VoxelMate\Private</Filter>
@@ -112,7 +112,7 @@
 			<Filter>Plugins\VoxelMate\Source\VoxelMate\Private</Filter>
 		</ClInclude >
 		<Filter Include="Plugins\VoxelMate\Source\VoxelMate\Public">
-			<UniqueIdentifier>{F4FA1CB6-9731-46E4-BB75-3990BED27D6E}</UniqueIdentifier>
+			<UniqueIdentifier>{99CC3CC7-7E5B-42F3-8C4B-CA22E029628A}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\GridTransformMaps.h">
 			<Filter>Plugins\VoxelMate\Source\VoxelMate\Public</Filter>
@@ -165,16 +165,16 @@
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyPackedRGBA16N.h">
 			<Filter>Plugins\VoxelMate\Source\VoxelMate\Public</Filter>
 		</ClInclude >
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyUint16.h">
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyUInt16.h">
 			<Filter>Plugins\VoxelMate\Source\VoxelMate\Public</Filter>
 		</ClInclude >
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyUint32.h">
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyUInt32.h">
 			<Filter>Plugins\VoxelMate\Source\VoxelMate\Public</Filter>
 		</ClInclude >
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyUint64.h">
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyUInt64.h">
 			<Filter>Plugins\VoxelMate\Source\VoxelMate\Public</Filter>
 		</ClInclude >
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyUint8.h">
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyUInt8.h">
 			<Filter>Plugins\VoxelMate\Source\VoxelMate\Public</Filter>
 		</ClInclude >
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyVector.h">
@@ -193,13 +193,13 @@
 			<Filter>Plugins\VoxelMate</Filter>
 		</None >
 		<Filter Include="Plugins\VoxelMate\Resources">
-			<UniqueIdentifier>{408B3D55-BB77-455B-B62B-BE59E8B38F95}</UniqueIdentifier>
+			<UniqueIdentifier>{12B99E6D-EA36-4B3A-BDA3-58406B87789B}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Plugins\VoxelMate\Resources\Icon128.png">
 			<Filter>Plugins\VoxelMate\Resources</Filter>
 		</None >
 		<Filter Include="Source\FirstPerson">
-			<UniqueIdentifier>{6C1BF13C-FE44-46D0-A544-CD4FCE64BE4D}</UniqueIdentifier>
+			<UniqueIdentifier>{6FB22171-2E13-419F-AF1C-B2C807C63C28}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\FirstPerson\FirstPerson.Build.cs">
 			<Filter>Source\FirstPerson</Filter>
@@ -235,13 +235,13 @@
 			<Filter>Source\FirstPerson</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty">
-			<UniqueIdentifier>{A1C3672C-A250-4056-BBDC-8F9CB62F4D9E}</UniqueIdentifier>
+			<UniqueIdentifier>{1AA92B63-4FA3-4DCF-B1EE-02D8857CAC17}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\NoiseGen">
-			<UniqueIdentifier>{7152FF22-5FF9-4C3A-B99F-2C20C2DA5FC2}</UniqueIdentifier>
+			<UniqueIdentifier>{A666885F-1A27-45DB-BB62-4B66C1ACB97B}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\NoiseGen\FastNoise">
-			<UniqueIdentifier>{BCD7E254-6BDE-427A-BFE8-D1988EA8E70D}</UniqueIdentifier>
+			<UniqueIdentifier>{A5278B76-065A-4F04-979E-1DDEE3E95FF8}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\NoiseGen\FastNoise\FastNoise.Build.cs">
 			<Filter>Source\ThirdParty\NoiseGen\FastNoise</Filter>
@@ -262,7 +262,7 @@
 			<Filter>Source\ThirdParty\NoiseGen\FastNoise</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\NoiseGen\FastNoiseSIMD">
-			<UniqueIdentifier>{0AF6E57E-A22B-4FFD-8A29-D3CAEFBA418E}</UniqueIdentifier>
+			<UniqueIdentifier>{2A62ABDC-91C9-4D87-8749-6EFEA7C458BC}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\NoiseGen\FastNoiseSIMD\FastNoiseSIMD.Build.cs">
 			<Filter>Source\ThirdParty\NoiseGen\FastNoiseSIMD</Filter>
@@ -286,7 +286,7 @@
 			<Filter>Source\ThirdParty\NoiseGen\FastNoiseSIMD</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\NoiseGen\LibNoise">
-			<UniqueIdentifier>{B0309D7F-D0A6-4820-AA7E-2918B239F3F0}</UniqueIdentifier>
+			<UniqueIdentifier>{D497C90D-E408-4CE1-89B8-E8033768FC5E}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Source\ThirdParty\NoiseGen\LibNoise\basictypes.h">
 			<Filter>Source\ThirdParty\NoiseGen\LibNoise</Filter>
@@ -334,7 +334,7 @@
 			<Filter>Source\ThirdParty\NoiseGen\LibNoise</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\NoiseGen\LibNoise\model">
-			<UniqueIdentifier>{A8710D20-DF92-4A32-8E02-AB54F090FC6D}</UniqueIdentifier>
+			<UniqueIdentifier>{D9882499-15B9-41FA-9E81-C06276030433}</UniqueIdentifier>
 		</Filter>
 		<ClCompile Include="..\..\Source\ThirdParty\NoiseGen\LibNoise\model\cylinder.cpp">
 			<Filter>Source\ThirdParty\NoiseGen\LibNoise\model</Filter>
@@ -364,7 +364,7 @@
 			<Filter>Source\ThirdParty\NoiseGen\LibNoise\model</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\NoiseGen\LibNoise\module">
-			<UniqueIdentifier>{14501AB5-17F6-4480-B7A4-A558B175BEF5}</UniqueIdentifier>
+			<UniqueIdentifier>{070AE8A9-EFE3-43BA-84D7-06A7C419DCE6}</UniqueIdentifier>
 		</Filter>
 		<ClCompile Include="..\..\Source\ThirdParty\NoiseGen\LibNoise\module\abs.cpp">
 			<Filter>Source\ThirdParty\NoiseGen\LibNoise\module</Filter>
@@ -544,7 +544,7 @@
 			<Filter>Source\ThirdParty\NoiseGen\LibNoise\module</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB">
-			<UniqueIdentifier>{09703578-3A33-47A0-B6B1-FFB198FEEB72}</UniqueIdentifier>
+			<UniqueIdentifier>{DB6CB372-CCDA-44E0-8DA9-DF7D7A454BAA}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\openvdb.VC.db">
 			<Filter>Source\ThirdParty\OpenVDB</Filter>
@@ -553,13 +553,13 @@
 			<Filter>Source\ThirdParty\OpenVDB</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\doc">
-			<UniqueIdentifier>{FEE03D8D-3E85-4DDF-B3A6-0C3BBA6A7FB0}</UniqueIdentifier>
+			<UniqueIdentifier>{ACEC944C-D6E6-4BAD-BF7C-36A7BDBD6109}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\doc\Museth_TOG13.pdf">
 			<Filter>Source\ThirdParty\OpenVDB\doc</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\openvdb_create">
-			<UniqueIdentifier>{0622EF6E-52A3-46F1-A053-5DE950DB5CE7}</UniqueIdentifier>
+			<UniqueIdentifier>{36587B9F-D91F-4CC2-9212-24115AD6C98B}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\openvdb_create\main.cc">
 			<Filter>Source\ThirdParty\OpenVDB\openvdb_create</Filter>
@@ -568,13 +568,13 @@
 			<Filter>Source\ThirdParty\OpenVDB\openvdb_create</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src">
-			<UniqueIdentifier>{B3364AD3-F453-4F11-B75E-29EA794E2992}</UniqueIdentifier>
+			<UniqueIdentifier>{974DDF30-64D8-41FB-AB78-3D8A9EBE35AC}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\README">
 			<Filter>Source\ThirdParty\OpenVDB\src</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb">
-			<UniqueIdentifier>{B6C8B3BC-9DE2-4C02-93D8-D6FDDADEF4FA}</UniqueIdentifier>
+			<UniqueIdentifier>{FD4A7CE6-C85C-4D6F-B88A-374980885DBA}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\CHANGES">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb</Filter>
@@ -631,28 +631,28 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\cmd">
-			<UniqueIdentifier>{BA12FE9F-39DB-4204-BF06-8255C37BCCF7}</UniqueIdentifier>
+			<UniqueIdentifier>{9632D11D-B750-485D-A511-E0A38FD79049}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_print">
-			<UniqueIdentifier>{6C425100-07CD-49A6-8278-13EF28E0BFEA}</UniqueIdentifier>
+			<UniqueIdentifier>{C0972005-DCEC-4A7D-9905-B1B908E2D9DE}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_print\main.cc">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_print</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_render">
-			<UniqueIdentifier>{EE4B0626-5152-4080-923C-FDB23EC19B13}</UniqueIdentifier>
+			<UniqueIdentifier>{9A2657FE-497B-4A51-8F40-AC7A084EAFCC}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_render\main.cc">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_render</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_view">
-			<UniqueIdentifier>{4C61D1C4-19E5-4A7A-8DCD-46A2EE3C54B0}</UniqueIdentifier>
+			<UniqueIdentifier>{297084B5-0BD4-443D-BE99-8C9C3A649330}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_view\main.cc">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\cmd\openvdb_view</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\doc">
-			<UniqueIdentifier>{7C889B2A-9ED8-4900-B93C-5D45F3957BEA}</UniqueIdentifier>
+			<UniqueIdentifier>{A702B98A-A3FF-4AFB-9E56-1820C784A2A4}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\doc\api_0_98_0.txt">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\doc</Filter>
@@ -679,7 +679,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\doc</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\io">
-			<UniqueIdentifier>{C5256EE6-2D41-4B04-8DE8-88399B12CE87}</UniqueIdentifier>
+			<UniqueIdentifier>{756A448C-F0FA-4FB8-90D3-17782E13FEE0}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\io\Archive.cc">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\io</Filter>
@@ -727,7 +727,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\io</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\math">
-			<UniqueIdentifier>{9E7F68F4-5623-47EF-A420-83F041511D59}</UniqueIdentifier>
+			<UniqueIdentifier>{5BB725C4-E843-4E68-927D-37C617BC7CD4}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\math\BBox.h">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\math</Filter>
@@ -811,7 +811,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\math</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\metadata">
-			<UniqueIdentifier>{DD1DB523-EF41-49CA-A112-DA7CAFDD371B}</UniqueIdentifier>
+			<UniqueIdentifier>{258C4107-4240-424C-BA91-8B099EBB8FD9}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\metadata\Metadata.cc">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\metadata</Filter>
@@ -829,7 +829,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\metadata</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\python">
-			<UniqueIdentifier>{552A6D36-3650-47A1-9745-1ADF9E820EDC}</UniqueIdentifier>
+			<UniqueIdentifier>{518701A1-24C3-4EA0-882D-01CB0EA5D15E}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\python\pyAccessor.h">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\python</Filter>
@@ -862,13 +862,13 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\python</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\python\test">
-			<UniqueIdentifier>{801CCFBB-BCC1-46F9-8CE9-01F6F35EFA80}</UniqueIdentifier>
+			<UniqueIdentifier>{0C47D108-8EF5-4174-AC34-E596633DD069}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\python\test\TestOpenVDB.py">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\python\test</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\tools">
-			<UniqueIdentifier>{85E6316E-8F86-483B-A23C-782CF6CB09EF}</UniqueIdentifier>
+			<UniqueIdentifier>{8D53DA7B-B35B-4947-AC77-5AAF59E64390}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\tools\ChangeBackground.h">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\tools</Filter>
@@ -985,7 +985,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\tools</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\tree">
-			<UniqueIdentifier>{D40B5BBB-7C83-41CC-8722-7107FA193C72}</UniqueIdentifier>
+			<UniqueIdentifier>{FDA3EAF4-1F95-4B69-B9D1-E6D375CF2107}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\tree\InternalNode.h">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\tree</Filter>
@@ -1021,7 +1021,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\tree</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\unittest">
-			<UniqueIdentifier>{8E815AB3-BD5A-4166-BF5B-9CFBB9901721}</UniqueIdentifier>
+			<UniqueIdentifier>{2A2F783C-0E68-49D4-9E63-279CD5BA3DCE}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\unittest\main.cc">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\unittest</Filter>
@@ -1231,7 +1231,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\unittest</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\util">
-			<UniqueIdentifier>{D8B57449-133A-4274-8EDB-8D3AFC5BC553}</UniqueIdentifier>
+			<UniqueIdentifier>{6A8ACAEA-92EE-4469-BE50-C265673F9C93}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\util\CpuTimer.h">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\util</Filter>
@@ -1267,7 +1267,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\util</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer">
-			<UniqueIdentifier>{998035A8-8321-4189-91C4-6BC028626192}</UniqueIdentifier>
+			<UniqueIdentifier>{A4F3F54B-DBEC-467C-95D4-C6E875222BA8}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\Camera.cc">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer</Filter>
@@ -1303,7 +1303,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master">
-			<UniqueIdentifier>{BC008D34-34A4-4102-9F33-1C99B1FDCCD1}</UniqueIdentifier>
+			<UniqueIdentifier>{63350AC6-EA93-4260-87B4-161FD52879B9}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\compile.bat">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master</Filter>
@@ -1321,16 +1321,16 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\include">
-			<UniqueIdentifier>{A34E18AA-FFC5-472D-B1A5-5FA6590C2A32}</UniqueIdentifier>
+			<UniqueIdentifier>{E6858AE4-00FC-4F09-9E03-138DCDDD3E6D}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\include\GL">
-			<UniqueIdentifier>{AA8BE6D7-F956-422B-B6AF-A602D0D3D35D}</UniqueIdentifier>
+			<UniqueIdentifier>{1129D691-F4FA-4E14-A6AE-26812CDA2C87}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\include\GL\glfw.h">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\include\GL</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib">
-			<UniqueIdentifier>{07EC49F2-BCC5-4950-81EF-162FEF33417A}</UniqueIdentifier>
+			<UniqueIdentifier>{44FFD128-D70B-4E54-9E18-4E188AD317C7}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\enable.c">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib</Filter>
@@ -1372,7 +1372,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\carbon">
-			<UniqueIdentifier>{9659B9DA-2FF0-4C37-8BCB-5FBAB4949624}</UniqueIdentifier>
+			<UniqueIdentifier>{459D9D11-F91F-45D9-850B-D683ACEDFCFF}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\carbon\carbon_enable.c">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\carbon</Filter>
@@ -1411,7 +1411,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\carbon</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\cocoa">
-			<UniqueIdentifier>{3DE83A0D-77ED-48CB-8187-729378B4CFEB}</UniqueIdentifier>
+			<UniqueIdentifier>{F7509E6C-78F5-4120-AB95-3E36F79E2B1F}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\cocoa\cocoa_enable.m">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\cocoa</Filter>
@@ -1447,7 +1447,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\cocoa</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\win32">
-			<UniqueIdentifier>{31382EBD-9D5C-4910-9867-937B5EE23EC2}</UniqueIdentifier>
+			<UniqueIdentifier>{8EA14477-EC8A-42DC-A637-A2E1FA6C6EB8}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\win32\glfwdll.def">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\win32</Filter>
@@ -1501,7 +1501,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\win32</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\x11">
-			<UniqueIdentifier>{21914AE3-C24B-460B-8236-9CEE45AB9F1E}</UniqueIdentifier>
+			<UniqueIdentifier>{E088A486-84B3-4D5A-9250-12C2A25D3833}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\x11\Makefile.x11.in">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\x11</Filter>
@@ -1537,13 +1537,13 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\lib\x11</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support">
-			<UniqueIdentifier>{7DB349E7-4B4B-453D-ABF4-8E4D24B5B3A9}</UniqueIdentifier>
+			<UniqueIdentifier>{97008AD4-D926-46CD-BE84-9A06C64C85E2}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d">
-			<UniqueIdentifier>{D494CCC0-4A9B-439B-9D59-F76FC8B0C2BF}</UniqueIdentifier>
+			<UniqueIdentifier>{111FF0C6-27F6-404B-A4A1-80C16E56A98F}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\examples">
-			<UniqueIdentifier>{2A35B354-DBF9-4FF8-AE63-4CB143DDDF74}</UniqueIdentifier>
+			<UniqueIdentifier>{A6DB794F-90FF-4AC7-874B-A3A681BA6AA9}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\examples\boing.d">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\examples</Filter>
@@ -1585,7 +1585,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\examples</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\imports">
-			<UniqueIdentifier>{7C140305-10AA-4F93-90F7-0171C55AD7B6}</UniqueIdentifier>
+			<UniqueIdentifier>{4108435D-AC6B-472E-AECB-15855F6585B1}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\imports\gl.d">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\imports</Filter>
@@ -1597,7 +1597,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\imports</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\lib">
-			<UniqueIdentifier>{4644DB78-094E-4010-8E00-9BC617D997FA}</UniqueIdentifier>
+			<UniqueIdentifier>{92EE1787-1F5E-4E61-9A0F-0B4A4D771EF9}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\lib\glfwdll.def">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\lib</Filter>
@@ -1612,7 +1612,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\d\lib</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\msvc90">
-			<UniqueIdentifier>{60877D8F-BFAB-47C8-86A1-36D02C8265A5}</UniqueIdentifier>
+			<UniqueIdentifier>{3232A1CB-5FF6-4091-A41C-F3D9092FE1C6}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\msvc90\accuracy.vcproj">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\msvc90</Filter>
@@ -1684,7 +1684,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\msvc90</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\pascal">
-			<UniqueIdentifier>{26837487-5DCB-4769-A16C-DDCC22C15E59}</UniqueIdentifier>
+			<UniqueIdentifier>{5AEACDD4-6ED1-443B-9A13-3599CE242B91}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\pascal\glfw.pas">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\pascal</Filter>
@@ -1696,7 +1696,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\support\pascal</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\tests">
-			<UniqueIdentifier>{037F0FDC-0CD6-49E7-9906-82598D5DB33B}</UniqueIdentifier>
+			<UniqueIdentifier>{0BCFADB5-714C-4827-88DC-489F0D20E5D3}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\tests\accuracy.c">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\tests</Filter>
@@ -1765,7 +1765,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\glfw-legacy-master\tests</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer">
-			<UniqueIdentifier>{6F825703-5A72-48D5-BF81-7092E03E3F13}</UniqueIdentifier>
+			<UniqueIdentifier>{D1D10F18-B2BE-46F3-BE5A-BFBEE18F6AF1}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\Camera.cc">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer</Filter>
@@ -1801,7 +1801,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master">
-			<UniqueIdentifier>{C152529E-F15B-4A75-A896-68B9C7A685E1}</UniqueIdentifier>
+			<UniqueIdentifier>{58E1D546-AD3C-49B6-AC6D-9DC764F74EF0}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\compile.bat">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master</Filter>
@@ -1819,16 +1819,16 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\include">
-			<UniqueIdentifier>{9F1F6C4D-7FDB-49A0-8A61-24E7DE1C74B6}</UniqueIdentifier>
+			<UniqueIdentifier>{C55E4650-C781-4BC6-B9F8-0894A0038314}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\include\GL">
-			<UniqueIdentifier>{077C4487-F723-4FF1-AC62-61DE1F42C6B5}</UniqueIdentifier>
+			<UniqueIdentifier>{0E4B5906-06E3-470D-8076-6AFA04C22CF1}</UniqueIdentifier>
 		</Filter>
 		<ClInclude Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\include\GL\glfw.h">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\include\GL</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib">
-			<UniqueIdentifier>{E798A053-E431-4BD5-8B7C-C913E427CDC1}</UniqueIdentifier>
+			<UniqueIdentifier>{58C874A0-4248-4F9D-B00A-CC83620DB252}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\enable.c">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib</Filter>
@@ -1870,7 +1870,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\carbon">
-			<UniqueIdentifier>{FE234935-5C39-43F2-9CC4-EC1CB197C0B4}</UniqueIdentifier>
+			<UniqueIdentifier>{EA99A2F9-DA36-4D30-AD6F-C36EA32C32CD}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\carbon\carbon_enable.c">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\carbon</Filter>
@@ -1909,7 +1909,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\carbon</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\cocoa">
-			<UniqueIdentifier>{9C6FDF76-CA4D-4907-B657-C6E12942908B}</UniqueIdentifier>
+			<UniqueIdentifier>{30DC53FB-CDD5-4E29-BC8B-E923338C913E}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\cocoa\cocoa_enable.m">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\cocoa</Filter>
@@ -1945,7 +1945,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\cocoa</Filter>
 		</ClInclude >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\win32">
-			<UniqueIdentifier>{55F00C96-3261-4F1E-A866-0EFD02784949}</UniqueIdentifier>
+			<UniqueIdentifier>{2E391BC1-CA3F-4761-AC15-3668B202C668}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\win32\glfwdll.def">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\win32</Filter>
@@ -1999,7 +1999,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\win32</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\x11">
-			<UniqueIdentifier>{B52ED246-EBB0-43E2-8444-0331E4C34034}</UniqueIdentifier>
+			<UniqueIdentifier>{77B4DAB1-5E93-41C9-BEB6-6EAA7ADE7D05}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\x11\Makefile.x11.in">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\x11</Filter>
@@ -2035,13 +2035,13 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\lib\x11</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support">
-			<UniqueIdentifier>{D1A5B1C5-2DAC-44CE-9E2E-3C42FE79CAD1}</UniqueIdentifier>
+			<UniqueIdentifier>{2E30F34E-1003-46C1-9520-1303CDABF11C}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d">
-			<UniqueIdentifier>{5C559738-79C8-4D9F-B376-C634E8B4247D}</UniqueIdentifier>
+			<UniqueIdentifier>{8BE3244F-07FF-409C-B6E8-EF90A9F02097}</UniqueIdentifier>
 		</Filter>
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\examples">
-			<UniqueIdentifier>{7909DF3D-A781-4F18-AA8E-C809C104FB36}</UniqueIdentifier>
+			<UniqueIdentifier>{108C5377-570B-480C-B4CE-D65A29595257}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\examples\boing.d">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\examples</Filter>
@@ -2083,7 +2083,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\examples</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\imports">
-			<UniqueIdentifier>{28D7271C-26B6-4E76-9457-3C780EAB4D37}</UniqueIdentifier>
+			<UniqueIdentifier>{B7BDE3F5-6343-41EB-95C2-D54D7E9E3CD7}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\imports\gl.d">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\imports</Filter>
@@ -2095,7 +2095,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\imports</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\lib">
-			<UniqueIdentifier>{2DD61542-2ACE-438C-A6C3-E170514EB237}</UniqueIdentifier>
+			<UniqueIdentifier>{94AE8E46-7017-48D4-AACC-65F88BFC49AC}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\lib\glfwdll.def">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\lib</Filter>
@@ -2110,7 +2110,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\d\lib</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\msvc90">
-			<UniqueIdentifier>{5EF0BAA1-4BC6-4680-A24F-8DCEC3D3ABCA}</UniqueIdentifier>
+			<UniqueIdentifier>{201B0FDA-7BDB-4B11-9844-F9C1E3F7F34C}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\msvc90\accuracy.vcproj">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\msvc90</Filter>
@@ -2182,7 +2182,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\msvc90</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\pascal">
-			<UniqueIdentifier>{9C29B036-90B5-462C-821C-F20E853A9243}</UniqueIdentifier>
+			<UniqueIdentifier>{9F64679F-70DC-4781-92F5-71DAF039527F}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\pascal\glfw.pas">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\pascal</Filter>
@@ -2194,7 +2194,7 @@
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\support\pascal</Filter>
 		</None >
 		<Filter Include="Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\tests">
-			<UniqueIdentifier>{31B7DE2B-B4C3-4B54-8452-6DFDC3B72328}</UniqueIdentifier>
+			<UniqueIdentifier>{3DB3A30B-6EA5-4EB2-8586-B0E8C7F676C9}</UniqueIdentifier>
 		</Filter>
 		<None Include="..\..\Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\tests\accuracy.c">
 			<Filter>Source\ThirdParty\OpenVDB\src\openvdb\viewer\viewer\glfw-legacy-master\tests</Filter>

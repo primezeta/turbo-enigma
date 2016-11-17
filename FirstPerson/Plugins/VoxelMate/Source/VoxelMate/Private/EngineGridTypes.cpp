@@ -1,6 +1,17 @@
 #include "VoxelMatePCH.h"
 #include "EngineGridTypes.h"
 
+const FVoxelDatabaseBool::ValueType FVoxelDatabaseBool::ZeroValue = false;
+const FVoxelDatabaseDouble::ValueType FVoxelDatabaseDouble::ZeroValue = 0.0;
+const FVoxelDatabaseFloat::ValueType FVoxelDatabaseFloat::ZeroValue = 0.0f;
+const FVoxelDatabaseInt8::ValueType FVoxelDatabaseInt8::ZeroValue = 0;
+const FVoxelDatabaseInt16::ValueType FVoxelDatabaseInt16::ZeroValue = 0;
+const FVoxelDatabaseInt32::ValueType FVoxelDatabaseInt32::ZeroValue = 0;
+const FVoxelDatabaseInt64::ValueType FVoxelDatabaseInt64::ZeroValue = 0;
+const FVoxelDatabaseUInt8::ValueType FVoxelDatabaseUInt8::ZeroValue = 0;
+const FVoxelDatabaseUInt16::ValueType FVoxelDatabaseUInt16::ZeroValue = 0;
+const FVoxelDatabaseUInt32::ValueType FVoxelDatabaseUInt32::ZeroValue = 0;
+const FVoxelDatabaseUInt64::ValueType FVoxelDatabaseUInt64::ZeroValue = 0;
 const FVoxelDatabaseVector::ValueType FVoxelDatabaseVector::ZeroValue = FVector::ZeroVector;
 const FVoxelDatabaseVector4::ValueType FVoxelDatabaseVector4::ZeroValue = FVector4(0.0f, 0.0f, 0.0f, 0.0f);
 const FVoxelDatabaseVector2D::ValueType FVoxelDatabaseVector2D::ZeroValue = FVector2D::ZeroVector;
