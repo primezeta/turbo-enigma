@@ -1,25 +1,35 @@
 #include "VoxelMatePCH.h"
 #include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabase.h"
-#include "VoxelGridProxyBool.h"
-#include "VoxelGridProxyDouble.h"
-#include "VoxelGridProxyFloat.h"
-#include "VoxelGridProxyInt8.h"
-#include "VoxelGridProxyInt16.h"
-#include "VoxelGridProxyInt32.h"
-#include "VoxelGridProxyInt64.h"
-#include "VoxelGridProxyUInt8.h"
-#include "VoxelGridProxyUInt16.h"
-#include "VoxelGridProxyUInt32.h"
-#include "VoxelGridProxyUInt64.h"
-#include "VoxelGridProxyColor.h"
-#include "VoxelGridProxyLinearColor.h"
-#include "VoxelGridProxyPackedNormal.h"
-#include "VoxelGridProxyPackedRGB10A2N.h"
-#include "VoxelGridProxyPackedRGBA16N.h"
-#include "VoxelGridProxyVector.h"
-#include "VoxelGridProxyVector2D.h"
-#include "VoxelGridProxyVector4.h"
+
+//TODO idea for faster grid lookup
+//TArray<FGridFactory::ValueTypeWeakPtr> CachedGrids; //Careful of anyone accessing this from other threads
+
+AVoxelGridProxy::AVoxelGridProxy(const FObjectInitializer& ObjectInitializer)
+    : Super(ObjectInitializer), IsFloatSavedAsHalf(false)//, CacheIndex(-1) TODO idea for faster grid lookup
+{
+    GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
+    //TODO idea for faster grid lookup
+    //UVoxelDatabase::Get().Grids
+    //CacheIndex = 
+}
+
+FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy)
+{
+    if (!GridProxy.IsDefaultSubobject())
+    {
+        Ar << GridProxy.GridId;
+        Ar << GridProxy.IsFloatSavedAsHalf;
+        Ar << GridProxy.GridDisplayText;
+    }
+    return Ar;
+}
+
+void AVoxelGridProxy::Serialize(FArchive& Ar)
+{
+    Super::Serialize(Ar);
+    Ar << *this;
+}
 
 #define GRID_PROXY_IMPLEMENTATION(ValueType, Name)\
 const ValueType& AVoxelGridProxy##Name::GetVoxelValue(const FIntVector& IndexCoord)\
@@ -52,22 +62,6 @@ void AVoxelGridProxy##Name::SetVoxelValueAndIsActive(const FIntVector& IndexCoor
     UVoxelDatabase::Get().SetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord, FVoxelDatabase##Name(InValue), InIsActive);\
 }
 
-FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy)
-{
-    if (!GridProxy.IsDefaultSubobject())
-    {
-        Ar << GridProxy.GridId;
-        Ar << GridProxy.GridDisplayText;
-    }
-    return Ar;
-}
-
-void AVoxelGridProxy::Serialize(FArchive& Ar)
-{
-    Super::Serialize(Ar);
-    Ar << *this;
-}
-
 GRID_PROXY_IMPLEMENTATION(bool, Bool)
 GRID_PROXY_IMPLEMENTATION(double, Double)
 GRID_PROXY_IMPLEMENTATION(float, Float)
@@ -87,3 +81,5 @@ GRID_PROXY_IMPLEMENTATION(FPackedRGBA16N, PackedRGBA16N)
 GRID_PROXY_IMPLEMENTATION(FVector, Vector)
 GRID_PROXY_IMPLEMENTATION(FVector2D, Vector2D)
 GRID_PROXY_IMPLEMENTATION(FVector4, Vector4)
+GRID_PROXY_IMPLEMENTATION(FIntPoint, IntPoint)
+GRID_PROXY_IMPLEMENTATION(FIntVector, IntVector)

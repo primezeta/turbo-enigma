@@ -36,7 +36,33 @@ enum class EVectorTypeClass : uint8
 };
 
 UENUM(BlueprintType)
-enum class EVoxelDatabaseType : uint8
+enum class EVoxelDatabaseVoxelType : uint8
+{
+    Bool                        UMETA(DisplayName = "bool"),
+    Float                       UMETA(DisplayName = "float"),
+    Double                      UMETA(DisplayName = "double"),
+    Uint8                       UMETA(DisplayName = "uint8"),
+    Uint16                      UMETA(DisplayName = "uint16"),
+    Uint32                      UMETA(DisplayName = "uint32"),
+    Uint64                      UMETA(DisplayName = "uint64"),
+    Int8                        UMETA(DisplayName = "int8"),
+    Int16                       UMETA(DisplayName = "int16"),
+    Int32                       UMETA(DisplayName = "int32"),
+    Int64                       UMETA(DisplayName = "int64"),
+    Vector                      UMETA(DisplayName = "FVector"),
+    Vector4                     UMETA(DisplayName = "FVector4"),
+    Vector2D                    UMETA(DisplayName = "FVector2D"),
+    Color                       UMETA(DisplayName = "FColor"),
+    LinearColor                 UMETA(DisplayName = "FLinearColor"),
+    PackedNormal                UMETA(DisplayName = "FPackedNormal"),
+    PackedRGB10A2N              UMETA(DisplayName = "FPackedRGB10A2N"),
+    PackedRGBA16N               UMETA(DisplayName = "FPackedRGBA16N"),
+    IntPoint                    UMETA(DisplayName = "FIntPoint"),
+    IntVector                   UMETA(DisplayName = "FIntVector"),
+};
+
+UENUM(BlueprintType)
+enum class EVoxelDatabaseMetadataType : uint8
 {
     Bool                        UMETA(DisplayName = "bool"),
     Float                       UMETA(DisplayName = "float"),
