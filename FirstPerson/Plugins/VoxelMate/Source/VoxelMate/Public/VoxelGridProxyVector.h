@@ -14,16 +14,16 @@ public:
     {
     }
 
-    UFUNCTION()
-        const FVector& GetVoxelValue(const FIntVector& IndexCoord);
-    UFUNCTION()
-        const bool GetVoxelIsActive(const FIntVector& IndexCoord);
-    UFUNCTION()
-        const FVector& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive);
-    UFUNCTION()
-        void SetVoxelValue(const FIntVector& IndexCoord, const FVector& InValue);
-    UFUNCTION()
-        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive);
-    UFUNCTION()
-        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector& InValue, const bool& InIsActive);
+    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+        const FVector& GetVoxelValue(const FIntVector& IndexCoord) const;
+    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+        const bool GetVoxelIsActive(const FIntVector& IndexCoord) const;
+    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+        const FVector& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
+    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+        void SetVoxelValue(const FIntVector& IndexCoord, const FVector& InValue) const;
+    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const;
+    UFUNCTION(Category = VoxelMate, BlueprintCallable)
+        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector& InValue, const bool& InIsActive) const;
 };

@@ -32,32 +32,32 @@ void AVoxelGridProxy::Serialize(FArchive& Ar)
 }
 
 #define GRID_PROXY_IMPLEMENTATION(ValueType, Name)\
-const ValueType& AVoxelGridProxy##Name::GetVoxelValue(const FIntVector& IndexCoord)\
+const ValueType& AVoxelGridProxy##Name::GetVoxelValue(const FIntVector& IndexCoord) const\
 {\
     return UVoxelDatabase::Get().GetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord).Value;\
 }\
 \
-const bool AVoxelGridProxy##Name::GetVoxelIsActive(const FIntVector& IndexCoord)\
+const bool AVoxelGridProxy##Name::GetVoxelIsActive(const FIntVector& IndexCoord) const\
 {\
     return UVoxelDatabase::Get().GetVoxelIsActive<FVoxelDatabase##Name>(GridId, IndexCoord);\
 }\
 \
-const ValueType& AVoxelGridProxy##Name::GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive)\
+const ValueType& AVoxelGridProxy##Name::GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const\
 {\
     return UVoxelDatabase::Get().GetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord, OutIsActive).Value;\
 }\
 \
-void AVoxelGridProxy##Name::SetVoxelValue(const FIntVector& IndexCoord, const ValueType& InValue)\
+void AVoxelGridProxy##Name::SetVoxelValue(const FIntVector& IndexCoord, const ValueType& InValue) const\
 {\
     UVoxelDatabase::Get().SetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord, FVoxelDatabase##Name(InValue));\
 }\
 \
-void AVoxelGridProxy##Name::SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive)\
+void AVoxelGridProxy##Name::SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const\
 {\
     UVoxelDatabase::Get().SetVoxelIsActive<FVoxelDatabase##Name>(GridId, IndexCoord, InIsActive);\
 }\
 \
-void AVoxelGridProxy##Name::SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const ValueType& InValue, const bool& InIsActive)\
+void AVoxelGridProxy##Name::SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const ValueType& InValue, const bool& InIsActive) const\
 {\
     UVoxelDatabase::Get().SetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord, FVoxelDatabase##Name(InValue), InIsActive);\
 }

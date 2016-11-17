@@ -14,16 +14,17 @@ public:
     {
     }
 
-    UFUNCTION()
-        const int16& GetVoxelValue(const FIntVector& IndexCoord);
-    UFUNCTION()
-        const bool GetVoxelIsActive(const FIntVector& IndexCoord);
-    UFUNCTION()
-        const int16& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive);
-    UFUNCTION()
-        void SetVoxelValue(const FIntVector& IndexCoord, const int16& InValue);
-    UFUNCTION()
-        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive);
-    UFUNCTION()
-        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int16& InValue, const bool& InIsActive);
+    //int16 is not a supported blueprint type
+    UFUNCTION(Category = VoxelMate)
+        const int16& GetVoxelValue(const FIntVector& IndexCoord) const;
+    UFUNCTION(Category = VoxelMate)
+        const bool GetVoxelIsActive(const FIntVector& IndexCoord) const;
+    UFUNCTION(Category = VoxelMate)
+        const int16& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
+    UFUNCTION(Category = VoxelMate)
+        void SetVoxelValue(const FIntVector& IndexCoord, const int16& InValue) const;
+    UFUNCTION(Category = VoxelMate)
+        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const;
+    UFUNCTION(Category = VoxelMate)
+        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int16& InValue, const bool& InIsActive) const;
 };

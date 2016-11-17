@@ -3,7 +3,7 @@
 #include "VoxelGridProxy.h"
 #include "VoxelGridProxyDouble.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
+UCLASS(ClassGroup = VoxelMate, NotPlaceable)
 class VOXELMATE_API AVoxelGridProxyDouble : public AVoxelGridProxy
 {
     GENERATED_BODY()
@@ -14,16 +14,17 @@ public:
     {
     }
 
-    UFUNCTION()
-        const double& GetVoxelValue(const FIntVector& IndexCoord);
-    UFUNCTION()
-        const bool GetVoxelIsActive(const FIntVector& IndexCoord);
-    UFUNCTION()
-        const double& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive);
-    UFUNCTION()
-        void SetVoxelValue(const FIntVector& IndexCoord, const double& InValue);
-    UFUNCTION()
-        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive);
-    UFUNCTION()
-        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const double& InValue, const bool& InIsActive);
+    //double is not a supported blueprint type
+    UFUNCTION(Category = VoxelMate)
+        const double& GetVoxelValue(const FIntVector& IndexCoord) const;
+    UFUNCTION(Category = VoxelMate)
+        const bool GetVoxelIsActive(const FIntVector& IndexCoord) const;
+    UFUNCTION(Category = VoxelMate)
+        const double& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
+    UFUNCTION(Category = VoxelMate)
+        void SetVoxelValue(const FIntVector& IndexCoord, const double& InValue) const;
+    UFUNCTION(Category = VoxelMate)
+        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const;
+    UFUNCTION(Category = VoxelMate)
+        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const double& InValue, const bool& InIsActive) const;
 };
