@@ -1206,6 +1206,18 @@ VOXELMATEINLINE bool IsValueLessThan<FPackedRGBA16N>(const FPackedRGBA16N& InLhs
     return IsValueLessThan<FVector>(FVector(InLhs), FVector(InRhs));
 }
 
+template<>
+VOXELMATEINLINE bool IsValueLessThan<FIntPoint>(const FIntPoint& InLhs, const FIntPoint& InRhs)
+{
+    return InLhs.X < InRhs.X && InLhs.Y < InRhs.Y;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueLessThan<FIntVector>(const FIntVector& InLhs, const FIntVector& InRhs)
+{
+    return InLhs.X < InRhs.X && InLhs.Y < InRhs.Y && InLhs.Z < InRhs.Z;
+}
+
 template<typename Ue4Type>
 VOXELMATEINLINE bool IsValueGreaterThan(const Ue4Type& InLhs, const Ue4Type& InRhs)
 {
@@ -1324,6 +1336,18 @@ template<>
 VOXELMATEINLINE bool IsValueGreaterThan<FPackedRGBA16N>(const FPackedRGBA16N& InLhs, const FPackedRGBA16N& InRhs)
 {
     return IsValueGreaterThan<FVector>(FVector(InLhs), FVector(InRhs));
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<FIntPoint>(const FIntPoint& InLhs, const FIntPoint& InRhs)
+{
+    return InLhs.X > InRhs.X && InLhs.Y > InRhs.Y;
+}
+
+template<>
+VOXELMATEINLINE bool IsValueGreaterThan<FIntVector>(const FIntVector& InLhs, const FIntVector& InRhs)
+{
+    return InLhs.X > InRhs.X && InLhs.Y > InRhs.Y && InLhs.Z > InRhs.Z;
 }
 
 template<typename Ue4Type>
@@ -2015,7 +2039,7 @@ struct TVoxelDatabaseVoxelType
     static_assert(!TIsPointer<ValueType>::Value, "Voxel types cannot be a pointer type");
 
     TVoxelDatabaseVoxelType()
-        : Value(ZeroValue)
+        : Value(ZeroValue.Value)
     {}
 
     TVoxelDatabaseVoxelType(ValueType&& InValue)
@@ -2027,7 +2051,7 @@ struct TVoxelDatabaseVoxelType
     {}
 
     ValueType Value;
-    const static ValueType ZeroValue;
+    const static TVoxelDatabaseVoxelType<ValueType> ZeroValue;
 
     VOXELMATEINLINE Type& operator=(const ValueType& InRhs)
     {
@@ -2090,7 +2114,7 @@ struct TVoxelDatabaseMetadataType
     static_assert(!TIsPointer<ValueType>::Value, "Metadata types cannot be a pointer type");
 
     TVoxelDatabaseMetadataType()
-        : Value(ZeroValue)
+        : Value(ZeroValue.Value)
     {}
 
     TVoxelDatabaseMetadataType(ValueType&& InValue)
@@ -2102,7 +2126,7 @@ struct TVoxelDatabaseMetadataType
     {}
 
     ValueType Value;
-    const static ValueType ZeroValue;
+    const static TVoxelDatabaseMetadataType<ValueType> ZeroValue;
 
     VOXELMATEINLINE Type& operator=(const ValueType& InRhs)
     {
