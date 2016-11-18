@@ -18,54 +18,33 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         return true;
     }
 
-    template<typename ValueType>
-    static void RegisterGridType()
+    template<typename VoxelType>
+    static void Register()
     {
-        //if (!openvdb::Grid<openvdb::tree::Tree3<ValueType>::Type>::isRegistered())
-        //{
-        //    openvdb::Grid<openvdb::tree::Tree3<ValueType>::Type>::registerGrid();
-        //    FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(openvdb::Grid<openvdb::tree::Tree3<ValueType>::Type>::gridType().c_str()));
-        //}
-
-        if (!openvdb::Grid<openvdb::tree::Tree4<ValueType>::Type>::isRegistered())
-        {
-            openvdb::Grid<openvdb::tree::Tree4<ValueType>::Type>::registerGrid();
-            FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(openvdb::Grid<openvdb::tree::Tree4<ValueType>::Type>::gridType().c_str()));
-        }
-
-        //if (!openvdb::Grid<openvdb::tree::Tree5<ValueType>::Type>::isRegistered())
-        //{
-        //    openvdb::Grid<openvdb::tree::Tree5<ValueType>::Type>::registerGrid();
-        //    FGridFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(openvdb::Grid<openvdb::tree::Tree5<ValueType>::Type>::gridType().c_str()));
-        //}
-    }
-
-    static bool IsRegistered(const FString& TypeName)
-    {
-        return openvdb::GridBase::isRegistered(TCHAR_TO_UTF8(*TypeName));
-    }
-
-    static ValueTypePtr Create(const FString& TypeName)
-    {
-        ValueTypePtr GridPtr = nullptr;
         try
         {
-            GridPtr = openvdb::GridBase::createGrid(TCHAR_TO_UTF8(*TypeName));
+            openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::registerGrid();
+            RegisteredTypeNames.Add(FName::NameToDisplayString(UTF8_TO_TCHAR(openvdb::typeNameAsString<VoxelType::ValueType>()), false));
         }
-        catch (const openvdb::LookupError& e)
+        catch (const openvdb::KeyError& e)
         {
-            (void)e; //TODO log error (grid type name is not registered)
+            (void)e; //TODO log error (grid type already registered)
         }
-        return GridPtr;
     }
 
-    template<typename GridType>
+    template<typename VoxelType>
+    static bool IsRegistered()
+    {
+        return openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::isRegistered();
+    }
+
+    template<typename VoxelType>
     static ValueTypePtr Create()
     {
         ValueTypePtr GridPtr = nullptr;
         try
         {
-            GridPtr = openvdb::createGrid<GridType>();
+            GridPtr = openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::create();
         }
         catch (const openvdb::LookupError& e)
         {
@@ -74,15 +53,15 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         return GridPtr;
     }
 
-    template<typename GridType>
-    static typename GridType::Ptr ShallowCopyGrid(ValueTypeConstPtr& InGridPtr)
+    template<typename VoxelType>
+    static typename openvdb::Grid<typename openvdb::tree::Tree4<VoxelType>::Type>::Ptr ShallowCopyGrid(ValueTypeConstPtr& InGridPtr)
     {
-        typename GridType::Ptr GridPtr = nullptr;
+        typename openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr GridPtr = nullptr;
         if (InGridPtr != nullptr)
         {
-            if (InGridPtr->isType<GridType>())
+            if (InGridPtr->isType<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>())
             {
-                GridPtr = GridType(*InGridPtr, openvdb::ShallowCopy);
+                GridPtr = openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>(*InGridPtr, openvdb::ShallowCopy);
                 check(GridPtr != nullptr);
                 GridPtr->setTransform(InGridPtr->transform().copy());
                 //TODO allow changing float-as-half under certain circumstances?
@@ -95,13 +74,13 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         return GridPtr;
     }
 
-    template<typename GridType>
-    static typename GridType::Ptr DeepCopyGrid(ValueTypeConstPtr& InGridPtr)
+    template<typename VoxelType>
+    static typename openvdb::Grid<typename openvdb::tree::Tree4<VoxelType>::Type>::Ptr DeepCopyGrid(ValueTypeConstPtr& InGridPtr)
     {
-        typename GridType::Ptr GridPtr = nullptr;
+        typename openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr GridPtr = nullptr;
         if (InGridPtr != nullptr)
         {
-            if (InGridPtr->isType<GridType>())
+            if (InGridPtr->isType<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>())
             {
                 GridPtr = InGridPtr->deepCopyGrid();
                 check(GridPtr != nullptr);
@@ -113,11 +92,6 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
             }
         }
         return GridPtr;
-    }
-
-    static void ClearRegistry()
-    {
-        openvdb::GridBase::clearRegistry();
     }
 };
 

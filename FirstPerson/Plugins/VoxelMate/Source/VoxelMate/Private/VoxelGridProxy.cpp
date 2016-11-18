@@ -9,6 +9,13 @@ AVoxelGridProxy::AVoxelGridProxy(const FObjectInitializer& ObjectInitializer)
     : Super(ObjectInitializer), IsFloatSavedAsHalf(false)//, CacheIndex(-1) TODO idea for faster grid lookup
 {
     GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
+    IsFloatSavedAsHalf = false;
+
+    FString DefaultGridDisplayText;
+    GetName(DefaultGridDisplayText);
+    GridDisplayText = FText::FromString(DefaultGridDisplayText);
+
+    DataFilePath = TEXT("");
     //TODO idea for faster grid lookup
     //UVoxelDatabase::Get().Grids
     //CacheIndex = 
@@ -21,6 +28,7 @@ FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy)
         Ar << GridProxy.GridId;
         Ar << GridProxy.IsFloatSavedAsHalf;
         Ar << GridProxy.GridDisplayText;
+        Ar << GridProxy.DataFilePath;
     }
     return Ar;
 }
@@ -31,35 +39,46 @@ void AVoxelGridProxy::Serialize(FArchive& Ar)
     Ar << *this;
 }
 
+bool AVoxelGridProxy::LoadVoxelData()
+{
+    return false;
+}
+
+bool AVoxelGridProxy::SaveVoxelData()
+{
+    return false;
+}
+
+//TODO Get/SetVoxelValue from VoxelDatabaseProxy
 #define GRID_PROXY_IMPLEMENTATION(ValueType, Name)\
 const ValueType& AVoxelGridProxy##Name::GetVoxelValue(const FIntVector& IndexCoord) const\
 {\
-    return UVoxelDatabase::Get().GetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord).Value;\
+    return UVoxelDatabase::Get().GetVoxelValue<FVoxelDatabase##Name##Voxel>(GridId, IndexCoord).Value;\
 }\
 \
-const bool AVoxelGridProxy##Name::GetVoxelIsActive(const FIntVector& IndexCoord) const\
+void AVoxelGridProxy##Name::GetVoxelIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const\
 {\
-    return UVoxelDatabase::Get().GetVoxelIsActive<FVoxelDatabase##Name>(GridId, IndexCoord);\
+    UVoxelDatabase::Get().GetVoxelIsActive<FVoxelDatabase##Name##Voxel>(GridId, IndexCoord, OutIsActive);\
 }\
 \
 const ValueType& AVoxelGridProxy##Name::GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const\
 {\
-    return UVoxelDatabase::Get().GetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord, OutIsActive).Value;\
+    return UVoxelDatabase::Get().GetVoxelValue<FVoxelDatabase##Name##Voxel>(GridId, IndexCoord, OutIsActive).Value;\
 }\
 \
-void AVoxelGridProxy##Name::SetVoxelValue(const FIntVector& IndexCoord, const ValueType& InValue) const\
+void AVoxelGridProxy##Name::SetVoxelValue(const FIntVector& IndexCoord, const ValueType& InValue)\
 {\
-    UVoxelDatabase::Get().SetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord, FVoxelDatabase##Name(InValue));\
+    UVoxelDatabase::Get().SetVoxelValue<FVoxelDatabase##Name##Voxel>(GridId, IndexCoord, InValue);\
 }\
 \
-void AVoxelGridProxy##Name::SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const\
+void AVoxelGridProxy##Name::SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive)\
 {\
-    UVoxelDatabase::Get().SetVoxelIsActive<FVoxelDatabase##Name>(GridId, IndexCoord, InIsActive);\
+    UVoxelDatabase::Get().SetVoxelIsActive<FVoxelDatabase##Name##Voxel>(GridId, IndexCoord, InIsActive);\
 }\
 \
-void AVoxelGridProxy##Name::SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const ValueType& InValue, const bool& InIsActive) const\
+void AVoxelGridProxy##Name::SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const ValueType& InValue, const bool& InIsActive)\
 {\
-    UVoxelDatabase::Get().SetVoxelValue<FVoxelDatabase##Name>(GridId, IndexCoord, FVoxelDatabase##Name(InValue), InIsActive);\
+    UVoxelDatabase::Get().SetVoxelValue<FVoxelDatabase##Name##Voxel>(GridId, IndexCoord, InValue, InIsActive);\
 }
 
 GRID_PROXY_IMPLEMENTATION(bool, Bool)

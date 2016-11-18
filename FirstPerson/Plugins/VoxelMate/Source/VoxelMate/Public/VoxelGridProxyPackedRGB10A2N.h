@@ -17,13 +17,13 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FPackedRGB10A2N& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        const bool GetVoxelIsActive(const FIntVector& IndexCoord) const;
+        void GetVoxelIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FPackedRGB10A2N& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void SetVoxelValue(const FIntVector& IndexCoord, const FPackedRGB10A2N& InValue) const;
+        void SetVoxelValue(const FIntVector& IndexCoord, const FPackedRGB10A2N& InValue);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const;
+        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FPackedRGB10A2N& InValue, const bool& InIsActive) const;
+        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FPackedRGB10A2N& InValue, const bool& InIsActive);
 };

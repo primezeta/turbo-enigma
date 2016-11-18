@@ -4,6 +4,7 @@
 //#include "Editor/UnrealEd/Classes/ThumbnailRendering/SceneThumbnailInfo.h"
 //#include "PhysicsPublic.h"
 #include "ProceduralMeshComponent.h"
+#include "BulkData.h"
 #include "VoxelGridProxy.generated.h"
 
 UCLASS(ClassGroup = VoxelMate, Abstract, NotPlaceable, Blueprintable)
@@ -21,12 +22,19 @@ public:
         FGuid GridId;
     UPROPERTY(BlueprintReadOnly)
         bool IsFloatSavedAsHalf;
-    UPROPERTY(BlueprintReadWrite)
+    UPROPERTY(BlueprintReadOnly)
         FText GridDisplayText;
+    UPROPERTY(BlueprintReadOnly)
+        FString DataFilePath;
     //UPROPERTY()
     //    TArray<UVoxelMetadataProxy*> MetadataProxies; //TODO
     UPROPERTY()
         UProceduralMeshComponent* GridMeshComponent;
+
+    UFUNCTION()
+        bool LoadVoxelData();
+    UFUNCTION()
+        bool SaveVoxelData();
 
 protected:
     //TODO idea for faster grid lookup

@@ -1,9 +1,55 @@
 #include "VoxelMatePCH.h"
 #include "ArchiveTransformMap.h"
+#include "EngineGridTypes.h"
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/array.hpp>
 
+bool FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::IsInitialized = false;
 TArray<FString> FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::RegisteredTypeNames;
+
+bool FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::IsRegisteredType(const FString& TypeName)
+{
+    return openvdb::math::MapRegistry::isRegistered(TCHAR_TO_UTF8(*TypeName));
+}
+
+FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::ValueTypePtr FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::CreateType(const FString& TypeName)
+{
+    FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::ValueTypePtr TransformMapPtr = nullptr;
+    try
+    {
+        TransformMapPtr = openvdb::math::MapRegistry::createMap(TCHAR_TO_UTF8(*TypeName));
+    }
+    catch (const openvdb::LookupError& e)
+    {
+        (void)e; //TODO log error (transform map type not registered)
+    }
+    return  TransformMapPtr;
+}
+
+void FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::RegisterSupportedTypes()
+{
+    if (FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::IsInitialized)
+    {
+        return;
+    }
+    openvdb::math::MapRegistry::clear();
+    FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::RegisteredTypeNames.Empty();
+    FTransformMapFactory::Register<FAffineMap>();
+    FTransformMapFactory::Register<FUnitaryMap>();
+    FTransformMapFactory::Register<FScaleMap>();
+    FTransformMapFactory::Register<FUniformScaleMap>();
+    FTransformMapFactory::Register<FTranslationMap>();
+    FTransformMapFactory::Register<FScaleTranslationMap>();
+    FTransformMapFactory::Register<FUniformScaleTranslationMap>();
+    FTransformMapFactory::Register<FNonlinearFrustumMap>();
+    FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::IsInitialized = true;
+}
+
+void FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::UnregisterSupportedTypes()
+{
+    openvdb::math::MapRegistry::clear();
+    FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::IsInitialized = false;
+}
 
 FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& TransformMapPtr)
 {
@@ -11,7 +57,7 @@ FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& Transform
     if (Ar.IsLoading())
     {
         Ar << TypeName;
-        TransformMapPtr = FTransformMapFactory::Create(TypeName);
+        TransformMapPtr = FTransformMapFactory::CreateType(TypeName);
         if (TransformMapPtr != nullptr)
         {
             Ar << *TransformMapPtr;
@@ -20,43 +66,7 @@ FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& Transform
     }
     else if (TransformMapPtr != nullptr)
     {
-        const openvdb::Name& MapTypeName = TransformMapPtr->type();
-        if (MapTypeName == openvdb::math::AffineMap::mapType())
-        {
-            TypeName = TEXT("FAffineMap");
-        }
-        else if (MapTypeName == openvdb::math::UnitaryMap::mapType())
-        {
-            TypeName = TEXT("FUnitaryMap");
-        }
-        else if (MapTypeName == openvdb::math::ScaleMap::mapType())
-        {
-            TypeName = TEXT("FScaleMap");
-        }
-        else if (MapTypeName == openvdb::math::UniformScaleMap::mapType())
-        {
-            TypeName = TEXT("FUniformScaleMap");
-        }
-        else if (MapTypeName == openvdb::math::TranslationMap::mapType())
-        {
-            TypeName = TEXT("FTranslationMap");
-        }
-        else if (MapTypeName == openvdb::math::ScaleTranslateMap::mapType())
-        {
-            TypeName = TEXT("FScaleTranslationMap");
-        }
-        else if (MapTypeName == openvdb::math::UniformScaleTranslateMap::mapType())
-        {
-            TypeName = TEXT("FUniformScaleTranslationMap");
-        }
-        else if (MapTypeName == openvdb::math::NonlinearFrustumMap::mapType())
-        {
-            TypeName = TEXT("FNonlinearFrustumMap");
-        }
-        else
-        {
-            check(false);
-        }
+        TypeName = UTF8_TO_TCHAR(TransformMapPtr->type().c_str());
         Ar << TypeName;
         Ar << *TransformMapPtr;
     }

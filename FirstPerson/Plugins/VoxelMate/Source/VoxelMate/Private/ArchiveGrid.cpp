@@ -1,4 +1,5 @@
 #include "VoxelMatePCH.h"
+#include "EngineGridTypes.h"
 #include "ArchiveGrid.h"
 #include "ArchiveMetaMap.h"
 #include "ArchiveTransformMap.h"
@@ -7,8 +8,64 @@
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <vector>
 
+bool FVoxelDatabaseTypeFactory<openvdb::GridBase>::IsInitialized = false;
 TArray<FString> FVoxelDatabaseTypeFactory<openvdb::GridBase>::RegisteredTypeNames;
 TMap<FString, int32> FGridFactory::CachedTopologySizeByTreeType;
+
+bool FVoxelDatabaseTypeFactory<openvdb::GridBase>::IsRegisteredType(const FString& TypeName)
+{
+    return openvdb::GridBase::isRegistered(TCHAR_TO_UTF8(*TypeName));
+}
+
+FVoxelDatabaseTypeFactory<openvdb::GridBase>::ValueTypePtr FVoxelDatabaseTypeFactory<openvdb::GridBase>::CreateType(const FString& TypeName)
+{
+    FVoxelDatabaseTypeFactory<openvdb::GridBase>::ValueTypePtr GridPtr = nullptr;
+    try
+    {
+        GridPtr = openvdb::GridBase::createGrid(TCHAR_TO_UTF8(*TypeName));
+    }
+    catch (const openvdb::LookupError& e)
+    {
+        (void)e; //TODO log error (grid type name is not registered)
+    }
+    return GridPtr;
+}
+
+void FVoxelDatabaseTypeFactory<openvdb::GridBase>::RegisterSupportedTypes()
+{
+    if (FVoxelDatabaseTypeFactory<openvdb::GridBase>::IsInitialized)
+    {
+        return;
+    }
+    openvdb::GridBase::clearRegistry();
+    FVoxelDatabaseTypeFactory<openvdb::GridBase>::RegisteredTypeNames.Empty();
+    FGridFactory::Register<FVoxelDatabaseBoolVoxel>();
+    FGridFactory::Register<FVoxelDatabaseFloatVoxel>();
+    FGridFactory::Register<FVoxelDatabaseDoubleVoxel>();
+    FGridFactory::Register<FVoxelDatabaseUInt8Voxel>();
+    FGridFactory::Register<FVoxelDatabaseUInt16Voxel>();
+    FGridFactory::Register<FVoxelDatabaseUInt32Voxel>();
+    FGridFactory::Register<FVoxelDatabaseUInt64Voxel>();
+    FGridFactory::Register<FVoxelDatabaseInt8Voxel>();
+    FGridFactory::Register<FVoxelDatabaseInt16Voxel>();
+    FGridFactory::Register<FVoxelDatabaseInt32Voxel>();
+    FGridFactory::Register<FVoxelDatabaseInt64Voxel>();
+    FGridFactory::Register<FVoxelDatabaseVectorVoxel>();
+    FGridFactory::Register<FVoxelDatabaseVector4Voxel>();
+    FGridFactory::Register<FVoxelDatabaseVector2DVoxel>();
+    FGridFactory::Register<FVoxelDatabaseColorVoxel>();
+    FGridFactory::Register<FVoxelDatabaseLinearColorVoxel>();
+    FGridFactory::Register<FVoxelDatabasePackedNormalVoxel>();
+    FGridFactory::Register<FVoxelDatabasePackedRGB10A2NVoxel>();
+    FGridFactory::Register<FVoxelDatabasePackedRGBA16NVoxel>();
+    FVoxelDatabaseTypeFactory<openvdb::GridBase>::IsInitialized = true;
+}
+
+void FVoxelDatabaseTypeFactory<openvdb::GridBase>::UnregisterSupportedTypes()
+{
+    openvdb::GridBase::clearRegistry();
+    FVoxelDatabaseTypeFactory<openvdb::GridBase>::IsInitialized = false;
+}
 
 FArchive& operator<<(FArchive& Ar, FGridFactory::ValueTypePtr& GridPtr)
 {
@@ -16,7 +73,7 @@ FArchive& operator<<(FArchive& Ar, FGridFactory::ValueTypePtr& GridPtr)
     if (Ar.IsLoading())
     {
         Ar << TypeName;
-        GridPtr = FGridFactory::Create(TypeName);
+        GridPtr = FGridFactory::CreateType(TypeName);
         if (GridPtr != nullptr)
         {
             Ar << *GridPtr;

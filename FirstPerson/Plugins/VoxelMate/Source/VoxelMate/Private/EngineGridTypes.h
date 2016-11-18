@@ -4,7 +4,6 @@
 #include "VoxelData.h"
 #include "GridTransformMaps.h"
 #include "VoxelDatabaseCommonPrivate.h"
-#include "VoxelDatabaseTypeFactory.h"
 
 #pragma warning(push)
 #pragma warning(once:4211 4800 4503 4146)
@@ -574,6 +573,54 @@ VOXELMATEINLINE void WriteValue<FNonlinearFrustumMap>(OutputStreamType& os, cons
     WriteValue<uint8>(os, InValue.IsValid);
 }
 
+template<>
+VOXELMATEINLINE void WriteValue<openvdb::math::AffineMap>(OutputStreamType& os, const openvdb::math::AffineMap& InValue)
+{
+    InValue.write(os);
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<openvdb::math::UnitaryMap>(OutputStreamType& os, const openvdb::math::UnitaryMap& InValue)
+{
+    InValue.write(os);
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<openvdb::math::ScaleMap>(OutputStreamType& os, const openvdb::math::ScaleMap& InValue)
+{
+    InValue.write(os);
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<openvdb::math::UniformScaleMap>(OutputStreamType& os, const openvdb::math::UniformScaleMap& InValue)
+{
+    InValue.write(os);
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<openvdb::math::TranslationMap>(OutputStreamType& os, const openvdb::math::TranslationMap& InValue)
+{
+    InValue.write(os);
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<openvdb::math::ScaleTranslateMap>(OutputStreamType& os, const openvdb::math::ScaleTranslateMap& InValue)
+{
+    InValue.write(os);
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<openvdb::math::UniformScaleTranslateMap>(OutputStreamType& os, const openvdb::math::UniformScaleTranslateMap& InValue)
+{
+    InValue.write(os);
+}
+
+template<>
+VOXELMATEINLINE void WriteValue<openvdb::math::NonlinearFrustumMap>(OutputStreamType& os, const openvdb::math::NonlinearFrustumMap& InValue)
+{
+    InValue.write(os);
+}
+
 template<typename Ue4Type>
 VOXELMATEINLINE bool AreValuesEqual(const Ue4Type& InLhs, const Ue4Type& InRhs)
 {
@@ -1084,6 +1131,54 @@ VOXELMATEINLINE bool AreValuesEqual<FNonlinearFrustumMap>(const FNonlinearFrustu
     return AreValuesEqual<FBox>(static_cast<FBox>(InLhs), static_cast<FBox>(InRhs)) &&
            FMath::IsNearlyEqual(InLhs.Taper, InRhs.Taper) &&
            FMath::IsNearlyEqual(InLhs.Depth, InRhs.Depth);
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<openvdb::math::AffineMap>(const openvdb::math::AffineMap& InLhs, const openvdb::math::AffineMap& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<openvdb::math::UnitaryMap>(const openvdb::math::UnitaryMap& InLhs, const openvdb::math::UnitaryMap& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<openvdb::math::ScaleMap>(const openvdb::math::ScaleMap& InLhs, const openvdb::math::ScaleMap& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<openvdb::math::UniformScaleMap>(const openvdb::math::UniformScaleMap& InLhs, const openvdb::math::UniformScaleMap& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<openvdb::math::TranslationMap>(const openvdb::math::TranslationMap& InLhs, const openvdb::math::TranslationMap& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<openvdb::math::ScaleTranslateMap>(const openvdb::math::ScaleTranslateMap& InLhs, const openvdb::math::ScaleTranslateMap& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<openvdb::math::UniformScaleTranslateMap>(const openvdb::math::UniformScaleTranslateMap& InLhs, const openvdb::math::UniformScaleTranslateMap& InRhs)
+{
+    return InLhs == InRhs;
+}
+
+template<>
+VOXELMATEINLINE bool AreValuesEqual<openvdb::math::NonlinearFrustumMap>(const openvdb::math::NonlinearFrustumMap& InLhs, const openvdb::math::NonlinearFrustumMap& InRhs)
+{
+    return InLhs == InRhs;
 }
 
 template<typename Ue4Type>
@@ -2032,14 +2127,61 @@ VOXELMATEINLINE FIntVector NegValue<FIntVector>(const FIntVector& InValue)
 }
 
 template<typename Ue4Type>
+struct TVoxelDatabaseMetadataType
+{
+    typedef typename Ue4Type ValueType;
+    typedef typename TVoxelDatabaseMetadataType<Ue4Type> Type;
+    static_assert(!TIsPointer<ValueType>::Value, "Voxel database types cannot be a pointer type");
+
+    TVoxelDatabaseMetadataType()
+        : Value(ZeroValue)
+    {}
+
+    TVoxelDatabaseMetadataType(ValueType&& InValue)
+        : Value(MoveTemp(InValue))
+    {}
+
+    TVoxelDatabaseMetadataType(const ValueType& InValue)
+        : Value(InValue)
+    {}
+
+    ValueType Value;
+    const static ValueType ZeroValue;
+
+    VOXELMATEINLINE Type& operator=(const ValueType& InValue)
+    {
+        Value = InValue;
+        return *this;
+    }
+
+    VOXELMATEINLINE Type& operator=(const Type& InValue)
+    {
+        Value = InValue.Value;
+        return *this;
+    }
+
+    VOXELMATEINLINE friend OutputStreamType& operator<<(OutputStreamType& os, const Type& InRhs)
+    {
+        WriteValue<ValueType>(os, InRhs.Value);
+        return os;
+    }
+
+    VOXELMATEINLINE friend bool operator==(const Type& InLhs, const Type& InRhs)
+    {
+        return AreValuesEqual<ValueType>(InLhs.Value, InRhs.Value);
+    }
+};
+
+//All voxel types are also available as metadata types (hence the inheritance)
+template<typename Ue4Type>
 struct TVoxelDatabaseVoxelType
 {
     typedef typename Ue4Type ValueType;
     typedef typename TVoxelDatabaseVoxelType<Ue4Type> Type;
-    static_assert(!TIsPointer<ValueType>::Value, "Voxel types cannot be a pointer type");
+    static_assert(!TIsPointer<ValueType>::Value, "Voxel database types cannot be a pointer type");
 
     TVoxelDatabaseVoxelType()
-        : Value(ZeroValue.Value)
+        : Value(ZeroValue)
     {}
 
     TVoxelDatabaseVoxelType(ValueType&& InValue)
@@ -2051,11 +2193,17 @@ struct TVoxelDatabaseVoxelType
     {}
 
     ValueType Value;
-    const static TVoxelDatabaseVoxelType<ValueType> ZeroValue;
+    const static ValueType ZeroValue;
 
-    VOXELMATEINLINE Type& operator=(const ValueType& InRhs)
+    VOXELMATEINLINE Type& operator=(const ValueType& InValue)
     {
-        Value = InRhs;
+        Value = InValue;
+        return *this;
+    }
+
+    VOXELMATEINLINE Type& operator=(const Type& InValue)
+    {
+        Value = InValue.Value;
         return *this;
     }
 
@@ -2095,626 +2243,719 @@ struct TVoxelDatabaseVoxelType
         return NegValue<ValueType>(InLhs.Value);
     }
 
-    VOXELMATEINLINE friend bool operator<(const Type& InLhs, const Type &InRhs)
+    VOXELMATEINLINE friend bool operator<(const Type& InLhs, const Type& InRhs)
     {
         return IsValueLessThan<ValueType>(InLhs.Value, InRhs.Value);
     }
 
-    VOXELMATEINLINE friend bool operator>(const Type& InLhs, const Type &InRhs)
+    VOXELMATEINLINE friend bool operator>(const Type& InLhs, const Type& InRhs)
     {
         return IsValueGreaterThan<ValueType>(InLhs.Value, InRhs.Value);
     }
 };
 
-template<typename Ue4Type>
-struct TVoxelDatabaseMetadataType
-{
-    typedef typename Ue4Type ValueType;
-    typedef typename TVoxelDatabaseMetadataType<Ue4Type> Type;
-    static_assert(!TIsPointer<ValueType>::Value, "Metadata types cannot be a pointer type");
-
-    TVoxelDatabaseMetadataType()
-        : Value(ZeroValue.Value)
-    {}
-
-    TVoxelDatabaseMetadataType(ValueType&& InValue)
-        : Value(MoveTemp(InValue))
-    {}
-
-    TVoxelDatabaseMetadataType(const ValueType& InValue)
-        : Value(InValue)
-    {}
-
-    ValueType Value;
-    const static TVoxelDatabaseMetadataType<ValueType> ZeroValue;
-
-    VOXELMATEINLINE Type& operator=(const ValueType& InRhs)
-    {
-        Value = InRhs;
-        return *this;
-    }
-
-    VOXELMATEINLINE friend OutputStreamType& operator<<(OutputStreamType& os, const Type& InRhs)
-    {
-        WriteValue<ValueType>(os, InRhs.Value);
-        return os;
-    }
-
-    VOXELMATEINLINE friend bool operator==(const Type& InLhs, const Type& InRhs)
-    {
-        return AreValuesEqual<ValueType>(InLhs.Value, InRhs.Value);
-    }
-};
-
-typedef TVoxelDatabaseVoxelType<bool> FVoxelDatabaseBool;
-typedef TVoxelDatabaseVoxelType<double> FVoxelDatabaseDouble;
-typedef TVoxelDatabaseVoxelType<float> FVoxelDatabaseFloat;
-typedef TVoxelDatabaseVoxelType<int8> FVoxelDatabaseInt8;
-typedef TVoxelDatabaseVoxelType<int16> FVoxelDatabaseInt16;
-typedef TVoxelDatabaseVoxelType<int32> FVoxelDatabaseInt32;
-typedef TVoxelDatabaseVoxelType<int64> FVoxelDatabaseInt64;
-typedef TVoxelDatabaseVoxelType<uint8> FVoxelDatabaseUInt8;
-typedef TVoxelDatabaseVoxelType<uint16> FVoxelDatabaseUInt16;
-typedef TVoxelDatabaseVoxelType<uint32> FVoxelDatabaseUInt32;
-typedef TVoxelDatabaseVoxelType<uint64> FVoxelDatabaseUInt64;
-typedef TVoxelDatabaseVoxelType<FVector> FVoxelDatabaseVector;
-typedef TVoxelDatabaseVoxelType<FVector4> FVoxelDatabaseVector4;
-typedef TVoxelDatabaseVoxelType<FVector2D> FVoxelDatabaseVector2D;
-typedef TVoxelDatabaseVoxelType<FColor> FVoxelDatabaseColor;
-typedef TVoxelDatabaseVoxelType<FLinearColor> FVoxelDatabaseLinearColor;
-typedef TVoxelDatabaseVoxelType<FPackedNormal> FVoxelDatabasePackedNormal;
-typedef TVoxelDatabaseVoxelType<FPackedRGB10A2N> FVoxelDatabasePackedRGB10A2N;
-typedef TVoxelDatabaseVoxelType<FPackedRGBA16N> FVoxelDatabasePackedRGBA16N;
-typedef TVoxelDatabaseVoxelType<FIntPoint> FVoxelDatabaseIntPoint;
-typedef TVoxelDatabaseVoxelType<FIntVector> FVoxelDatabaseIntVector;
-typedef TVoxelDatabaseMetadataType<FFloatRange> FVoxelDatabaseFloatRange;
-typedef TVoxelDatabaseMetadataType<FInt32Range> FVoxelDatabaseInt32Range;
-typedef TVoxelDatabaseMetadataType<FFloatInterval> FVoxelDatabaseFloatInterval;
-typedef TVoxelDatabaseMetadataType<FInt32Interval> FVoxelDatabaseInt32Interval;
-typedef TVoxelDatabaseMetadataType<FFloatRangeBound> FVoxelDatabaseFloatRangeBound;
-typedef TVoxelDatabaseMetadataType<FInt32RangeBound> FVoxelDatabaseInt32RangeBound;
-typedef TVoxelDatabaseMetadataType<FTwoVectors> FVoxelDatabaseTwoVectors;
-typedef TVoxelDatabaseMetadataType<FPlane> FVoxelDatabasePlane;
-typedef TVoxelDatabaseMetadataType<FRotator> FVoxelDatabaseRotator;
-typedef TVoxelDatabaseMetadataType<FQuat> FVoxelDatabaseQuat;
-typedef TVoxelDatabaseMetadataType<FBox> FVoxelDatabaseBox;
-typedef TVoxelDatabaseMetadataType<FBox2D> FVoxelDatabaseBox2D;
-typedef TVoxelDatabaseMetadataType<FBoxSphereBounds> FVoxelDatabaseBoxSphereBounds;
-typedef TVoxelDatabaseMetadataType<FOrientedBox> FVoxelDatabaseOrientedBox;
-typedef TVoxelDatabaseMetadataType<FMatrix> FVoxelDatabaseMatrix;
-typedef TVoxelDatabaseMetadataType<FInterpCurvePointFloat> FVoxelDatabaseInterpCurvePointFloat;
-typedef TVoxelDatabaseMetadataType<FInterpCurveFloat> FVoxelDatabaseInterpCurveFloat;
-typedef TVoxelDatabaseMetadataType<FInterpCurvePointVector2D> FVoxelDatabaseInterpCurvePointVector2D;
-typedef TVoxelDatabaseMetadataType<FInterpCurveVector2D> FVoxelDatabaseInterpCurveVector2D;
-typedef TVoxelDatabaseMetadataType<FInterpCurvePointVector> FVoxelDatabaseInterpCurvePointVector;
-typedef TVoxelDatabaseMetadataType<FInterpCurveVector> FVoxelDatabaseInterpCurveVector;
-typedef TVoxelDatabaseMetadataType<FInterpCurvePointQuat> FVoxelDatabaseInterpCurvePointQuat;
-typedef TVoxelDatabaseMetadataType<FInterpCurveQuat> FVoxelDatabaseInterpCurveQuat;
-typedef TVoxelDatabaseMetadataType<FInterpCurvePointTwoVectors> FVoxelDatabaseInterpCurvePointTwoVectors;
-typedef TVoxelDatabaseMetadataType<FInterpCurveTwoVectors> FVoxelDatabaseInterpCurveTwoVectors;
-typedef TVoxelDatabaseMetadataType<FInterpCurvePointLinearColor> FVoxelDatabaseInterpCurvePointLinearColor;
-typedef TVoxelDatabaseMetadataType<FInterpCurveLinearColor> FVoxelDatabaseInterpCurveLinearColor;
-typedef TVoxelDatabaseMetadataType<FTransform> FVoxelDatabaseTransform;
-typedef TVoxelDatabaseMetadataType<FRandomStream> FVoxelDatabaseRandomStream;
-typedef TVoxelDatabaseMetadataType<FDateTime> FVoxelDatabaseDateTime;
-typedef TVoxelDatabaseMetadataType<FTimespan> FVoxelDatabaseTimespan;
-typedef TVoxelDatabaseMetadataType<FStringAssetReference> FVoxelDatabaseStringAssetReference;
-typedef TVoxelDatabaseMetadataType<FStringClassReference> FVoxelDatabaseStringClassReference;
-typedef TVoxelDatabaseMetadataType<FString> FVoxelDatabaseString;
-typedef TVoxelDatabaseMetadataType<FName> FVoxelDatabaseName;
-typedef TVoxelDatabaseMetadataType<FText> FVoxelDatabaseText;
-typedef TVoxelDatabaseMetadataType<FAffineMap> FVoxelDatabaseAffineMap;
-typedef TVoxelDatabaseMetadataType<FUnitaryMap> FVoxelDatabaseUnitaryMap;
-typedef TVoxelDatabaseMetadataType<FScaleMap> FVoxelDatabaseScaleMap;
-typedef TVoxelDatabaseMetadataType<FUniformScaleMap> FVoxelDatabaseUniformScaleMap;
-typedef TVoxelDatabaseMetadataType<FTranslationMap> FVoxelDatabaseTranslationMap;
-typedef TVoxelDatabaseMetadataType<FScaleTranslationMap> FVoxelDatabaseScaleTranslationMap;
-typedef TVoxelDatabaseMetadataType<FUniformScaleTranslationMap> FVoxelDatabaseUniformScaleTranslationMap;
-typedef TVoxelDatabaseMetadataType<FNonlinearFrustumMap> FVoxelDatabaseNonlinearFrustumMap;
+typedef typename TVoxelDatabaseVoxelType<bool> FVoxelDatabaseBoolVoxel;
+typedef typename TVoxelDatabaseVoxelType<double> FVoxelDatabaseDoubleVoxel;
+typedef typename TVoxelDatabaseVoxelType<float> FVoxelDatabaseFloatVoxel;
+typedef typename TVoxelDatabaseVoxelType<int8> FVoxelDatabaseInt8Voxel;
+typedef typename TVoxelDatabaseVoxelType<int16> FVoxelDatabaseInt16Voxel;
+typedef typename TVoxelDatabaseVoxelType<int32> FVoxelDatabaseInt32Voxel;
+typedef typename TVoxelDatabaseVoxelType<int64> FVoxelDatabaseInt64Voxel;
+typedef typename TVoxelDatabaseVoxelType<uint8> FVoxelDatabaseUInt8Voxel;
+typedef typename TVoxelDatabaseVoxelType<uint16> FVoxelDatabaseUInt16Voxel;
+typedef typename TVoxelDatabaseVoxelType<uint32> FVoxelDatabaseUInt32Voxel;
+typedef typename TVoxelDatabaseVoxelType<uint64> FVoxelDatabaseUInt64Voxel;
+typedef typename TVoxelDatabaseVoxelType<FVector> FVoxelDatabaseVectorVoxel;
+typedef typename TVoxelDatabaseVoxelType<FVector4> FVoxelDatabaseVector4Voxel;
+typedef typename TVoxelDatabaseVoxelType<FVector2D> FVoxelDatabaseVector2DVoxel;
+typedef typename TVoxelDatabaseVoxelType<FColor> FVoxelDatabaseColorVoxel;
+typedef typename TVoxelDatabaseVoxelType<FLinearColor> FVoxelDatabaseLinearColorVoxel;
+typedef typename TVoxelDatabaseVoxelType<FPackedNormal> FVoxelDatabasePackedNormalVoxel;
+typedef typename TVoxelDatabaseVoxelType<FPackedRGB10A2N> FVoxelDatabasePackedRGB10A2NVoxel;
+typedef typename TVoxelDatabaseVoxelType<FPackedRGBA16N> FVoxelDatabasePackedRGBA16NVoxel;
+typedef typename TVoxelDatabaseVoxelType<FIntPoint> FVoxelDatabaseIntPointVoxel;
+typedef typename TVoxelDatabaseVoxelType<FIntVector> FVoxelDatabaseIntVectorVoxel;
+
+typedef typename TVoxelDatabaseMetadataType<bool> FVoxelDatabaseBoolMeta;
+typedef typename TVoxelDatabaseMetadataType<double> FVoxelDatabaseDoubleMeta;
+typedef typename TVoxelDatabaseMetadataType<float> FVoxelDatabaseFloatMeta;
+typedef typename TVoxelDatabaseMetadataType<int8> FVoxelDatabaseInt8Meta;
+typedef typename TVoxelDatabaseMetadataType<int16> FVoxelDatabaseInt16Meta;
+typedef typename TVoxelDatabaseMetadataType<int32> FVoxelDatabaseInt32Meta;
+typedef typename TVoxelDatabaseMetadataType<int64> FVoxelDatabaseInt64Meta;
+typedef typename TVoxelDatabaseMetadataType<uint8> FVoxelDatabaseUInt8Meta;
+typedef typename TVoxelDatabaseMetadataType<uint16> FVoxelDatabaseUInt16Meta;
+typedef typename TVoxelDatabaseMetadataType<uint32> FVoxelDatabaseUInt32Meta;
+typedef typename TVoxelDatabaseMetadataType<uint64> FVoxelDatabaseUInt64Meta;
+typedef typename TVoxelDatabaseMetadataType<FVector> FVoxelDatabaseVectorMeta;
+typedef typename TVoxelDatabaseMetadataType<FVector4> FVoxelDatabaseVector4Meta;
+typedef typename TVoxelDatabaseMetadataType<FVector2D> FVoxelDatabaseVector2DMeta;
+typedef typename TVoxelDatabaseMetadataType<FColor> FVoxelDatabaseColorMeta;
+typedef typename TVoxelDatabaseMetadataType<FLinearColor> FVoxelDatabaseLinearColorMeta;
+typedef typename TVoxelDatabaseMetadataType<FPackedNormal> FVoxelDatabasePackedNormalMeta;
+typedef typename TVoxelDatabaseMetadataType<FPackedRGB10A2N> FVoxelDatabasePackedRGB10A2NMeta;
+typedef typename TVoxelDatabaseMetadataType<FPackedRGBA16N> FVoxelDatabasePackedRGBA16NMeta;
+typedef typename TVoxelDatabaseMetadataType<FIntPoint> FVoxelDatabaseIntPointMeta;
+typedef typename TVoxelDatabaseMetadataType<FIntVector> FVoxelDatabaseIntVectorMeta;
+typedef typename TVoxelDatabaseMetadataType<FFloatRange> FVoxelDatabaseFloatRangeMeta;
+typedef typename TVoxelDatabaseMetadataType<FInt32Range> FVoxelDatabaseInt32RangeMeta;
+typedef typename TVoxelDatabaseMetadataType<FFloatInterval> FVoxelDatabaseFloatIntervalMeta;
+typedef typename TVoxelDatabaseMetadataType<FInt32Interval> FVoxelDatabaseInt32IntervalMeta;
+typedef typename TVoxelDatabaseMetadataType<FFloatRangeBound> FVoxelDatabaseFloatRangeBoundMeta;
+typedef typename TVoxelDatabaseMetadataType<FInt32RangeBound> FVoxelDatabaseInt32RangeBoundMeta;
+typedef typename TVoxelDatabaseMetadataType<FTwoVectors> FVoxelDatabaseTwoVectorsMeta;
+typedef typename TVoxelDatabaseMetadataType<FPlane> FVoxelDatabasePlaneMeta;
+typedef typename TVoxelDatabaseMetadataType<FRotator> FVoxelDatabaseRotatorMeta;
+typedef typename TVoxelDatabaseMetadataType<FQuat> FVoxelDatabaseQuatMeta;
+typedef typename TVoxelDatabaseMetadataType<FBox> FVoxelDatabaseBoxMeta;
+typedef typename TVoxelDatabaseMetadataType<FBox2D> FVoxelDatabaseBox2DMeta;
+typedef typename TVoxelDatabaseMetadataType<FBoxSphereBounds> FVoxelDatabaseBoxSphereBoundsMeta;
+typedef typename TVoxelDatabaseMetadataType<FOrientedBox> FVoxelDatabaseOrientedBoxMeta;
+typedef typename TVoxelDatabaseMetadataType<FMatrix> FVoxelDatabaseMatrixMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurvePointFloat> FVoxelDatabaseInterpCurvePointFloatMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurveFloat> FVoxelDatabaseInterpCurveFloatMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurvePointVector2D> FVoxelDatabaseInterpCurvePointVector2DMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurveVector2D> FVoxelDatabaseInterpCurveVector2DMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurvePointVector> FVoxelDatabaseInterpCurvePointVectorMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurveVector> FVoxelDatabaseInterpCurveVectorMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurvePointQuat> FVoxelDatabaseInterpCurvePointQuatMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurveQuat> FVoxelDatabaseInterpCurveQuatMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurvePointTwoVectors> FVoxelDatabaseInterpCurvePointTwoVectorsMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurveTwoVectors> FVoxelDatabaseInterpCurveTwoVectorsMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurvePointLinearColor> FVoxelDatabaseInterpCurvePointLinearColorMeta;
+typedef typename TVoxelDatabaseMetadataType<FInterpCurveLinearColor> FVoxelDatabaseInterpCurveLinearColorMeta;
+typedef typename TVoxelDatabaseMetadataType<FTransform> FVoxelDatabaseTransformMeta;
+typedef typename TVoxelDatabaseMetadataType<FRandomStream> FVoxelDatabaseRandomStreamMeta;
+typedef typename TVoxelDatabaseMetadataType<FDateTime> FVoxelDatabaseDateTimeMeta;
+typedef typename TVoxelDatabaseMetadataType<FTimespan> FVoxelDatabaseTimespanMeta;
+typedef typename TVoxelDatabaseMetadataType<FStringAssetReference> FVoxelDatabaseStringAssetReferenceMeta;
+typedef typename TVoxelDatabaseMetadataType<FStringClassReference> FVoxelDatabaseStringClassReferenceMeta;
+typedef typename TVoxelDatabaseMetadataType<FString> FVoxelDatabaseStringMeta;
+typedef typename TVoxelDatabaseMetadataType<FName> FVoxelDatabaseNameMeta;
+typedef typename TVoxelDatabaseMetadataType<FText> FVoxelDatabaseTextMeta;
+typedef typename TVoxelDatabaseMetadataType<FAffineMap> FVoxelDatabaseAffineMapMetadataMeta;
+typedef typename TVoxelDatabaseMetadataType<FUnitaryMap> FVoxelDatabaseUnitaryMapMetadataMeta;
+typedef typename TVoxelDatabaseMetadataType<FScaleMap> FVoxelDatabaseScaleMapMetadataMeta;
+typedef typename TVoxelDatabaseMetadataType<FUniformScaleMap> FVoxelDatabaseUniformScaleMapMetadataMeta;
+typedef typename TVoxelDatabaseMetadataType<FTranslationMap> FVoxelDatabaseTranslationMapMetadataMeta;
+typedef typename TVoxelDatabaseMetadataType<FScaleTranslationMap> FVoxelDatabaseScaleTranslationMapMetadataMeta;
+typedef typename TVoxelDatabaseMetadataType<FUniformScaleTranslationMap> FVoxelDatabaseUniformScaleTranslationMapMetadataMeta;
+typedef typename TVoxelDatabaseMetadataType<FNonlinearFrustumMap> FVoxelDatabaseNonlinearFrustumMapMetadataMeta;
 
-template<> VOXELMATEINLINE FVoxelDatabaseBool openvdb::zeroVal<FVoxelDatabaseBool>()
-{
-    return FVoxelDatabaseBool::ZeroValue;
-}
+//TODO specialize typeNameAsString to extract the type name of the wrapped type like so:
+//template<> VOXELMATEINLINE const char* openvdb::typeNameAsString<FVoxelDatabaseBool>()
+//{
+//    return openvdb::typeNameAsString<FVoxelDatabaseBool::ValueType>();
+//}
 
-template<> VOXELMATEINLINE FVoxelDatabaseDouble openvdb::zeroVal<FVoxelDatabaseDouble>()
+template<> VOXELMATEINLINE FVoxelDatabaseBoolVoxel openvdb::zeroVal<FVoxelDatabaseBoolVoxel>()
 {
-    return FVoxelDatabaseDouble::ZeroValue;
+    return FVoxelDatabaseBoolVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseFloat openvdb::zeroVal<FVoxelDatabaseFloat>()
+template<> VOXELMATEINLINE FVoxelDatabaseDoubleVoxel openvdb::zeroVal<FVoxelDatabaseDoubleVoxel>()
 {
-    return FVoxelDatabaseFloat::ZeroValue;
+    return FVoxelDatabaseDoubleVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInt8 openvdb::zeroVal<FVoxelDatabaseInt8>()
+template<> VOXELMATEINLINE FVoxelDatabaseFloatVoxel openvdb::zeroVal<FVoxelDatabaseFloatVoxel>()
 {
-    return FVoxelDatabaseInt8::ZeroValue;
+    return FVoxelDatabaseFloatVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInt16 openvdb::zeroVal<FVoxelDatabaseInt16>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt8Voxel openvdb::zeroVal<FVoxelDatabaseInt8Voxel>()
 {
-    return FVoxelDatabaseInt16::ZeroValue;
+    return FVoxelDatabaseInt8Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInt32 openvdb::zeroVal<FVoxelDatabaseInt32>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt16Voxel openvdb::zeroVal<FVoxelDatabaseInt16Voxel>()
 {
-    return FVoxelDatabaseInt32::ZeroValue;
+    return FVoxelDatabaseInt16Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInt64 openvdb::zeroVal<FVoxelDatabaseInt64>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt32Voxel openvdb::zeroVal<FVoxelDatabaseInt32Voxel>()
 {
-    return FVoxelDatabaseInt64::ZeroValue;
+    return FVoxelDatabaseInt32Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUInt8 openvdb::zeroVal<FVoxelDatabaseUInt8>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt64Voxel openvdb::zeroVal<FVoxelDatabaseInt64Voxel>()
 {
-    return FVoxelDatabaseUInt8::ZeroValue;
+    return FVoxelDatabaseInt64Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUInt16 openvdb::zeroVal<FVoxelDatabaseUInt16>()
+template<> VOXELMATEINLINE FVoxelDatabaseUInt8Voxel openvdb::zeroVal<FVoxelDatabaseUInt8Voxel>()
 {
-    return FVoxelDatabaseUInt16::ZeroValue;
+    return FVoxelDatabaseUInt8Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUInt32 openvdb::zeroVal<FVoxelDatabaseUInt32>()
+template<> VOXELMATEINLINE FVoxelDatabaseUInt16Voxel openvdb::zeroVal<FVoxelDatabaseUInt16Voxel>()
 {
-    return FVoxelDatabaseUInt32::ZeroValue;
+    return FVoxelDatabaseUInt16Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUInt64 openvdb::zeroVal<FVoxelDatabaseUInt64>()
+template<> VOXELMATEINLINE FVoxelDatabaseUInt32Voxel openvdb::zeroVal<FVoxelDatabaseUInt32Voxel>()
 {
-    return FVoxelDatabaseUInt64::ZeroValue;
+    return FVoxelDatabaseUInt32Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseVector2D openvdb::zeroVal<FVoxelDatabaseVector2D>()
+template<> VOXELMATEINLINE FVoxelDatabaseUInt64Voxel openvdb::zeroVal<FVoxelDatabaseUInt64Voxel>()
 {
-    return FVoxelDatabaseVector2D::ZeroValue;
+    return FVoxelDatabaseUInt64Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseVector openvdb::zeroVal<FVoxelDatabaseVector>()
+template<> VOXELMATEINLINE FVoxelDatabaseVector2DVoxel openvdb::zeroVal<FVoxelDatabaseVector2DVoxel>()
 {
-    return FVoxelDatabaseVector::ZeroValue;
+    return FVoxelDatabaseVector2DVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseVector4 openvdb::zeroVal<FVoxelDatabaseVector4>()
+template<> VOXELMATEINLINE FVoxelDatabaseVectorVoxel openvdb::zeroVal<FVoxelDatabaseVectorVoxel>()
 {
-    return FVoxelDatabaseVector4::ZeroValue;
+    return FVoxelDatabaseVectorVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseColor openvdb::zeroVal<FVoxelDatabaseColor>()
+template<> VOXELMATEINLINE FVoxelDatabaseVector4Voxel openvdb::zeroVal<FVoxelDatabaseVector4Voxel>()
 {
-    return FVoxelDatabaseColor::ZeroValue;
+    return FVoxelDatabaseVector4Voxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseLinearColor openvdb::zeroVal<FVoxelDatabaseLinearColor>()
+template<> VOXELMATEINLINE FVoxelDatabaseColorVoxel openvdb::zeroVal<FVoxelDatabaseColorVoxel>()
 {
-    return FVoxelDatabaseLinearColor::ZeroValue;
+    return FVoxelDatabaseColorVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabasePackedNormal openvdb::zeroVal<FVoxelDatabasePackedNormal>()
+template<> VOXELMATEINLINE FVoxelDatabaseLinearColorVoxel openvdb::zeroVal<FVoxelDatabaseLinearColorVoxel>()
 {
-    return FVoxelDatabasePackedNormal::ZeroValue;
+    return FVoxelDatabaseLinearColorVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabasePackedRGB10A2N openvdb::zeroVal<FVoxelDatabasePackedRGB10A2N>()
+template<> VOXELMATEINLINE FVoxelDatabasePackedNormalVoxel openvdb::zeroVal<FVoxelDatabasePackedNormalVoxel>()
 {
-    return FVoxelDatabasePackedRGB10A2N::ZeroValue;
+    return FVoxelDatabasePackedNormalVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabasePackedRGBA16N openvdb::zeroVal<FVoxelDatabasePackedRGBA16N>()
+template<> VOXELMATEINLINE FVoxelDatabasePackedRGB10A2NVoxel openvdb::zeroVal<FVoxelDatabasePackedRGB10A2NVoxel>()
 {
-    return FVoxelDatabasePackedRGBA16N::ZeroValue;
+    return FVoxelDatabasePackedRGB10A2NVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseIntPoint openvdb::zeroVal<FVoxelDatabaseIntPoint>()
+template<> VOXELMATEINLINE FVoxelDatabasePackedRGBA16NVoxel openvdb::zeroVal<FVoxelDatabasePackedRGBA16NVoxel>()
 {
-    return FVoxelDatabaseIntPoint::ZeroValue;
+    return FVoxelDatabasePackedRGBA16NVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseIntVector openvdb::zeroVal<FVoxelDatabaseIntVector>()
+template<> VOXELMATEINLINE FVoxelDatabaseIntPointVoxel openvdb::zeroVal<FVoxelDatabaseIntPointVoxel>()
 {
-    return FVoxelDatabaseIntVector::ZeroValue;
+    return FVoxelDatabaseIntPointVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseFloatRange openvdb::zeroVal<FVoxelDatabaseFloatRange>()
+template<> VOXELMATEINLINE FVoxelDatabaseIntVectorVoxel openvdb::zeroVal<FVoxelDatabaseIntVectorVoxel>()
 {
-    return FVoxelDatabaseFloatRange::ZeroValue;
+    return FVoxelDatabaseIntVectorVoxel::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInt32Range openvdb::zeroVal<FVoxelDatabaseInt32Range>()
+template<> VOXELMATEINLINE FVoxelDatabaseBoolMeta openvdb::zeroVal<FVoxelDatabaseBoolMeta>()
 {
-    return FVoxelDatabaseInt32Range::ZeroValue;
+    return FVoxelDatabaseBoolMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseFloatInterval openvdb::zeroVal<FVoxelDatabaseFloatInterval>()
+template<> VOXELMATEINLINE FVoxelDatabaseDoubleMeta openvdb::zeroVal<FVoxelDatabaseDoubleMeta>()
 {
-    return FVoxelDatabaseFloatInterval::ZeroValue;
+    return FVoxelDatabaseDoubleMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInt32Interval openvdb::zeroVal<FVoxelDatabaseInt32Interval>()
+template<> VOXELMATEINLINE FVoxelDatabaseFloatMeta openvdb::zeroVal<FVoxelDatabaseFloatMeta>()
 {
-    return FVoxelDatabaseInt32Interval::ZeroValue;
+    return FVoxelDatabaseFloatMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseFloatRangeBound openvdb::zeroVal<FVoxelDatabaseFloatRangeBound>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt8Meta openvdb::zeroVal<FVoxelDatabaseInt8Meta>()
 {
-    return FVoxelDatabaseFloatRangeBound::ZeroValue;
+    return FVoxelDatabaseInt8Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInt32RangeBound openvdb::zeroVal<FVoxelDatabaseInt32RangeBound>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt16Meta openvdb::zeroVal<FVoxelDatabaseInt16Meta>()
 {
-    return FVoxelDatabaseInt32RangeBound::ZeroValue;
+    return FVoxelDatabaseInt16Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseTwoVectors openvdb::zeroVal<FVoxelDatabaseTwoVectors>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt32Meta openvdb::zeroVal<FVoxelDatabaseInt32Meta>()
 {
-    return FVoxelDatabaseTwoVectors::ZeroValue;
+    return FVoxelDatabaseInt32Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabasePlane openvdb::zeroVal<FVoxelDatabasePlane>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt64Meta openvdb::zeroVal<FVoxelDatabaseInt64Meta>()
 {
-    return FVoxelDatabasePlane::ZeroValue;
+    return FVoxelDatabaseInt64Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseRotator openvdb::zeroVal<FVoxelDatabaseRotator>()
+template<> VOXELMATEINLINE FVoxelDatabaseUInt8Meta openvdb::zeroVal<FVoxelDatabaseUInt8Meta>()
 {
-    return FVoxelDatabaseRotator::ZeroValue;
+    return FVoxelDatabaseUInt8Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseQuat openvdb::zeroVal<FVoxelDatabaseQuat>()
+template<> VOXELMATEINLINE FVoxelDatabaseUInt16Meta openvdb::zeroVal<FVoxelDatabaseUInt16Meta>()
 {
-    return FVoxelDatabaseQuat::ZeroValue;
+    return FVoxelDatabaseUInt16Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseBox openvdb::zeroVal<FVoxelDatabaseBox>()
+template<> VOXELMATEINLINE FVoxelDatabaseUInt32Meta openvdb::zeroVal<FVoxelDatabaseUInt32Meta>()
 {
-    return FVoxelDatabaseBox::ZeroValue;
+    return FVoxelDatabaseUInt32Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseBox2D openvdb::zeroVal<FVoxelDatabaseBox2D>()
+template<> VOXELMATEINLINE FVoxelDatabaseUInt64Meta openvdb::zeroVal<FVoxelDatabaseUInt64Meta>()
 {
-    return FVoxelDatabaseBox2D::ZeroValue;
+    return FVoxelDatabaseUInt64Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseBoxSphereBounds openvdb::zeroVal<FVoxelDatabaseBoxSphereBounds>()
+template<> VOXELMATEINLINE FVoxelDatabaseVector2DMeta openvdb::zeroVal<FVoxelDatabaseVector2DMeta>()
 {
-    return FVoxelDatabaseBoxSphereBounds::ZeroValue;
+    return FVoxelDatabaseVector2DMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseOrientedBox openvdb::zeroVal<FVoxelDatabaseOrientedBox>()
+template<> VOXELMATEINLINE FVoxelDatabaseVectorMeta openvdb::zeroVal<FVoxelDatabaseVectorMeta>()
 {
-    return FVoxelDatabaseOrientedBox::ZeroValue;
+    return FVoxelDatabaseVectorMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseMatrix openvdb::zeroVal<FVoxelDatabaseMatrix>()
+template<> VOXELMATEINLINE FVoxelDatabaseVector4Meta openvdb::zeroVal<FVoxelDatabaseVector4Meta>()
 {
-    return FVoxelDatabaseMatrix::ZeroValue;
+    return FVoxelDatabaseVector4Meta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointFloat openvdb::zeroVal<FVoxelDatabaseInterpCurvePointFloat>()
+template<> VOXELMATEINLINE FVoxelDatabaseColorMeta openvdb::zeroVal<FVoxelDatabaseColorMeta>()
 {
-    return FVoxelDatabaseInterpCurvePointFloat::ZeroValue;
+    return FVoxelDatabaseColorMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveFloat openvdb::zeroVal<FVoxelDatabaseInterpCurveFloat>()
+template<> VOXELMATEINLINE FVoxelDatabaseLinearColorMeta openvdb::zeroVal<FVoxelDatabaseLinearColorMeta>()
 {
-    return FVoxelDatabaseInterpCurveFloat::ZeroValue;
+    return FVoxelDatabaseLinearColorMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointVector2D openvdb::zeroVal<FVoxelDatabaseInterpCurvePointVector2D>()
+template<> VOXELMATEINLINE FVoxelDatabasePackedNormalMeta openvdb::zeroVal<FVoxelDatabasePackedNormalMeta>()
 {
-    return FVoxelDatabaseInterpCurvePointVector2D::ZeroValue;
+    return FVoxelDatabasePackedNormalMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveVector2D openvdb::zeroVal<FVoxelDatabaseInterpCurveVector2D>()
+template<> VOXELMATEINLINE FVoxelDatabasePackedRGB10A2NMeta openvdb::zeroVal<FVoxelDatabasePackedRGB10A2NMeta>()
 {
-    return FVoxelDatabaseInterpCurveVector2D::ZeroValue;
+    return FVoxelDatabasePackedRGB10A2NMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointVector openvdb::zeroVal<FVoxelDatabaseInterpCurvePointVector>()
+template<> VOXELMATEINLINE FVoxelDatabasePackedRGBA16NMeta openvdb::zeroVal<FVoxelDatabasePackedRGBA16NMeta>()
 {
-    return FVoxelDatabaseInterpCurvePointVector::ZeroValue;
+    return FVoxelDatabasePackedRGBA16NMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveVector openvdb::zeroVal<FVoxelDatabaseInterpCurveVector>()
+template<> VOXELMATEINLINE FVoxelDatabaseIntPointMeta openvdb::zeroVal<FVoxelDatabaseIntPointMeta>()
 {
-    return FVoxelDatabaseInterpCurveVector::ZeroValue;
+    return FVoxelDatabaseIntPointMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointQuat openvdb::zeroVal<FVoxelDatabaseInterpCurvePointQuat>()
+template<> VOXELMATEINLINE FVoxelDatabaseIntVectorMeta openvdb::zeroVal<FVoxelDatabaseIntVectorMeta>()
 {
-    return FVoxelDatabaseInterpCurvePointQuat::ZeroValue;
+    return FVoxelDatabaseIntVectorMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveQuat openvdb::zeroVal<FVoxelDatabaseInterpCurveQuat>()
+template<> VOXELMATEINLINE FVoxelDatabaseFloatRangeMeta openvdb::zeroVal<FVoxelDatabaseFloatRangeMeta>()
 {
-    return FVoxelDatabaseInterpCurveQuat::ZeroValue;
+    return FVoxelDatabaseFloatRangeMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointTwoVectors openvdb::zeroVal<FVoxelDatabaseInterpCurvePointTwoVectors>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt32RangeMeta openvdb::zeroVal<FVoxelDatabaseInt32RangeMeta>()
 {
-    return FVoxelDatabaseInterpCurvePointTwoVectors::ZeroValue;
+    return FVoxelDatabaseInt32RangeMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveTwoVectors openvdb::zeroVal<FVoxelDatabaseInterpCurveTwoVectors>()
+template<> VOXELMATEINLINE FVoxelDatabaseFloatIntervalMeta openvdb::zeroVal<FVoxelDatabaseFloatIntervalMeta>()
 {
-    return FVoxelDatabaseInterpCurveTwoVectors::ZeroValue;
+    return FVoxelDatabaseFloatIntervalMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointLinearColor openvdb::zeroVal<FVoxelDatabaseInterpCurvePointLinearColor>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt32IntervalMeta openvdb::zeroVal<FVoxelDatabaseInt32IntervalMeta>()
 {
-    return FVoxelDatabaseInterpCurvePointLinearColor::ZeroValue;
+    return FVoxelDatabaseInt32IntervalMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveLinearColor openvdb::zeroVal<FVoxelDatabaseInterpCurveLinearColor>()
+template<> VOXELMATEINLINE FVoxelDatabaseFloatRangeBoundMeta openvdb::zeroVal<FVoxelDatabaseFloatRangeBoundMeta>()
 {
-    return FVoxelDatabaseInterpCurveLinearColor::ZeroValue;
+    return FVoxelDatabaseFloatRangeBoundMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseTransform openvdb::zeroVal<FVoxelDatabaseTransform>()
+template<> VOXELMATEINLINE FVoxelDatabaseInt32RangeBoundMeta openvdb::zeroVal<FVoxelDatabaseInt32RangeBoundMeta>()
 {
-    return FVoxelDatabaseTransform::ZeroValue;
+    return FVoxelDatabaseInt32RangeBoundMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseRandomStream openvdb::zeroVal<FVoxelDatabaseRandomStream>()
+template<> VOXELMATEINLINE FVoxelDatabaseTwoVectorsMeta openvdb::zeroVal<FVoxelDatabaseTwoVectorsMeta>()
 {
-    return FVoxelDatabaseRandomStream::ZeroValue;
+    return FVoxelDatabaseTwoVectorsMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseDateTime openvdb::zeroVal<FVoxelDatabaseDateTime>()
+template<> VOXELMATEINLINE FVoxelDatabasePlaneMeta openvdb::zeroVal<FVoxelDatabasePlaneMeta>()
 {
-    return FVoxelDatabaseDateTime::ZeroValue;
+    return FVoxelDatabasePlaneMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseTimespan openvdb::zeroVal<FVoxelDatabaseTimespan>()
+template<> VOXELMATEINLINE FVoxelDatabaseRotatorMeta openvdb::zeroVal<FVoxelDatabaseRotatorMeta>()
 {
-    return FVoxelDatabaseTimespan::ZeroValue;
+    return FVoxelDatabaseRotatorMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseStringAssetReference openvdb::zeroVal<FVoxelDatabaseStringAssetReference>()
+template<> VOXELMATEINLINE FVoxelDatabaseQuatMeta openvdb::zeroVal<FVoxelDatabaseQuatMeta>()
 {
-    return FVoxelDatabaseStringAssetReference::ZeroValue;
+    return FVoxelDatabaseQuatMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseStringClassReference openvdb::zeroVal<FVoxelDatabaseStringClassReference>()
+template<> VOXELMATEINLINE FVoxelDatabaseBoxMeta openvdb::zeroVal<FVoxelDatabaseBoxMeta>()
 {
-    return FVoxelDatabaseStringClassReference::ZeroValue;
+    return FVoxelDatabaseBoxMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseString openvdb::zeroVal<FVoxelDatabaseString>()
+template<> VOXELMATEINLINE FVoxelDatabaseBox2DMeta openvdb::zeroVal<FVoxelDatabaseBox2DMeta>()
 {
-    return FVoxelDatabaseString::ZeroValue;
+    return FVoxelDatabaseBox2DMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseName openvdb::zeroVal<FVoxelDatabaseName>()
+template<> VOXELMATEINLINE FVoxelDatabaseBoxSphereBoundsMeta openvdb::zeroVal<FVoxelDatabaseBoxSphereBoundsMeta>()
 {
-    return FVoxelDatabaseName::ZeroValue;
+    return FVoxelDatabaseBoxSphereBoundsMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseText openvdb::zeroVal<FVoxelDatabaseText>()
+template<> VOXELMATEINLINE FVoxelDatabaseOrientedBoxMeta openvdb::zeroVal<FVoxelDatabaseOrientedBoxMeta>()
 {
-    return FVoxelDatabaseText::ZeroValue;
+    return FVoxelDatabaseOrientedBoxMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseAffineMap openvdb::zeroVal<FVoxelDatabaseAffineMap>()
+template<> VOXELMATEINLINE FVoxelDatabaseMatrixMeta openvdb::zeroVal<FVoxelDatabaseMatrixMeta>()
 {
-    return FVoxelDatabaseAffineMap::ZeroValue;
+    return FVoxelDatabaseMatrixMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUnitaryMap openvdb::zeroVal<FVoxelDatabaseUnitaryMap>()
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointFloatMeta openvdb::zeroVal<FVoxelDatabaseInterpCurvePointFloatMeta>()
 {
-    return FVoxelDatabaseUnitaryMap::ZeroValue;
+    return FVoxelDatabaseInterpCurvePointFloatMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseScaleMap openvdb::zeroVal<FVoxelDatabaseScaleMap>()
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveFloatMeta openvdb::zeroVal<FVoxelDatabaseInterpCurveFloatMeta>()
 {
-    return FVoxelDatabaseScaleMap::ZeroValue;
+    return FVoxelDatabaseInterpCurveFloatMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUniformScaleMap openvdb::zeroVal<FVoxelDatabaseUniformScaleMap>()
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointVector2DMeta openvdb::zeroVal<FVoxelDatabaseInterpCurvePointVector2DMeta>()
 {
-    return FVoxelDatabaseUniformScaleMap::ZeroValue;
+    return FVoxelDatabaseInterpCurvePointVector2DMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseTranslationMap openvdb::zeroVal<FVoxelDatabaseTranslationMap>()
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveVector2DMeta openvdb::zeroVal<FVoxelDatabaseInterpCurveVector2DMeta>()
 {
-    return FVoxelDatabaseTranslationMap::ZeroValue;
+    return FVoxelDatabaseInterpCurveVector2DMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseScaleTranslationMap openvdb::zeroVal<FVoxelDatabaseScaleTranslationMap>()
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointVectorMeta openvdb::zeroVal<FVoxelDatabaseInterpCurvePointVectorMeta>()
 {
-    return FVoxelDatabaseScaleTranslationMap::ZeroValue;
+    return FVoxelDatabaseInterpCurvePointVectorMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUniformScaleTranslationMap openvdb::zeroVal<FVoxelDatabaseUniformScaleTranslationMap>()
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveVectorMeta openvdb::zeroVal<FVoxelDatabaseInterpCurveVectorMeta>()
 {
-    return FVoxelDatabaseUniformScaleTranslationMap::ZeroValue;
+    return FVoxelDatabaseInterpCurveVectorMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseNonlinearFrustumMap openvdb::zeroVal<FVoxelDatabaseNonlinearFrustumMap>()
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointQuatMeta openvdb::zeroVal<FVoxelDatabaseInterpCurvePointQuatMeta>()
 {
-    return FVoxelDatabaseNonlinearFrustumMap::ZeroValue;
+    return FVoxelDatabaseInterpCurvePointQuatMeta::ZeroValue;
 }
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseBool>
-{
-    VOXELMATEINLINE static FVoxelDatabaseBool value() { return openvdb::math::Tolerance<bool>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseDouble>
-{
-    VOXELMATEINLINE static FVoxelDatabaseDouble value() { return openvdb::math::Tolerance<double>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseFloat>
-{
-    VOXELMATEINLINE static FVoxelDatabaseFloat value() { return openvdb::math::Tolerance<float>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt8>
-{
-    VOXELMATEINLINE static FVoxelDatabaseInt8 value() { return openvdb::math::Tolerance<int8>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt16>
-{
-    VOXELMATEINLINE static FVoxelDatabaseInt16 value() { return openvdb::math::Tolerance<int16>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt32>
-{
-    VOXELMATEINLINE static FVoxelDatabaseInt32 value() { return openvdb::math::Tolerance<int32>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt64>
-{
-    VOXELMATEINLINE static FVoxelDatabaseInt64 value() { return openvdb::math::Tolerance<int64>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt8>
-{
-    VOXELMATEINLINE static FVoxelDatabaseUInt8 value() { return openvdb::math::Tolerance<uint8>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt16>
-{
-    VOXELMATEINLINE static FVoxelDatabaseUInt16 value() { return openvdb::math::Tolerance<uint16>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt32>
-{
-    VOXELMATEINLINE static FVoxelDatabaseUInt32 value() { return openvdb::math::Tolerance<uint32>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt64>
-{
-    VOXELMATEINLINE static FVoxelDatabaseUInt64 value() { return openvdb::math::Tolerance<uint64>::value(); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseVector>
-{
-    VOXELMATEINLINE static FVoxelDatabaseVector value() { return FVector(openvdb::math::Tolerance<float>::value()); }
-};
-
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseVector4>
-{
-    VOXELMATEINLINE static FVoxelDatabaseVector4 value() { return FVector4(openvdb::math::Tolerance<float>::value()); }
-};
 
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseVector2D>
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveQuatMeta openvdb::zeroVal<FVoxelDatabaseInterpCurveQuatMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseVector2D value() { return FVector2D(openvdb::math::Tolerance<float>::value(), openvdb::math::Tolerance<float>::value()); }
-};
+    return FVoxelDatabaseInterpCurveQuatMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Tolerance<FVoxelDatabaseLinearColor>
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointTwoVectorsMeta openvdb::zeroVal<FVoxelDatabaseInterpCurvePointTwoVectorsMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseLinearColor value() { return FLinearColor(FVector4(openvdb::math::Tolerance<float>::value())); }
-};
+    return FVoxelDatabaseInterpCurvePointTwoVectorsMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Tolerance<FVoxelDatabasePackedNormal>
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveTwoVectorsMeta openvdb::zeroVal<FVoxelDatabaseInterpCurveTwoVectorsMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabasePackedNormal value() { return FPackedNormal(FVector4(openvdb::math::Tolerance<float>::value())); }
-};
+    return FVoxelDatabaseInterpCurveTwoVectorsMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Tolerance<FVoxelDatabasePackedRGB10A2N>
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurvePointLinearColorMeta openvdb::zeroVal<FVoxelDatabaseInterpCurvePointLinearColorMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabasePackedRGB10A2N value() { return FVoxelDatabasePackedRGB10A2N(FVector4(openvdb::math::Tolerance<float>::value())); }
-};
+    return FVoxelDatabaseInterpCurvePointLinearColorMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Tolerance<FVoxelDatabasePackedRGBA16N>
+template<> VOXELMATEINLINE FVoxelDatabaseInterpCurveLinearColorMeta openvdb::zeroVal<FVoxelDatabaseInterpCurveLinearColorMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabasePackedRGBA16N value() { return FVoxelDatabasePackedRGBA16N(FVector4(openvdb::math::Tolerance<float>::value())); }
-};
+    return FVoxelDatabaseInterpCurveLinearColorMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseBool>
+template<> VOXELMATEINLINE FVoxelDatabaseTransformMeta openvdb::zeroVal<FVoxelDatabaseTransformMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseBool value() { return openvdb::math::Delta<bool>::value(); }
-};
+    return FVoxelDatabaseTransformMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseDouble>
+template<> VOXELMATEINLINE FVoxelDatabaseRandomStreamMeta openvdb::zeroVal<FVoxelDatabaseRandomStreamMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseDouble value() { return openvdb::math::Delta<double>::value(); }
-};
+    return FVoxelDatabaseRandomStreamMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseFloat>
+template<> VOXELMATEINLINE FVoxelDatabaseDateTimeMeta openvdb::zeroVal<FVoxelDatabaseDateTimeMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseFloat value() { return openvdb::math::Delta<float>::value(); }
-};
+    return FVoxelDatabaseDateTimeMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseInt8>
+template<> VOXELMATEINLINE FVoxelDatabaseTimespanMeta openvdb::zeroVal<FVoxelDatabaseTimespanMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseInt8 value() { return openvdb::math::Delta<int8>::value(); }
-};
+    return FVoxelDatabaseTimespanMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseInt16>
+template<> VOXELMATEINLINE FVoxelDatabaseStringAssetReferenceMeta openvdb::zeroVal<FVoxelDatabaseStringAssetReferenceMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseInt16 value() { return openvdb::math::Delta<int16>::value(); }
-};
+    return FVoxelDatabaseStringAssetReferenceMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseInt32>
+template<> VOXELMATEINLINE FVoxelDatabaseStringClassReferenceMeta openvdb::zeroVal<FVoxelDatabaseStringClassReferenceMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseInt32 value() { return openvdb::math::Delta<int32>::value(); }
-};
+    return FVoxelDatabaseStringClassReferenceMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseInt64>
+template<> VOXELMATEINLINE FVoxelDatabaseStringMeta openvdb::zeroVal<FVoxelDatabaseStringMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseInt64 value() { return openvdb::math::Delta<int64>::value(); }
-};
+    return FVoxelDatabaseStringMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseUInt8>
+template<> VOXELMATEINLINE FVoxelDatabaseNameMeta openvdb::zeroVal<FVoxelDatabaseNameMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseUInt8 value() { return openvdb::math::Delta<uint8>::value(); }
-};
+    return FVoxelDatabaseNameMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseUInt16>
+template<> VOXELMATEINLINE FVoxelDatabaseTextMeta openvdb::zeroVal<FVoxelDatabaseTextMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseUInt16 value() { return openvdb::math::Delta<uint16>::value(); }
-};
+    return FVoxelDatabaseTextMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseUInt32>
+template<> VOXELMATEINLINE FVoxelDatabaseAffineMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseAffineMapMetadataMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseUInt32 value() { return openvdb::math::Delta<uint32>::value(); }
-};
+    return FVoxelDatabaseAffineMapMetadataMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseUInt64>
+template<> VOXELMATEINLINE FVoxelDatabaseUnitaryMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseUnitaryMapMetadataMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseUInt64 value() { return openvdb::math::Delta<uint64>::value(); }
-};
+    return FVoxelDatabaseUnitaryMapMetadataMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseVector>
+template<> VOXELMATEINLINE FVoxelDatabaseScaleMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseScaleMapMetadataMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseVector value() { return FVector(openvdb::math::Delta<float>::value()); }
-};
+    return FVoxelDatabaseScaleMapMetadataMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseVector4>
+template<> VOXELMATEINLINE FVoxelDatabaseUniformScaleMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseUniformScaleMapMetadataMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseVector4 value() { return FVector4(openvdb::math::Delta<float>::value()); }
-};
+    return FVoxelDatabaseUniformScaleMapMetadataMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseVector2D>
+template<> VOXELMATEINLINE FVoxelDatabaseTranslationMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseTranslationMapMetadataMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseVector2D value() { return FVector2D(openvdb::math::Delta<float>::value(), openvdb::math::Delta<float>::value()); }
-};
+    return FVoxelDatabaseTranslationMapMetadataMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabaseLinearColor>
+template<> VOXELMATEINLINE FVoxelDatabaseScaleTranslationMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseScaleTranslationMapMetadataMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabaseLinearColor value() { return FLinearColor(FVector4(openvdb::math::Delta<float>::value())); }
-};
+    return FVoxelDatabaseScaleTranslationMapMetadataMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabasePackedNormal>
+template<> VOXELMATEINLINE FVoxelDatabaseUniformScaleTranslationMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseUniformScaleTranslationMapMetadataMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabasePackedNormal value() { return FPackedNormal(FVector4(openvdb::math::Delta<float>::value())); }
-};
+    return FVoxelDatabaseUniformScaleTranslationMapMetadataMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabasePackedRGB10A2N>
+template<> VOXELMATEINLINE FVoxelDatabaseNonlinearFrustumMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseNonlinearFrustumMapMetadataMeta>()
 {
-    VOXELMATEINLINE static FVoxelDatabasePackedRGB10A2N value() { return FVoxelDatabasePackedRGB10A2N(FVector4(openvdb::math::Delta<float>::value())); }
-};
+    return FVoxelDatabaseNonlinearFrustumMapMetadataMeta::ZeroValue;
+}
 
-template<> struct openvdb::math::Delta<FVoxelDatabasePackedRGBA16N>
-{
-    VOXELMATEINLINE static FVoxelDatabasePackedRGBA16N value() { return FVoxelDatabasePackedRGBA16N(FVector4(openvdb::math::Delta<float>::value())); }
-};
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseBoolVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseBoolVoxel value() { return openvdb::math::Tolerance<bool>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseDoubleVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseDoubleVoxel value() { return openvdb::math::Tolerance<double>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseFloatVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseFloatVoxel value() { return openvdb::math::Tolerance<float>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt8Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseInt8Voxel value() { return openvdb::math::Tolerance<int8>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt16Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseInt16Voxel value() { return openvdb::math::Tolerance<int16>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt32Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseInt32Voxel value() { return openvdb::math::Tolerance<int32>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseInt64Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseInt64Voxel value() { return openvdb::math::Tolerance<int64>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt8Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseUInt8Voxel value() { return openvdb::math::Tolerance<uint8>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt16Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseUInt16Voxel value() { return openvdb::math::Tolerance<uint16>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt32Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseUInt32Voxel value() { return openvdb::math::Tolerance<uint32>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseUInt64Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseUInt64Voxel value() { return openvdb::math::Tolerance<uint64>::value(); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseVectorVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseVectorVoxel value() { return FVector(openvdb::math::Tolerance<float>::value()); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseVector4Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseVector4Voxel value() { return FVector4(openvdb::math::Tolerance<float>::value()); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseVector2DVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseVector2DVoxel value() { return FVector2D(openvdb::math::Tolerance<float>::value(), openvdb::math::Tolerance<float>::value()); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabaseLinearColorVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseLinearColorVoxel value() { return FLinearColor(FVector4(openvdb::math::Tolerance<float>::value())); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabasePackedNormalVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabasePackedNormalVoxel value() { return FPackedNormal(FVector4(openvdb::math::Tolerance<float>::value())); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabasePackedRGB10A2NVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabasePackedRGB10A2NVoxel value() { return FPackedRGB10A2N(FVector4(openvdb::math::Tolerance<float>::value())); }
+//};
+//
+//template<> struct openvdb::math::Tolerance<FVoxelDatabasePackedRGBA16NVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabasePackedRGBA16NVoxel value() { return FPackedRGBA16N(FVector4(openvdb::math::Tolerance<float>::value())); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseBoolVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseBoolVoxel value() { return openvdb::math::Delta<bool>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseDoubleVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseDoubleVoxel value() { return openvdb::math::Delta<double>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseFloatVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseFloatVoxel value() { return openvdb::math::Delta<float>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseInt8Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseInt8Voxel value() { return openvdb::math::Delta<int8>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseInt16Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseInt16Voxel value() { return openvdb::math::Delta<int16>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseInt32Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseInt32Voxel value() { return openvdb::math::Delta<int32>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseInt64Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseInt64Voxel value() { return openvdb::math::Delta<int64>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseUInt8Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseUInt8Voxel value() { return openvdb::math::Delta<uint8>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseUInt16Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseUInt16Voxel value() { return openvdb::math::Delta<uint16>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseUInt32Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseUInt32Voxel value() { return openvdb::math::Delta<uint32>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseUInt64Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseUInt64Voxel value() { return openvdb::math::Delta<uint64>::value(); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseVectorVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseVectorVoxel value() { return FVector(openvdb::math::Delta<float>::value()); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseVector4Voxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseVector4Voxel value() { return FVector4(openvdb::math::Delta<float>::value()); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseVector2DVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseVector2DVoxel value() { return FVector2D(openvdb::math::Delta<float>::value(), openvdb::math::Delta<float>::value()); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabaseLinearColorVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabaseLinearColorVoxel value() { return FLinearColor(FVector4(openvdb::math::Delta<float>::value())); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabasePackedNormalVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabasePackedNormalVoxel value() { return FPackedNormal(FVector4(openvdb::math::Delta<float>::value())); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabasePackedRGB10A2NVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabasePackedRGB10A2NVoxel value() { return FPackedRGB10A2N(FVector4(openvdb::math::Delta<float>::value())); }
+//};
+//
+//template<> struct openvdb::math::Delta<FVoxelDatabasePackedRGBA16NVoxel>()
+//{
+//    VOXELMATEINLINE static FVoxelDatabasePackedRGBA16NVoxel value() { return FPackedRGBA16N(FVector4(openvdb::math::Delta<float>::value())); }
+//};
 
 #pragma warning(pop)

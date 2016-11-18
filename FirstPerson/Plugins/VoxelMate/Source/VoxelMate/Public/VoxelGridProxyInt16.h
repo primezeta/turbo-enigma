@@ -18,13 +18,13 @@ public:
     UFUNCTION(Category = VoxelGridProxy)
         const int16& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy)
-        const bool GetVoxelIsActive(const FIntVector& IndexCoord) const;
+        void GetVoxelIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
     UFUNCTION(Category = VoxelGridProxy)
         const int16& GetVoxelValueAndIsActive(const FIntVector& IndexCoord, bool& OutIsActive) const;
     UFUNCTION(Category = VoxelGridProxy)
-        void SetVoxelValue(const FIntVector& IndexCoord, const int16& InValue) const;
+        void SetVoxelValue(const FIntVector& IndexCoord, const int16& InValue);
     UFUNCTION(Category = VoxelGridProxy)
-        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive) const;
+        void SetVoxelIsActive(const FIntVector& IndexCoord, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
-        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int16& InValue, const bool& InIsActive) const;
+        void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int16& InValue, const bool& InIsActive);
 };

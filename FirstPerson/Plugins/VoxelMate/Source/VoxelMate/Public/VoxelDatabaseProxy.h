@@ -17,6 +17,12 @@ public:
     virtual void PreSave(const class ITargetPlatform* TargetPlatform) override;
     virtual void PostLoad() override;
 
+    UVoxelDatabaseProxy();
+
+    static bool CreateGridDataFile(AVoxelGridProxy* GridProxy, FText& OutFailureReason);
+    bool LoadGridData(AVoxelGridProxy* GridProxy);
+    bool SaveGridData(AVoxelGridProxy* GridProxy);
+
     UPROPERTY(BlueprintReadOnly)
         TArray<AVoxelGridProxy*> GridProxies;
     //UPROPERTY()

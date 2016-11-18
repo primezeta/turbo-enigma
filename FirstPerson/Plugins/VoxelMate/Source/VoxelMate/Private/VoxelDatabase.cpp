@@ -7,11 +7,6 @@
 
 void UVoxelDatabase::InitializeTypes()
 {
-    if (IsDatabaseInitialized)
-    {
-        return;
-    }
-
     //TODO: Note that the following BLOSC related stuff is in openvdb::initialize
 //#ifdef OPENVDB_USE_BLOSC
 //    blosc_init();
@@ -20,132 +15,31 @@ void UVoxelDatabase::InitializeTypes()
 //    }
 //    /// @todo blosc_set_nthreads(int nthreads);
 //#endif
-
-    //Register the grid types per supported type and tree
-    FGridFactory::ClearRegistry();
-    FGridFactory::RegisterGridType<FVoxelDatabaseBool>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseFloat>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseDouble>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseUInt8>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseUInt16>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseUInt32>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseUInt64>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseInt8>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseInt16>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseInt32>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseInt64>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseVector>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseVector4>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseVector2D>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseColor>();
-    FGridFactory::RegisterGridType<FVoxelDatabaseLinearColor>();
-    FGridFactory::RegisterGridType<FVoxelDatabasePackedNormal>();
-    FGridFactory::RegisterGridType<FVoxelDatabasePackedRGB10A2N>();
-    FGridFactory::RegisterGridType<FVoxelDatabasePackedRGBA16N>();
-
-    //Register metadata types per supported type
-    FMetaValueFactory::ClearRegistry();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseBool>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseFloat>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseDouble>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUInt8>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUInt16>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUInt32>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUInt64>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt8>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt16>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt32>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt64>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseVector>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseVector4>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseVector2D>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseColor>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseLinearColor>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabasePackedNormal>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabasePackedRGB10A2N>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabasePackedRGBA16N>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseIntPoint>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseIntVector>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseFloatRangeBound>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseFloatRange>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt32RangeBound>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt32Range>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseFloatInterval>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInt32Interval>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseTwoVectors>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabasePlane>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseRotator>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseQuat>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseBox>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseBox2D>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseBoxSphereBounds>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseOrientedBox>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseMatrix>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurvePointFloat>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurveFloat>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurvePointVector2D>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurveVector2D>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurvePointVector>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurveVector>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurvePointQuat>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurveQuat>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurvePointTwoVectors>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurveTwoVectors>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurvePointLinearColor>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseInterpCurveLinearColor>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseTransform>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseRandomStream>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseDateTime>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseTimespan>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseStringAssetReference>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseStringClassReference>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseString>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseName>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseText>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseAffineMap>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUnitaryMap>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseScaleMap>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUniformScaleMap>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseTranslationMap>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseScaleTranslationMap>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseUniformScaleTranslationMap>();
-    FMetaValueFactory::RegisterMetaType<FVoxelDatabaseNonlinearFrustumMap>();
-
-    //Register transform map types per supported type
-    FTransformMapFactory::ClearRegistry();
-    FTransformMapFactory::RegisterTransformMapType<openvdb::math::AffineMap>();
-    FTransformMapFactory::RegisterTransformMapType<openvdb::math::UnitaryMap>();
-    FTransformMapFactory::RegisterTransformMapType<openvdb::math::ScaleMap>();
-    FTransformMapFactory::RegisterTransformMapType<openvdb::math::UniformScaleMap>();
-    FTransformMapFactory::RegisterTransformMapType<openvdb::math::TranslationMap>();
-    FTransformMapFactory::RegisterTransformMapType<openvdb::math::ScaleTranslateMap>();
-    FTransformMapFactory::RegisterTransformMapType<openvdb::math::UniformScaleTranslateMap>();
-    FTransformMapFactory::RegisterTransformMapType<openvdb::math::NonlinearFrustumMap>();
-
-    IsDatabaseInitialized = true;
+    FGridFactory::RegisterSupportedTypes();
+    FMetaValueFactory::RegisterSupportedTypes();
+    FTransformMapFactory::RegisterSupportedTypes();
 }
 
 void UVoxelDatabase::UninitializeTypes()
 {
-    FGridFactory::ClearRegistry();
-    FMetaValueFactory::ClearRegistry();
-    FTransformMapFactory::ClearRegistry();
-    IsDatabaseInitialized = false;
+    FGridFactory::UnregisterSupportedTypes();
+    FMetaValueFactory::UnregisterSupportedTypes();
+    FTransformMapFactory::UnregisterSupportedTypes();
 }
 
 const TArray<FString>& UVoxelDatabase::GetRegisteredGridTypeNames() const
 {
-    return FGridFactory::RegisteredTypeNames;
+    return FGridFactory::GetRegisteredTypeNames();
 }
 
 const TArray<FString>& UVoxelDatabase::GetRegisteredMetadataTypeNames() const
 {
-    return FMetaValueFactory::RegisteredTypeNames;
+    return FMetaValueFactory::GetRegisteredTypeNames();
 }
 
 const TArray<FString>& UVoxelDatabase::GetRegisteredTransformMapTypeNames() const
 {
-    return FTransformMapFactory::RegisteredTypeNames;
+    return FTransformMapFactory::GetRegisteredTypeNames();
 }
 
 void UVoxelDatabase::GetGridsDisplay(TMap<FGuid, FText>& OutGridsDisplay) const
@@ -154,7 +48,7 @@ void UVoxelDatabase::GetGridsDisplay(TMap<FGuid, FText>& OutGridsDisplay) const
     {
         if (i.Value() != nullptr)
         {
-            openvdb::TypedMetadata<FVoxelDatabaseText>::Ptr MetaValuePtr = i->Value->getMetadata<openvdb::TypedMetadata<FVoxelDatabaseText>>(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText));
+            openvdb::TypedMetadata<FVoxelDatabaseTextMeta>::Ptr MetaValuePtr = i->Value->getMetadata<openvdb::TypedMetadata<FVoxelDatabaseTextMeta>>(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText));
             check(MetaValuePtr != nullptr);
             const FGuid& GridId = i.Key();
             OutGridsDisplay.Emplace(GridId, MetaValuePtr->value().Value);
@@ -217,18 +111,4 @@ UVoxelDatabaseProxy* UVoxelDatabase::GetDatabaseProxy()
     //}
 
     return VoxelDatabaseProxy;
-}
-
-bool UVoxelDatabase::AddMetadata(const FString& TypeName, FGuid& OutMetadataId)
-{
-    bool IsMetadataAdded = false;
-    FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create(TypeName);
-    if (MetaPtr != nullptr)
-    {
-        OutMetadataId = FGuid::NewGuid();
-        check(!Metadata.Contains(OutMetadataId));
-        Metadata.Add(OutMetadataId, MetaPtr);
-        IsMetadataAdded = true;
-    }
-    return IsMetadataAdded;
 }

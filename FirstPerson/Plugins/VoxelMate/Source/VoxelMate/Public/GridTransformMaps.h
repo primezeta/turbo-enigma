@@ -8,6 +8,15 @@
 #include "Math/TranslationMatrix.h"
 #include "Math/RotationTranslationMatrix.h"
 
+struct FAffineMap;
+struct FUnitaryMap;
+struct FScaleMap;
+struct FUniformScaleMap;
+struct FTranslationMap;
+struct FScaleTranslationMap;
+struct FUniformScaleTranslationMap;
+struct FNonlinearFrustumMap;
+
 struct VOXELMATE_API FAffineMap : public FMatrix
 {
     FAffineMap()

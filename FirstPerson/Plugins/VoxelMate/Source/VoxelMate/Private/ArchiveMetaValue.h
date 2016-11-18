@@ -16,45 +16,38 @@ struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
     }
 
     template<typename MetaType>
-    static inline void RegisterMetaType()
+    static void Register()
     {
-        const openvdb::Name TypeName = openvdb::TypedMetadata<MetaType>::staticTypeName().c_str();
-        if (!openvdb::Metadata::isRegisteredType(TypeName))
+        try
         {
-            try
-            {
-                openvdb::Metadata::registerType(TypeName, openvdb::TypedMetadata<MetaType>::createMetadata);
-                FMetaValueFactory::RegisteredTypeNames.Add(UTF8_TO_TCHAR(openvdb::typeNameAsString<MetaType>()));
-            }
-            catch (const openvdb::KeyError& e)
-            {
-                (void)e; //TODO log error (metadata typename already registered)
-            }
+            openvdb::TypedMetadata<MetaType>::registerType();
+            FMetaValueFactory::RegisteredTypeNames.Add(FName::NameToDisplayString(UTF8_TO_TCHAR(openvdb::typeNameAsString<MetaType::ValueType>()), false));
+        }
+        catch (const openvdb::KeyError& e)
+        {
+            (void)e; //TODO log error (metadata type already registered)
         }
     }
 
-    static bool IsRegistered(const FString& TypeName)
+    template<typename MetaType>
+    static bool IsRegistered()
     {
-        return openvdb::Metadata::isRegisteredType(TCHAR_TO_UTF8(*TypeName));
+        return openvdb::TypedMetadata<MetaType>::isRegisteredType();
     }
 
-    static ValueTypePtr Create(const FString& TypeName)
+    template<typename MetaType>
+    static ValueTypePtr Create()
     {
         ValueTypePtr MetaValuePtr = nullptr;
         try
         {
-            MetaValuePtr = openvdb::Metadata::createMetadata(TCHAR_TO_UTF8(*TypeName));
+            MetaValuePtr = openvdb::TypedMetadata<MetaType>::createMetadata();
         }
         catch (const openvdb::LookupError& e)
         {
-            (void)e; //TODO log error (metadata type not registered)
+            (void)e; //TODO log error (metadata type is not registered)
         }
         return MetaValuePtr;
-    }
-
-    static void ClearRegistry()
-    {
-        openvdb::Metadata::clearRegistry();
     }
 };
 

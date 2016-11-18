@@ -2,6 +2,10 @@
 #include "ArchiveGrid.h"
 #include "ArchiveMetaValue.h"
 #include "VoxelDatabaseProxy.h"
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <vector>
 #include "VoxelDatabase.generated.h"
 
 //TODO Use FText for any strings displayed to the user
@@ -25,6 +29,8 @@ public:
         UVoxelDatabase* VoxelDatabase;
     UPROPERTY()
         UVoxelDatabaseProxy* VoxelDatabaseProxy;
+    UPROPERTY()
+        FString DataPath;
     
     friend FArchive& operator<<(FArchive& Ar, UVoxelDatabase& VoxelDatabase)
     {
@@ -63,14 +69,14 @@ public:
     bool UVoxelDatabase::AddGrid(const FText& GridDisplayText, bool SaveFloatAsHalf, FGuid& OutGridId)
     {
         bool IsGridAdded = false;
-        FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>();
+        FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create<VoxelType>();
         if (GridPtr != nullptr)
         {
             OutGridId = FGuid::NewGuid();
             check(OutGridId.IsValid());
             GridPtr->setName(TCHAR_TO_UTF8(*OutGridId.ToString()));
             GridPtr->setSaveFloatAsHalf(SaveFloatAsHalf);
-            GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseText>(GridDisplayText));
+            GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseTextMeta>(GridDisplayText));
             Grids.Add(OutGridId, GridPtr);
             IsGridAdded = true;
         }
@@ -94,11 +100,11 @@ public:
                 FGridFactory::ValueTypeConstPtr& OriginalGridPtr = *FindGrid;
                 if (OriginalGridPtr != nullptr)
                 {
-                    FGridFactory::ValueTypePtr GridPtr = FGridFactory::ShallowCopyGrid<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>(OriginalGridPtr);
+                    FGridFactory::ValueTypePtr GridPtr = FGridFactory::ShallowCopyGrid<VoxelType>(OriginalGridPtr);
                     if (GridPtr != nullptr)
                     {
                         GridPtr->removeMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText));
-                        GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseText>(GridDisplayText));
+                        GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseTextMeta>(GridDisplayText));
                         OutGridId = FGuid::NewGuid();
                         check(OutGridId.IsValid());
                         Grids.Add(OutGridId, GridPtr);
@@ -135,11 +141,11 @@ public:
                 FGridFactory::ValueTypeConstPtr& OriginalGridPtr = *FindGrid;
                 if (OriginalGridPtr != nullptr)
                 {
-                    FGridFactory::ValueTypePtr GridPtr = FGridFactory::ShallowCopyGrid<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>(OriginalGridPtr);
+                    FGridFactory::ValueTypePtr GridPtr = FGridFactory::DeepCopyGrid<VoxelType>(OriginalGridPtr);
                     if (GridPtr != nullptr)
                     {
                         GridPtr->removeMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText));
-                        GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseText>(GridDisplayText));
+                        GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseTextMeta>(GridDisplayText));
                         OutGridId = FGuid::NewGuid();
                         check(OutGridId.IsValid());
                         Grids.Add(OutGridId, GridPtr);
@@ -178,7 +184,9 @@ public:
                 return Accessor.getValue(Coord);
             }
         }
-        return VoxelType::ZeroValue;
+
+        const static VoxelType Zero = VoxelType::ZeroValue;
+        return Zero;
     }
 
     template<typename VoxelType>
@@ -196,14 +204,15 @@ public:
                 return Accessor.getValue(Coord);
             }
         }
+
         OutIsVoxelActive = false;
-        return VoxelType::ZeroValue;
+        const static VoxelType Zero = VoxelType::ZeroValue;
+        return Zero;
     }
 
     template<typename VoxelType>
-    VOXELMATEINLINE bool GetVoxelIsActive(const FGuid& GridId, const FIntVector& VoxelIndexCoord) const
+    VOXELMATEINLINE void GetVoxelIsActive(const FGuid& GridId, const FIntVector& VoxelIndexCoord, bool& OutIsActive) const
     {
-        bool IsActive = false;
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
         {
@@ -212,10 +221,10 @@ public:
             {
                 openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::ConstAccessor Accessor = TypedGridPtr->getConstAccessor();
                 const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
-                IsActive = Accessor.isValueOn(Coord);
+                OutIsActive = Accessor.isValueOn(Coord);
             }
         }
-        return IsActive;
+        OutIsActive = false;
     }
 
     template<typename VoxelType>
@@ -274,19 +283,38 @@ public:
         }
     }
 
+    template<typename MetadataType>
+    bool UVoxelDatabase::AddMetadata(FGuid& OutMetadataId)
+    {
+        bool IsMetadataAdded = false;
+        FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create<MetadataType>();
+        if (MetaPtr != nullptr)
+        {
+            OutMetadataId = FGuid::NewGuid();
+            check(!Metadata.Contains(OutMetadataId));
+            Metadata.Add(OutMetadataId, MetaPtr);
+            IsMetadataAdded = true;
+        }
+        return IsMetadataAdded;
+    }
+
+
 private:
     friend class FVoxelMateModule;
     //TODO idea for faster grid lookup
     //friend class AVoxelGridProxy;
 
     UVoxelDatabase()
-        : IsDatabaseInitialized(false)
     {
+        check(!VoxelDatabase);
         VoxelDatabase = this;
         AddToRoot();
+
+        FString VoxelDatabaseName;
+        GetName(VoxelDatabaseName);
+        DataPath = FPaths::GameUserDeveloperDir() + VoxelDatabaseName + TEXT("/Data/");
     }
 
-    bool IsDatabaseInitialized;
     TMap<FGuid, FGridFactory::ValueTypePtr> Grids;
     TMap<FGuid, FMetaValueFactory::ValueTypePtr> Metadata;
 };
