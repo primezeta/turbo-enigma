@@ -14,27 +14,64 @@ class VOXELMATE_API AVoxelGridProxy : public AActor
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxy(const FObjectInitializer& ObjectInitializer);
+    AVoxelGridProxy(const FObjectInitializer& ObjectInitializer)
+        : Super(ObjectInitializer)
+    {
+        GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
+        GridDisplayText = FText::FromString(GetName());
+        DataFilePath = TEXT("");
+        //TODO idea for faster grid lookup
+        //UVoxelDatabase::Get().Grids
+        //CacheIndex = 
+    }
 
-    friend FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy);
-    virtual void Serialize(FArchive& Ar) override;
+    friend FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy)
+    {
+        if (!GridProxy.IsDefaultSubobject())
+        {
+            Ar << GridProxy.GridId;
+            Ar << GridProxy.GridDisplayText;
+            Ar << GridProxy.DataFilePath;
+        }
+        return Ar;
+    }
+    
+    virtual void Serialize(FArchive& Ar) override
+    {
+        Super::Serialize(Ar);
+        Ar << *this;
+    }
 
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(Category = VoxelGridProxy, BlueprintReadOnly)
         FGuid GridId;
-    UPROPERTY(BlueprintReadOnly)
-        bool IsFloatSavedAsHalf;
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(Category = VoxelGridProxy, BlueprintReadOnly)
         FText GridDisplayText;
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(Category = VoxelGridProxy, BlueprintReadOnly)
         FString DataFilePath;
     //UPROPERTY()
     //    TArray<UVoxelMetadataProxy*> MetadataProxies; //TODO
     UPROPERTY()
         UProceduralMeshComponent* GridMeshComponent;
 
-    UFUNCTION()
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        virtual bool IsAScalarType()
+        {
+            return false;
+        }
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        virtual bool IsAVectorType()
+        {
+            return false;
+        }
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        virtual bool IsAFloatType()
+        {
+            return false;
+        }
+
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         bool LoadVoxelData();
-    UFUNCTION()
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         bool SaveVoxelData();
 
 protected:
@@ -42,17 +79,108 @@ protected:
     //int32 CacheIndex;
 };
 
-UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyBool : public AVoxelGridProxy
+UCLASS(ClassGroup = VoxelMate, Abstract, NotPlaceable)
+class VOXELMATE_API AVoxelScalarGridProxy : public AVoxelGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyBool(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        virtual bool IsAScalarType() override final
+        {
+            return true;
+        }
+};
+
+UCLASS(ClassGroup = VoxelMate, Abstract, NotPlaceable)
+class VOXELMATE_API AVoxelVectorGridProxy : public AVoxelGridProxy
+{
+    GENERATED_BODY()
+
+public:
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        virtual bool IsAVectorType() override final
+        {
+            return true;
+        }
+};
+
+UCLASS(ClassGroup = VoxelMate, Abstract, NotPlaceable)
+class VOXELMATE_API AVoxelFloatScalarGridProxy : public AVoxelScalarGridProxy
+{
+    GENERATED_BODY()
+
+public:
+    AVoxelFloatScalarGridProxy(const FObjectInitializer& ObjectInitializer)
+        : Super(ObjectInitializer), IsFloatSavedAsHalf(false)
+    {}
+
+    friend FArchive& operator<<(FArchive& Ar, AVoxelFloatScalarGridProxy& GridProxy)
     {
+        if (!GridProxy.IsDefaultSubobject())
+        {
+            Ar << GridProxy.IsFloatSavedAsHalf;
+        }
+        return Ar;
     }
 
+    virtual void Serialize(FArchive& Ar) override
+    {
+        Super::Serialize(Ar);
+        Ar << *this;
+    }
+
+    UPROPERTY(BlueprintReadOnly)
+        bool IsFloatSavedAsHalf;
+
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        virtual bool IsAFloatType() override final
+        {
+            return true;
+        }
+};
+
+UCLASS(ClassGroup = VoxelMate, Abstract, NotPlaceable)
+class VOXELMATE_API AVoxelFloatVectorGridProxy : public AVoxelVectorGridProxy
+{
+    GENERATED_BODY()
+
+public:
+    AVoxelFloatVectorGridProxy(const FObjectInitializer& ObjectInitializer)
+        : Super(ObjectInitializer), IsFloatSavedAsHalf(false)
+    {}
+
+    friend FArchive& operator<<(FArchive& Ar, AVoxelFloatVectorGridProxy& GridProxy)
+    {
+        if (!GridProxy.IsDefaultSubobject())
+        {
+            Ar << GridProxy.IsFloatSavedAsHalf;
+        }
+        return Ar;
+    }
+
+    virtual void Serialize(FArchive& Ar) override
+    {
+        Super::Serialize(Ar);
+        Ar << *this;
+    }
+
+    UPROPERTY(BlueprintReadOnly)
+        bool IsFloatSavedAsHalf;
+
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        virtual bool IsAFloatType() override final
+        {
+            return true;
+        }
+};
+
+UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
+class VOXELMATE_API AVoxelGridProxyBool : public AVoxelScalarGridProxy
+{
+    GENERATED_BODY()
+
+public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const bool& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -70,16 +198,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyColor : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyColor : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyColor(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FColor& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -97,16 +220,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable)
-class VOXELMATE_API AVoxelGridProxyDouble : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyDouble : public AVoxelFloatScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyDouble(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     //double is not a supported blueprint type
     UFUNCTION(Category = VoxelGridProxy)
         const double& GetVoxelValue(const FIntVector& IndexCoord) const;
@@ -125,16 +243,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyFloat : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyFloat : public AVoxelFloatScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyFloat(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const float& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -152,16 +265,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyInt8 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyInt8 : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyInt8(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     //int8 is not a supported blueprint type
     UFUNCTION(Category = VoxelGridProxy)
         const int8& GetVoxelValue(const FIntVector& IndexCoord) const;
@@ -180,16 +288,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyInt16 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyInt16 : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyInt16(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     //int16 is not a supported blueprint type
     UFUNCTION(Category = VoxelGridProxy)
         const int16& GetVoxelValue(const FIntVector& IndexCoord) const;
@@ -208,16 +311,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyInt32 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyInt32 : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyInt32(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const int32& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -235,16 +333,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyInt64 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyInt64 : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyInt64(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     //int64 is not a supported blueprint type
     UFUNCTION(Category = VoxelGridProxy)
         const int64& GetVoxelValue(const FIntVector& IndexCoord) const;
@@ -263,16 +356,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyUInt8 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyUInt8 : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyUInt8(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const uint8& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -290,16 +378,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyUInt16 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyUInt16 : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyUInt16(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     //uint16 is not a supported blueprint type
     UFUNCTION(Category = VoxelGridProxy)
         const uint16& GetVoxelValue(const FIntVector& IndexCoord) const;
@@ -318,16 +401,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyUInt32 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyUInt32 : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyUInt32(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     //uint32 is not a supported blueprint type
     UFUNCTION(Category = VoxelGridProxy)
         const uint32& GetVoxelValue(const FIntVector& IndexCoord) const;
@@ -346,16 +424,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyUInt64 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyUInt64 : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyUInt64(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     //uint32 is not a supported blueprint type
     UFUNCTION(Category = VoxelGridProxy)
         const uint64& GetVoxelValue(const FIntVector& IndexCoord) const;
@@ -374,16 +447,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyVector : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyVector : public AVoxelFloatVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyVector(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FVector& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -401,16 +469,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyVector2D : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyVector2D : public AVoxelFloatVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyVector2D(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FVector2D& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -428,16 +491,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyVector4 : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyVector4 : public AVoxelFloatVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyVector4(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FVector4& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -455,16 +513,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyIntPoint : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyIntPoint : public AVoxelVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyIntPoint(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FIntPoint& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -482,16 +535,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyIntVector : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyIntVector : public AVoxelVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyIntVector(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FIntVector& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -509,16 +557,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyLinearColor : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyLinearColor : public AVoxelFloatVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyLinearColor(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FLinearColor& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -536,16 +579,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyPackedNormal : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyPackedNormal : public AVoxelVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyPackedNormal(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FPackedNormal& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -563,16 +601,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyPackedRGB10A2N : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyPackedRGB10A2N : public AVoxelVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyPackedRGB10A2N(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FPackedRGB10A2N& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
@@ -590,16 +623,11 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyPackedRGBA16N : public AVoxelGridProxy
+class VOXELMATE_API AVoxelGridProxyPackedRGBA16N : public AVoxelVectorGridProxy
 {
     GENERATED_BODY()
 
 public:
-    AVoxelGridProxyPackedRGBA16N(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {
-    }
-
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         const FPackedRGBA16N& GetVoxelValue(const FIntVector& IndexCoord) const;
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)

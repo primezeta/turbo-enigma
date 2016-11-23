@@ -5,39 +5,7 @@
 //TODO idea for faster grid lookup
 //TArray<FGridFactory::ValueTypeWeakPtr> CachedGrids; //Careful of anyone accessing this from other threads
 
-AVoxelGridProxy::AVoxelGridProxy(const FObjectInitializer& ObjectInitializer)
-    : Super(ObjectInitializer), IsFloatSavedAsHalf(false)//, CacheIndex(-1) TODO idea for faster grid lookup
-{
-    GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
-    IsFloatSavedAsHalf = false;
-
-    FString DefaultGridDisplayText;
-    GetName(DefaultGridDisplayText);
-    GridDisplayText = FText::FromString(DefaultGridDisplayText);
-
-    DataFilePath = TEXT("");
-    //TODO idea for faster grid lookup
-    //UVoxelDatabase::Get().Grids
-    //CacheIndex = 
-}
-
-FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy)
-{
-    if (!GridProxy.IsDefaultSubobject())
-    {
-        Ar << GridProxy.GridId;
-        Ar << GridProxy.IsFloatSavedAsHalf;
-        Ar << GridProxy.GridDisplayText;
-        Ar << GridProxy.DataFilePath;
-    }
-    return Ar;
-}
-
-void AVoxelGridProxy::Serialize(FArchive& Ar)
-{
-    Super::Serialize(Ar);
-    Ar << *this;
-}
+//IsFloatSavedAsHalf(false)
 
 bool AVoxelGridProxy::LoadVoxelData()
 {

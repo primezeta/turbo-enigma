@@ -30,5 +30,11 @@ public:
     UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
         static UVoxelDatabaseProxy* OpenDatabaseProxy();
     UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
-        AVoxelGridProxy* AddGridProxy(EVoxelDatabaseVoxelType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf);
+        AVoxelGridProxy* AddScalarGrid(EVoxelScalarType VoxelType, const FText& GridDisplayText);
+    UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
+        AVoxelGridProxy* AddFloatScalarGrid(EVoxelFloatScalarType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf);
+    UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
+        AVoxelGridProxy* AddVectorGrid(EVoxelVectorType VoxelType, const FText& GridDisplayText);
+    UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
+        AVoxelGridProxy* AddFloatVectorGrid(EVoxelFloatVectorType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf);
 };

@@ -36,11 +36,48 @@ enum class EVectorTypeClass : uint8
 };
 
 UENUM(BlueprintType)
-enum class EVoxelDatabaseVoxelType : uint8
+enum class ENoiseType : uint8
+{
+    Value    UMETA(DisplayName = "Value Noise"),
+    Perlin   UMETA(DisplayName = "Perlin Noise"),
+    Simplex  UMETA(DisplayName = "Simplex Noise"),
+    White    UMETA(DisplayName = "White Noise"),
+    Cellular UMETA(DisplayName = "Cellular Noise")
+};
+
+UENUM(BlueprintType)
+enum class ENoiseFractalMode : uint8
+{
+    None                     UMETA(DisplayName = "None"),
+    FractionalBrownianMotion UMETA(DisplayName = "Fractional Brownian Motion Fractal"),
+    Billow                   UMETA(DisplayName = "Billow Fractal"),
+    RigidMulti               UMETA(DisplayName = "Rigid Multi Fractal")
+};
+
+UENUM(BlueprintType)
+enum class ENoiseCellularDistanceMode : uint8
+{
+    Euclidean UMETA(DisplayName = "Euclidean"),
+    Manhattan UMETA(DisplayName = "Manhattan"),
+    Natural   UMETA(DisplayName = "Natural")
+};
+
+UENUM(BlueprintType)
+enum class ENoiseCellularReturnType : uint8
+{
+    CellValue    UMETA(DisplayName = "Cell Value Return"),
+    Distance     UMETA(DisplayName = "Distance Return"),
+    Distance2    UMETA(DisplayName = "Distance2 Return"),
+    Distance2Add UMETA(DisplayName = "Distance2Add Return"),
+    Distance2Sub UMETA(DisplayName = "Distance2Sub Return"),
+    Distance2Mul UMETA(DisplayName = "Distance2Mul Return"),
+    Distance2Div UMETA(DisplayName = "Distance2Div Return")
+};
+
+UENUM(BlueprintType)
+enum class EVoxelScalarType : uint8
 {
     Bool                        UMETA(DisplayName = "bool"),
-    Float                       UMETA(DisplayName = "float"),
-    Double                      UMETA(DisplayName = "double"),
     Uint8                       UMETA(DisplayName = "uint8"),
     Uint16                      UMETA(DisplayName = "uint16"),
     Uint32                      UMETA(DisplayName = "uint32"),
@@ -49,16 +86,33 @@ enum class EVoxelDatabaseVoxelType : uint8
     Int16                       UMETA(DisplayName = "int16"),
     Int32                       UMETA(DisplayName = "int32"),
     Int64                       UMETA(DisplayName = "int64"),
-    Vector                      UMETA(DisplayName = "FVector"),
-    Vector4                     UMETA(DisplayName = "FVector4"),
-    Vector2D                    UMETA(DisplayName = "FVector2D"),
     Color                       UMETA(DisplayName = "FColor"),
-    LinearColor                 UMETA(DisplayName = "FLinearColor"),
+};
+
+UENUM(BlueprintType)
+enum class EVoxelFloatScalarType : uint8
+{
+    Float                       UMETA(DisplayName = "float"),
+    Double                      UMETA(DisplayName = "double"),
+};
+
+UENUM(BlueprintType)
+enum class EVoxelVectorType : uint8
+{
     PackedNormal                UMETA(DisplayName = "FPackedNormal"),
     PackedRGB10A2N              UMETA(DisplayName = "FPackedRGB10A2N"),
     PackedRGBA16N               UMETA(DisplayName = "FPackedRGBA16N"),
     IntPoint                    UMETA(DisplayName = "FIntPoint"),
     IntVector                   UMETA(DisplayName = "FIntVector"),
+};
+
+UENUM(BlueprintType)
+enum class EVoxelFloatVectorType : uint8
+{
+    Vector                      UMETA(DisplayName = "FVector"),
+    Vector4                     UMETA(DisplayName = "FVector4"),
+    Vector2D                    UMETA(DisplayName = "FVector2D"),
+    LinearColor                 UMETA(DisplayName = "FLinearColor"),
 };
 
 UENUM(BlueprintType)
