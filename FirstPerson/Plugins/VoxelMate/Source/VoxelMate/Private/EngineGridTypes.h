@@ -128,10 +128,7 @@ VOXELMATEINLINE void WriteValue<FVector2D>(OutputStreamType& os, const FVector2D
 template<>
 VOXELMATEINLINE void WriteValue<FColor>(OutputStreamType& os, const FColor& InValue)
 {
-    WriteValue<uint8>(os, InValue.R);
-    WriteValue<uint8>(os, InValue.G);
-    WriteValue<uint8>(os, InValue.B);
-    WriteValue<uint8>(os, InValue.A);
+    WriteValue<uint32>(os, InValue.DWColor());
 }
 
 template<>
@@ -1262,7 +1259,7 @@ VOXELMATEINLINE bool IsValueLessThan<FLinearColor>(const FLinearColor& InLhs, co
 template<>
 VOXELMATEINLINE bool IsValueLessThan<FColor>(const FColor& InLhs, const FColor& InRhs)
 {
-    return FVector4(InLhs.R, InLhs.G, InLhs.G, InLhs.A).SizeSquared3() < FVector4(InRhs.R, InRhs.G, InRhs.G, InRhs.A).SizeSquared3();
+    return InLhs.DWColor() < InRhs.DWColor();
 }
 
 template<>
@@ -1394,7 +1391,7 @@ VOXELMATEINLINE bool IsValueGreaterThan<FLinearColor>(const FLinearColor& InLhs,
 template<>
 VOXELMATEINLINE bool IsValueGreaterThan<FColor>(const FColor& InLhs, const FColor& InRhs)
 {
-    return FVector4(InLhs.R, InLhs.G, InLhs.G, InLhs.A).SizeSquared3() > FVector4(InRhs.R, InRhs.G, InRhs.G, InRhs.A).SizeSquared3();
+    return InLhs.DWColor() > InRhs.DWColor();
 }
 
 template<>
