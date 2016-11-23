@@ -6,11 +6,29 @@
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <vector>
+#include <openvdb/tools/ValueTransformer.h>
 #include "VoxelDatabase.generated.h"
 
 //TODO Use FText for any strings displayed to the user
 //see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
 //DECLARE_MULTICAST_DELEGATE_OneParam(FVoxelDatabaseOnMetadataChanged, class UVoxelDatabaseProxy*, const FGuid&);
+
+template<typename IterT, typename VoxelT>
+struct NoiseValueOp
+{
+    typedef typename VoxelT VoxelType;
+    typedef typename VoxelT::ValueType ValueType;
+    typedef typename IterT IterType;
+
+    const TArray<TArray<TArrayView<float>>>& Noise3DValues;
+    NoiseValueOp(const TArray<TArray<TArrayView<float>>>& Values) : Noise3DValues(Values) {}
+    VOXELMATEINLINE void operator()(const IterType& iter) const
+    {
+        check(iter.isVoxelValue());
+        const openvdb::Coord& coord = iter.getCoord();
+        iter.setValue(Noise3DValues[coord.x()][coord.y()][coord.z()]);
+    }
+};
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, NotBlueprintable, CustomConstructor)
 class VOXELMATE_API UVoxelDatabase : public UObject
@@ -329,6 +347,25 @@ public:
                 const openvdb::Coord FillEnd(FillStart.x() + FillDimensions.X, FillStart.y() + FillDimensions.Y, FillStart.z() + FillDimensions.Z);
                 const openvdb::CoordBBox FillBBox(FillStart, FillEnd);
                 TypedGridPtr->fill(FillBBox, InValue, InIsActive);
+            }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
+            }
+        }
+    }
+
+    template<typename ValueOpType>
+    VOXELMATEINLINE void RunGridOp(const FGuid& GridId, ValueOpType& ValueOp)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            openvdb::Grid<openvdb::tree::Tree4<ValueOpType::VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<ValueOpType::VoxelType>::Type>>(*FindGrid);
+            if (TypedGridPtr)
+            {
+                openvdb::tools::foreach<ValueOpType::IterType, ValueOpType>(TypedGridPtr->beginValueOn(), ValueOp);
             }
             else
             {
