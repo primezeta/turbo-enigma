@@ -4,7 +4,7 @@ using UnrealBuildTool;
 using System.IO;
 using System;
 
-enum SimdArch { AVX, AVX2 } //TODO: Add other architectures
+enum SimdArch { SSE2, SEE4_1, AVX, AVX2, FMA3 } //TODO: Add other architectures
 
 public class FastNoiseSIMD : ModuleRules
 {
