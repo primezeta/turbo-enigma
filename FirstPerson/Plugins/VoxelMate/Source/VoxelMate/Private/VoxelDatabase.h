@@ -344,9 +344,10 @@ public:
             {
                 //const CoordBBox& bbox, const ValueType& value, bool active = true
                 const openvdb::Coord FillStart(StartIndexCoord.X, StartIndexCoord.Y, StartIndexCoord.Z);
-                const openvdb::Coord FillEnd(FillStart.x() + FillDimensions.X, FillStart.y() + FillDimensions.Y, FillStart.z() + FillDimensions.Z);
+                const openvdb::Coord FillEnd(FillStart.x() + FillDimensions.X - 1, FillStart.y() + FillDimensions.Y - 1, FillStart.z() + FillDimensions.Z - 1);
                 const openvdb::CoordBBox FillBBox(FillStart, FillEnd);
                 TypedGridPtr->fill(FillBBox, InValue, InIsActive);
+                TypedGridPtr->tree().voxelizeActiveTiles();
             }
             else
             {

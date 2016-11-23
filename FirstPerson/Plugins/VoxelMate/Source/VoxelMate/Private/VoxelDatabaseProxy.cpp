@@ -51,11 +51,7 @@ void UVoxelDatabaseProxy::PostLoad()
 
 UVoxelDatabaseProxy* UVoxelDatabaseProxy::OpenDatabaseProxy()
 {
-    UVoxelDatabaseProxy* VoxelDatabaseProxy = nullptr;
-    if (FVoxelMateModule::IsAvailable())
-    {
-        VoxelDatabaseProxy = UVoxelDatabase::Get().GetDatabaseProxy();
-    }
+    UVoxelDatabaseProxy* VoxelDatabaseProxy = UVoxelDatabase::Get().GetDatabaseProxy();
     return VoxelDatabaseProxy;
 }
 
@@ -148,43 +144,43 @@ AVoxelGridProxy* UVoxelDatabaseProxy::AddScalarGrid(EVoxelScalarType VoxelType, 
 
     if (VoxelType == EVoxelScalarType::Bool && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseBoolVoxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyBool>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyBool>(this);
     }
     else if (VoxelType == EVoxelScalarType::Uint8 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseUInt8Voxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyUInt8>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyUInt8>(this);
     }
     else if (VoxelType == EVoxelScalarType::Uint16 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseUInt16Voxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyUInt16>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyUInt16>(this);
     }
     else if (VoxelType == EVoxelScalarType::Uint32 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseUInt32Voxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyUInt32>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyUInt32>(this);
     }
     else if (VoxelType == EVoxelScalarType::Uint64 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseUInt64Voxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyUInt64>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyUInt64>(this);
     }
     else if (VoxelType == EVoxelScalarType::Int8 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseInt8Voxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyInt8>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyInt8>(this);
     }
     else if (VoxelType == EVoxelScalarType::Int16 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseInt16Voxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyInt16>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyInt16>(this);
     }
     else if (VoxelType == EVoxelScalarType::Int32 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseInt32Voxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyInt32>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyInt32>(this);
     }
     else if (VoxelType == EVoxelScalarType::Int64 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseInt64Voxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyInt64>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyInt64>(this);
     }
     else if (VoxelType == EVoxelScalarType::Color && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseColorVoxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyColor>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyColor>(this);
     }
 
     if (GridProxy)
@@ -208,11 +204,11 @@ AVoxelGridProxy* UVoxelDatabaseProxy::AddFloatScalarGrid(EVoxelFloatScalarType V
 
     if (VoxelType == EVoxelFloatScalarType::Float && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseFloatVoxel>(GridDisplayText, SaveFloatAsHalf, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyFloat>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyFloat>(this);
     }
     else if (VoxelType == EVoxelFloatScalarType::Double && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseDoubleVoxel>(GridDisplayText, SaveFloatAsHalf, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyDouble>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyDouble>(this);
     }
 
     if (GridProxy)
@@ -237,23 +233,23 @@ AVoxelGridProxy* UVoxelDatabaseProxy::AddVectorGrid(EVoxelVectorType VoxelType, 
 
     if (VoxelType == EVoxelVectorType::PackedNormal && UVoxelDatabase::Get().AddGrid<FVoxelDatabasePackedNormalVoxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyPackedNormal>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyPackedNormal>(this);
     }
     else if (VoxelType == EVoxelVectorType::PackedRGB10A2N && UVoxelDatabase::Get().AddGrid<FVoxelDatabasePackedRGB10A2NVoxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyPackedRGB10A2N>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyPackedRGB10A2N>(this);
     }
     else if (VoxelType == EVoxelVectorType::PackedRGBA16N && UVoxelDatabase::Get().AddGrid<FVoxelDatabasePackedRGBA16NVoxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyPackedRGBA16N>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyPackedRGBA16N>(this);
     }
     else if (VoxelType == EVoxelVectorType::IntPoint && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseIntPointVoxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyIntPoint>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyIntPoint>(this);
     }
     else if (VoxelType == EVoxelVectorType::IntVector && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseIntVectorVoxel>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyIntVector>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyIntVector>(this);
     }
 
     if (GridProxy)
@@ -277,19 +273,19 @@ AVoxelGridProxy* UVoxelDatabaseProxy::AddFloatVectorGrid(EVoxelFloatVectorType V
 
     if (VoxelType == EVoxelFloatVectorType::Vector && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseVectorVoxel>(GridDisplayText, SaveFloatAsHalf, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyVector>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyVector>(this);
     }
     else if (VoxelType == EVoxelFloatVectorType::Vector4 && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseVector4Voxel>(GridDisplayText, SaveFloatAsHalf, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyVector4>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyVector4>(this);
     }
     else if (VoxelType == EVoxelFloatVectorType::Vector2D && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseVector2DVoxel>(GridDisplayText, SaveFloatAsHalf, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyVector2D>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyVector2D>(this);
     }
     else if (VoxelType == EVoxelFloatVectorType::LinearColor && UVoxelDatabase::Get().AddGrid<FVoxelDatabaseLinearColorVoxel>(GridDisplayText, SaveFloatAsHalf, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyLinearColor>(this, FName(EName::NAME_Actor, *GridDisplayText.ToString()));
+        GridProxy = NewObject<AVoxelGridProxyLinearColor>(this);
     }
 
     if (GridProxy)
