@@ -2,27 +2,6 @@
 #include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabase.h"
 #include "VoxelGridProxy.h"
-#include "VoxelGridProxyBool.h"
-#include "VoxelGridProxyDouble.h"
-#include "VoxelGridProxyFloat.h"
-#include "VoxelGridProxyInt8.h"
-#include "VoxelGridProxyInt16.h"
-#include "VoxelGridProxyInt32.h"
-#include "VoxelGridProxyInt64.h"
-#include "VoxelGridProxyUInt8.h"
-#include "VoxelGridProxyUInt16.h"
-#include "VoxelGridProxyUInt32.h"
-#include "VoxelGridProxyUInt64.h"
-#include "VoxelGridProxyColor.h"
-#include "VoxelGridProxyLinearColor.h"
-#include "VoxelGridProxyPackedNormal.h"
-#include "VoxelGridProxyPackedRGB10A2N.h"
-#include "VoxelGridProxyPackedRGBA16N.h"
-#include "VoxelGridProxyVector.h"
-#include "VoxelGridProxyVector2D.h"
-#include "VoxelGridProxyVector4.h"
-#include "VoxelGridProxyIntPoint.h"
-#include "VoxelGridProxyIntVector.h"
 
 FArchive& operator<<(FArchive& Ar, UVoxelDatabaseProxy& DatabaseProxy)
 {
@@ -72,7 +51,12 @@ void UVoxelDatabaseProxy::PostLoad()
 
 UVoxelDatabaseProxy* UVoxelDatabaseProxy::OpenDatabaseProxy()
 {
-    return UVoxelDatabase::Get().GetDatabaseProxy();
+    UVoxelDatabaseProxy* VoxelDatabaseProxy = nullptr;
+    if (FVoxelMateModule::IsAvailable())
+    {
+        VoxelDatabaseProxy = UVoxelDatabase::Get().GetDatabaseProxy();
+    }
+    return VoxelDatabaseProxy;
 }
 
 bool UVoxelDatabaseProxy::CreateGridDataFile(AVoxelGridProxy* GridProxy, FText& OutFailureReason)

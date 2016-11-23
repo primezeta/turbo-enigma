@@ -50,6 +50,7 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         {
             (void)e; //TODO log error (grid type name is not registered)
         }
+        check(GridPtr != nullptr);
         return GridPtr;
     }
 

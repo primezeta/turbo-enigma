@@ -3,7 +3,6 @@
 #include "VoxelDatabaseStatics.h"
 #include "VoxelDatabase.h"
 #include "ArchiveTransformMap.h"
-#include "VoxelGridProxyBool.h"
 
 void UVoxelDatabase::InitializeTypes()
 {

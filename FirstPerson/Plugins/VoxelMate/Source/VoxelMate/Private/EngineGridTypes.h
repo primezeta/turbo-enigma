@@ -2130,45 +2130,32 @@ template<typename Ue4Type>
 struct TVoxelDatabaseMetadataType
 {
     typedef typename Ue4Type ValueType;
-    typedef typename TVoxelDatabaseMetadataType<Ue4Type> Type;
-    static_assert(!TIsPointer<ValueType>::Value, "Voxel database types cannot be a pointer type");
+    static_assert(!TIsPointer<Ue4Type>::Value, "Voxel database types cannot be a pointer type");
 
     TVoxelDatabaseMetadataType()
-        : Value(ZeroValue)
+        : Value(ZeroValue.Value)
     {}
 
-    TVoxelDatabaseMetadataType(ValueType&& InValue)
-        : Value(MoveTemp(InValue))
-    {}
-
-    TVoxelDatabaseMetadataType(const ValueType& InValue)
+    TVoxelDatabaseMetadataType(Ue4Type&& InValue)
         : Value(InValue)
     {}
 
-    ValueType Value;
-    const static ValueType ZeroValue;
+    TVoxelDatabaseMetadataType(const Ue4Type& InValue)
+        : Value(InValue)
+    {}
 
-    VOXELMATEINLINE Type& operator=(const ValueType& InValue)
-    {
-        Value = InValue;
-        return *this;
-    }
+    Ue4Type Value;
+    const static TVoxelDatabaseMetadataType ZeroValue;
 
-    VOXELMATEINLINE Type& operator=(const Type& InValue)
+    VOXELMATEINLINE friend OutputStreamType& operator<<(OutputStreamType& os, const TVoxelDatabaseMetadataType& InRhs)
     {
-        Value = InValue.Value;
-        return *this;
-    }
-
-    VOXELMATEINLINE friend OutputStreamType& operator<<(OutputStreamType& os, const Type& InRhs)
-    {
-        WriteValue<ValueType>(os, InRhs.Value);
+        WriteValue<Ue4Type>(os, InRhs.Value);
         return os;
     }
 
-    VOXELMATEINLINE friend bool operator==(const Type& InLhs, const Type& InRhs)
+    VOXELMATEINLINE friend bool operator==(const TVoxelDatabaseMetadataType& InLhs, const TVoxelDatabaseMetadataType& InRhs)
     {
-        return AreValuesEqual<ValueType>(InLhs.Value, InRhs.Value);
+        return AreValuesEqual<Ue4Type>(InLhs.Value, InRhs.Value);
     }
 };
 
@@ -2177,80 +2164,67 @@ template<typename Ue4Type>
 struct TVoxelDatabaseVoxelType
 {
     typedef typename Ue4Type ValueType;
-    typedef typename TVoxelDatabaseVoxelType<Ue4Type> Type;
     static_assert(!TIsPointer<ValueType>::Value, "Voxel database types cannot be a pointer type");
 
     TVoxelDatabaseVoxelType()
-        : Value(ZeroValue)
+        : Value(ZeroValue.Value)
     {}
 
-    TVoxelDatabaseVoxelType(ValueType&& InValue)
-        : Value(MoveTemp(InValue))
-    {}
-
-    TVoxelDatabaseVoxelType(const ValueType& InValue)
+    TVoxelDatabaseVoxelType(Ue4Type&& InValue)
         : Value(InValue)
     {}
 
-    ValueType Value;
-    const static ValueType ZeroValue;
+    TVoxelDatabaseVoxelType(const Ue4Type& InValue)
+        : Value(InValue)
+    {}
 
-    VOXELMATEINLINE Type& operator=(const ValueType& InValue)
-    {
-        Value = InValue;
-        return *this;
-    }
+    Ue4Type Value;
+    const static TVoxelDatabaseVoxelType ZeroValue;
 
-    VOXELMATEINLINE Type& operator=(const Type& InValue)
+    VOXELMATEINLINE friend OutputStreamType& operator<<(OutputStreamType& os, const TVoxelDatabaseVoxelType& InRhs)
     {
-        Value = InValue.Value;
-        return *this;
-    }
-
-    VOXELMATEINLINE friend OutputStreamType& operator<<(OutputStreamType& os, const Type& InRhs)
-    {
-        WriteValue<ValueType>(os, InRhs.Value);
+        WriteValue<Ue4Type>(os, InRhs.Value);
         return os;
     }
 
-    VOXELMATEINLINE friend bool operator==(const Type& InLhs, const Type& InRhs)
+    VOXELMATEINLINE friend bool operator==(const TVoxelDatabaseVoxelType& InLhs, const TVoxelDatabaseVoxelType& InRhs)
     {
-        return AreValuesEqual<ValueType>(InLhs.Value, InRhs.Value);
+        return AreValuesEqual<Ue4Type>(InLhs.Value, InRhs.Value);
     }
 
-    VOXELMATEINLINE friend Type Abs(const Type& InType)
+    VOXELMATEINLINE friend TVoxelDatabaseVoxelType Abs(const TVoxelDatabaseVoxelType& InType)
     {
-        return AbsValue<ValueType>(InType.Value);
+        return AbsValue<Ue4Type>(InType.Value);
     }
 
-    VOXELMATEINLINE friend Type operator+(const Type& InLhs, const float &InRhs)
+    VOXELMATEINLINE friend TVoxelDatabaseVoxelType operator+(const TVoxelDatabaseVoxelType& InLhs, const float &InRhs)
     {
-        return AddFloat<ValueType>(InLhs.Value, InRhs);
+        return AddFloat<Ue4Type>(InLhs.Value, InRhs);
     }
 
-    VOXELMATEINLINE friend Type operator+(const Type& InLhs, const Type& InRhs)
+    VOXELMATEINLINE friend TVoxelDatabaseVoxelType operator+(const TVoxelDatabaseVoxelType& InLhs, const TVoxelDatabaseVoxelType& InRhs)
     {
-        return AddValues<ValueType>(InLhs.Value, InRhs.Value);
+        return AddValues<Ue4Type>(InLhs.Value, InRhs.Value);
     }
 
-    VOXELMATEINLINE friend Type operator-(const Type& InLhs, const Type& InRhs)
+    VOXELMATEINLINE friend TVoxelDatabaseVoxelType operator-(const TVoxelDatabaseVoxelType& InLhs, const TVoxelDatabaseVoxelType& InRhs)
     {
-        return SubValues<ValueType>(InLhs.Value, InRhs.Value);
+        return SubValues<Ue4Type>(InLhs.Value, InRhs.Value);
     }
 
-    VOXELMATEINLINE friend Type operator-(const Type& InLhs)
+    VOXELMATEINLINE friend TVoxelDatabaseVoxelType operator-(const TVoxelDatabaseVoxelType& InLhs)
     {
-        return NegValue<ValueType>(InLhs.Value);
+        return NegValue<Ue4Type>(InLhs.Value);
     }
 
-    VOXELMATEINLINE friend bool operator<(const Type& InLhs, const Type& InRhs)
+    VOXELMATEINLINE friend bool operator<(const TVoxelDatabaseVoxelType& InLhs, const TVoxelDatabaseVoxelType& InRhs)
     {
-        return IsValueLessThan<ValueType>(InLhs.Value, InRhs.Value);
+        return IsValueLessThan<Ue4Type>(InLhs.Value, InRhs.Value);
     }
 
-    VOXELMATEINLINE friend bool operator>(const Type& InLhs, const Type& InRhs)
+    VOXELMATEINLINE friend bool operator>(const TVoxelDatabaseVoxelType& InLhs, const TVoxelDatabaseVoxelType& InRhs)
     {
-        return IsValueGreaterThan<ValueType>(InLhs.Value, InRhs.Value);
+        return IsValueGreaterThan<Ue4Type>(InLhs.Value, InRhs.Value);
     }
 };
 

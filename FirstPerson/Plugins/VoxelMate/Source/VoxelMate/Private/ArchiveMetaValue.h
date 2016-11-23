@@ -47,6 +47,7 @@ struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
         {
             (void)e; //TODO log error (metadata type is not registered)
         }
+        check(MetaValuePtr != nullptr);
         return MetaValuePtr;
     }
 };

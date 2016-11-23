@@ -25,8 +25,6 @@ public:
         return *VoxelMateVoxelDatabase;
     }
 
-    UPROPERTY(BlueprintReadOnly)
-        UVoxelDatabase* VoxelDatabase;
     UPROPERTY()
         UVoxelDatabaseProxy* VoxelDatabaseProxy;
     UPROPERTY()
@@ -69,105 +67,103 @@ public:
     bool UVoxelDatabase::AddGrid(const FText& GridDisplayText, bool SaveFloatAsHalf, FGuid& OutGridId)
     {
         bool IsGridAdded = false;
-        FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create<VoxelType>();
-        if (GridPtr != nullptr)
+        OutGridId = FGuid::NewGuid();
+        if (OutGridId.IsValid())
         {
-            OutGridId = FGuid::NewGuid();
-            check(OutGridId.IsValid());
+            FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create<VoxelType>();
             GridPtr->setName(TCHAR_TO_UTF8(*OutGridId.ToString()));
             GridPtr->setSaveFloatAsHalf(SaveFloatAsHalf);
-            GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseTextMeta>(GridDisplayText));
+            FMetaMapFactory::InsertGridMeta<FText>(*GridPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, GridDisplayText);
             Grids.Add(OutGridId, GridPtr);
             IsGridAdded = true;
         }
-
-        if(!IsGridAdded)
+        else
         {
-            OutGridId.Invalidate();
+            //TODO log warning (new grid id not valid)
+            OutGridId.Invalidate(); //set all to 0
         }
         return IsGridAdded;
     }
 
     template<typename VoxelType>
-    bool UVoxelDatabase::ShallowCopyGrid(const FGuid& InGridId, const FText& GridDisplayText, FGuid& OutGridId)
+    int32 UVoxelDatabase::ShallowCopyGrid(const FGuid& InGridId, const FText& GridDisplayText)
     {
-        bool IsGridCopied = false;
-        if (InGridId.IsValid())
+        int32 GridCopyIndex = -1;
+        FGridFactory::ValueTypePtr GridCopyPtr = FGridFactory::ShallowCopyGrid<VoxelType>(OriginalGridPtr);
+        if (GridCopyPtr != nullptr)
         {
-            FGridFactory::ValueTypePtr* FindGrid = Grids.Find(InGridId);
-            if (FindGrid)
-            {
-                FGridFactory::ValueTypeConstPtr& OriginalGridPtr = *FindGrid;
-                if (OriginalGridPtr != nullptr)
-                {
-                    FGridFactory::ValueTypePtr GridPtr = FGridFactory::ShallowCopyGrid<VoxelType>(OriginalGridPtr);
-                    if (GridPtr != nullptr)
-                    {
-                        GridPtr->removeMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText));
-                        GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseTextMeta>(GridDisplayText));
-                        OutGridId = FGuid::NewGuid();
-                        check(OutGridId.IsValid());
-                        Grids.Add(OutGridId, GridPtr);
-                        IsGridCopied = true;
-                    }
-                }
-                else
-                {
-                    //TODO log error (tried to copy an invalid grid)
-                }
-            }
-            else
-            {
-                //TODO log error (could not find grid to copy)
-            }
+            FMetaMapFactory::InsertGridMeta<FText>(*GridCopyPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, GridDisplayText);
+
+            const openvdb::Name& OriginalGridName = GridPtr->getName();
+            GridCopyIndex = GridCopies.Num(InGridId);
+
+            std::ostringstream GridCopyName;
+            GridCopyName << GridPtr->getName() << "_" << GridCopyIndex;
+            GridPtr->setName(GridCopyName.str());
+
+            GridCopies.AddUnique(InGridId, GridCopyPtr);
+            IsGridCopied = true;
         }
-        
-        if (!IsGridAdded)
+        else
         {
-            OutGridId.Invalidate();
+            //TODO log error (could not copy grid; possibly different types)
         }
-        return IsGridCopied;
+        return GridCopyIndex;
     }
 
     template<typename VoxelType>
-    bool UVoxelDatabase::DeepCopyGrid(const FGuid& InGridId, const FText& GridDisplayText, FGuid& OutGridId)
+    int32 UVoxelDatabase::DeepCopyGrid(const FGuid& InGridId, const FText& GridDisplayText)
     {
-        bool IsGridCopied = false;
-        if (InGridId.IsValid())
+        int32 GridCopyIndex = -1;
+        FGridFactory::ValueTypePtr GridCopyPtr = FGridFactory::DeepCopyGrid<VoxelType>(OriginalGridPtr);
+        if (GridCopyPtr != nullptr)
         {
-            FGridFactory::ValueTypePtr* FindGrid = Grids.Find(InGridId);
-            if (FindGrid)
-            {
-                FGridFactory::ValueTypeConstPtr& OriginalGridPtr = *FindGrid;
-                if (OriginalGridPtr != nullptr)
-                {
-                    FGridFactory::ValueTypePtr GridPtr = FGridFactory::DeepCopyGrid<VoxelType>(OriginalGridPtr);
-                    if (GridPtr != nullptr)
-                    {
-                        GridPtr->removeMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText));
-                        GridPtr->insertMeta(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText), openvdb::TypedMetadata<FVoxelDatabaseTextMeta>(GridDisplayText));
-                        OutGridId = FGuid::NewGuid();
-                        check(OutGridId.IsValid());
-                        Grids.Add(OutGridId, GridPtr);
-                        IsGridCopied = true;
-                    }
-                }
-                else
-                {
-                    //TODO log error (tried to copy an invalid grid)
-                }
-            }
-            else
-            {
-                //TODO log error (could not find grid to copy)
-            }
+            FMetaMapFactory::InsertGridMeta<FText>(*GridCopyPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, GridDisplayText);
+
+            const openvdb::Name& OriginalGridName = GridPtr->getName();
+            GridCopyIndex = GridCopies.Num(InGridId);
+
+            std::ostringstream GridCopyName;
+            GridCopyName << GridPtr->getName() << "_" << GridCopyIndex;
+            GridPtr->setName(GridCopyName.str());
+
+            GridCopies.AddUnique(InGridId, GridCopyPtr);
+            IsGridCopied = true;
+        }
+        else
+        {
+            //TODO log error (could not copy grid; possibly different types)
+        }
+        return GridCopyIndex;
+    }
+
+    template<typename VoxelType>
+    bool UVoxelDatabase::DuplicateGrid(const FGuid& InGridId, const FText& GridDisplayText, FGuid& OutDuplicateGridId)
+    {
+        FGridFactory::ValueTypePtr* FindGrid = Grids.Find(InGridId);
+        if (!FindGrid)
+        {
+            //TODO log error (grid already exists - cannot overwrite it with the duplicate)
+            return false;
         }
 
-        if (!IsGridAdded)
+        bool IsGridDuplicated = false;
+        FGridFactory::ValueTypePtr GridDuplicatePtr = FGridFactory::DeepCopyGrid<VoxelType>(*FindGrid);
+        if (GridDuplicatePtr != nullptr)
         {
-            OutGridId.Invalidate();
+            OutDuplicateGridId = FGuid::NewGuid();
+            check(!Grids.Contains(OutDuplicateGridId));
+            GridPtr->setName(TCHAR_TO_UTF8(*OutDuplicateGridId.ToString()));
+            //Note:: save-float-as-half is automatically copied via the grid metadata
+            FMetaMapFactory::InsertGridMeta<FText>(*GridPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, GridDisplayText);
+            Grids.Add(OutDuplicateGridId, GridDuplicatePtr);
+            IsGridDuplicated = true;
         }
-        return IsGridCopied;
+        else
+        {
+            //TODO log error (could not copy grid; possibly different types)
+        }
+        return IsGridDuplicated;
     }
 
     template<typename VoxelType>
@@ -182,6 +178,11 @@ public:
                 openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::ConstAccessor Accessor = TypedGridPtr->getConstAccessor();
                 const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
                 return Accessor.getValue(Coord);
+            }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
             }
         }
 
@@ -203,6 +204,11 @@ public:
                 OutIsVoxelActive = Accessor.isValueOn(Coord);
                 return Accessor.getValue(Coord);
             }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
+            }
         }
 
         OutIsVoxelActive = false;
@@ -223,6 +229,11 @@ public:
                 const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
                 OutIsActive = Accessor.isValueOn(Coord);
             }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
+            }
         }
         OutIsActive = false;
     }
@@ -239,6 +250,11 @@ public:
                 openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Accessor Accessor = TypedGridPtr->getAccessor();
                 const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
                 Accessor.setValueOnly(Coord, InVoxelValue);
+            }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
             }
         }
     }
@@ -264,6 +280,11 @@ public:
                     Accessor.setValueOff(Coord, InVoxelValue);
                 }
             }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
+            }
         }
     }
 
@@ -279,6 +300,40 @@ public:
                 openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Accessor Accessor = TypedGridPtr->getAccessor();
                 const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
                 Accessor.setActiveState(Coord, InIsActive);
+            }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
+            }
+        }
+    }
+
+    template<typename VoxelType>
+    VOXELMATEINLINE void FillGrid(const FGuid& GridId, const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const VoxelType& InValue, const bool& InIsActive)
+    {
+        if (FillDimensions.X == 0 || FillDimensions.Y == 0 || FillDimensions.Z == 0)
+        {
+            //TODO log error (fill volume is empty)
+            return;
+        }
+
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(*FindGrid);
+            if (TypedGridPtr)
+            {
+                //const CoordBBox& bbox, const ValueType& value, bool active = true
+                const openvdb::Coord FillStart(StartIndexCoord.X, StartIndexCoord.Y, StartIndexCoord.Z);
+                const openvdb::Coord FillEnd(FillStart.x() + FillDimensions.X, FillStart.y() + FillDimensions.Y, FillStart.z() + FillDimensions.Z);
+                const openvdb::CoordBBox FillBBox(FillStart, FillEnd);
+                TypedGridPtr->fill(FillBBox, InValue, InIsActive);
+            }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
             }
         }
     }
@@ -298,7 +353,6 @@ public:
         return IsMetadataAdded;
     }
 
-
 private:
     friend class FVoxelMateModule;
     //TODO idea for faster grid lookup
@@ -306,15 +360,13 @@ private:
 
     UVoxelDatabase()
     {
-        check(!VoxelDatabase);
-        VoxelDatabase = this;
         AddToRoot();
-
         FString VoxelDatabaseName;
         GetName(VoxelDatabaseName);
         DataPath = FPaths::GameUserDeveloperDir() + VoxelDatabaseName + TEXT("/Data/");
     }
 
-    TMap<FGuid, FGridFactory::ValueTypePtr> Grids;
     TMap<FGuid, FMetaValueFactory::ValueTypePtr> Metadata;
+    TMap<FGuid, FGridFactory::ValueTypePtr> Grids;
+    TMultiMap<FGuid, FGridFactory::ValueTypePtr> GridCopies;
 };

@@ -14,4 +14,9 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+    static inline bool IsAvailable()
+    {
+        return FModuleManager::Get().IsModuleLoaded("VoxelMateModule");
+    }
 };

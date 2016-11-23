@@ -50,6 +50,7 @@ struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::Ma
         {
             (void)e; //TODO log error (transform map type not registered)
         }
+        check(TransformMapPtr != nullptr);
         return  TransformMapPtr;
     }
 };
