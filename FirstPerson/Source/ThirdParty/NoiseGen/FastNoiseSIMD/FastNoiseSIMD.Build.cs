@@ -10,7 +10,6 @@ public class FastNoiseSIMD : ModuleRules
 {
     private UnrealTargetPlatform Platform;
     private UnrealTargetConfiguration Configuration;
-    private string NoiseLib;
 
     public FastNoiseSIMD(TargetInfo Target)
     {
@@ -25,26 +24,22 @@ public class FastNoiseSIMD : ModuleRules
         if (Arch == SimdArch.SSE)
         {
             Console.WriteLine("FastNoiseSIMD configured for SSE");
-            NoiseLib = "FastNoiseSIMD_sse.lib";
             Definitions.Add("FN_COMPILE_SSE2");
         }
         else if (Arch == SimdArch.SSE2)
         {
             Console.WriteLine("FastNoiseSIMD configured for SSE2");
-            NoiseLib = "FastNoiseSIMD_sse2.lib";
             Definitions.Add("FN_COMPILE_SSE2");
         }
         else if (Arch == SimdArch.SSE41)
         {
             Console.WriteLine("FastNoiseSIMD configured for SSE41");
-            NoiseLib = "FastNoiseSIMD_sse41.lib";
             Definitions.Add("FN_COMPILE_SSE41");
             Definitions.Add("FN_COMPILE_SSE2");
         }
         else if (Arch == SimdArch.AVX)
         {
             Console.WriteLine("FastNoiseSIMD configured for AVX");
-            NoiseLib = "FastNoiseSIMD_avx.lib";
             Definitions.Add("FN_COMPILE_AVX2");
             Definitions.Add("FN_COMPILE_SSE41");
             Definitions.Add("FN_COMPILE_SSE2");
@@ -52,7 +47,6 @@ public class FastNoiseSIMD : ModuleRules
         else if (Arch == SimdArch.AVX2)
         {
             Console.WriteLine("FastNoiseSIMD configured for AVX2");
-            NoiseLib = "FastNoiseSIMD_avx2.lib";
             Definitions.Add("FN_COMPILE_AVX2");
             Definitions.Add("FN_COMPILE_SSE41");
             Definitions.Add("FN_COMPILE_SSE2");
@@ -60,16 +54,14 @@ public class FastNoiseSIMD : ModuleRules
         else if (Arch == SimdArch.AVX2_FMA3)
         {
             Console.WriteLine("FastNoiseSIMD configured for AVX2 with FMA3");
-            NoiseLib = "FastNoiseSIMD_avx2_fma3.lib";
+            Definitions.Add("FN_USE_FMA3");
             Definitions.Add("FN_COMPILE_AVX2");
             Definitions.Add("FN_COMPILE_SSE41");
             Definitions.Add("FN_COMPILE_SSE2");
-            Definitions.Add("FN_USE_FMA3");
         }
         else
         {
             Console.WriteLine("Warning: FastNoiseSIMD falling back to no SIMD usage");
-            Definitions.Add("FastNoiseSIMD.lib");
             Definitions.Add("FN_COMPILE_NO_SIMD_FALLBACK");
         }
 
@@ -163,7 +155,7 @@ public class FastNoiseSIMD : ModuleRules
         {
             return new string[]
             {
-                NoiseLib,
+                "FastNoiseSIMD.lib",
             };
         }
     }    

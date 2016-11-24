@@ -4,7 +4,6 @@
 #include "VoxelDatabase.h"
 
 #include "FastNoiseSIMD.h"
-#undef FN_ALIGNED_SETS //TOOD Need to determine how aligned noise sets will interact with TSharedPtr
 
 //TODO idea for faster grid lookup
 //TArray<FGridFactory::ValueTypeWeakPtr> CachedGrids; //Careful of anyone accessing this from other threads

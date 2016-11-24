@@ -25,6 +25,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FastNoiseSIMD.cpp" />
+    <ClCompile Include="FastNoiseSIMD_avx2.cpp" />
+    <ClCompile Include="FastNoiseSIMD_sse2.cpp" />
+    <ClCompile Include="FastNoiseSIMD_sse41.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{39A117F6-9B5E-424A-930F-76BFF4073374}</ProjectGuid>
@@ -97,8 +100,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);FN_COMPILE_NO_SIMD_FALLBACK</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);FASTNOISE_LIB</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -111,8 +114,8 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);FN_COMPILE_NO_SIMD_FALLBACK</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);FASTNOISE_LIB</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -125,8 +128,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);FN_COMPILE_NO_SIMD_FALLBACK</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);FASTNOISE_LIB</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -142,8 +145,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);FN_COMPILE_NO_SIMD_FALLBACK</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);FASTNOISE_LIB</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
