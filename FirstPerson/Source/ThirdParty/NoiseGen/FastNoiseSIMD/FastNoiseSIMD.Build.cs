@@ -4,13 +4,14 @@ using UnrealBuildTool;
 using System.IO;
 using System;
 
-enum SimdArch { SSE2, SEE4_1, AVX, AVX2, FMA3 } //TODO: Add other architectures
+enum SimdArch { NONE, SSE, SSE2, SSE41, AVX, AVX2, AVX2_FMA3 }
 
 public class FastNoiseSIMD : ModuleRules
 {
     private UnrealTargetPlatform Platform;
     private UnrealTargetConfiguration Configuration;
-    
+    private string NoiseLib;
+
     public FastNoiseSIMD(TargetInfo Target)
     {
         Platform = Target.Platform;
@@ -18,22 +19,51 @@ public class FastNoiseSIMD : ModuleRules
         Type = ModuleType.External;
         OptimizeCode = CodeOptimization.InNonDebugBuilds;
         SimdArch Arch = SimdArch.AVX2;
+
+        //TODO: Figure out how to configure FN_ALIGNED_SETS from FastNoiseSIMD
+        bUseAVX = (Arch == SimdArch.AVX || Arch == SimdArch.AVX2 || Arch == SimdArch.AVX2_FMA3);
+        if (Arch == SimdArch.SSE)
+        {
+            NoiseLib = "FastNoiseSIMD_sse.lib";
+            Definitions.Add("FN_COMPILE_SSE2");
+        }
+        else if (Arch == SimdArch.SSE2)
+        {
+            NoiseLib = "FastNoiseSIMD_sse2.lib";
+            Definitions.Add("FN_COMPILE_SSE2");
+        }
+        else if (Arch == SimdArch.SSE41)
+        {
+            NoiseLib = "FastNoiseSIMD_sse41.lib";
+            Definitions.Add("FN_COMPILE_SSE41");
+        }
+        else if (Arch == SimdArch.AVX)
+        {
+            NoiseLib = "FastNoiseSIMD_avx.lib";
+            Definitions.Add("FN_COMPILE_AVX2");
+        }
+        else if (Arch == SimdArch.AVX2)
+        {
+            NoiseLib = "FastNoiseSIMD_avx2.lib";
+            Definitions.Add("FN_COMPILE_AVX2");
+        }
+        else if (Arch == SimdArch.AVX2_FMA3)
+        {
+            NoiseLib = "FastNoiseSIMD_avx2_fma3.lib";
+            Definitions.Add("FN_COMPILE_AVX2");
+            Definitions.Add("FN_USE_FMA3");
+        }
+        else
+        {
+            Console.WriteLine("Warning: FastNoiseSIMD falling back to no SIMD usage");
+            Definitions.Add("FastNoiseSIMD.lib");
+        }
+
         PublicIncludePaths.AddRange(PublicIncludes);
         PrivateIncludePaths.AddRange(PrivateIncludes);
         PublicSystemIncludePaths.AddRange(ThirdPartyIncludes);
         PublicLibraryPaths.AddRange(ThirdPartyLibPaths);
         PublicAdditionalLibraries.AddRange(ThirdPartyLibNames);
-
-        if (Arch == SimdArch.AVX)
-        {
-            Definitions.Add("_AVX_");
-            bUseAVX = true;
-        }
-        else if (Arch == SimdArch.AVX2)
-        {
-            Definitions.Add("_AVX2_");
-            bUseAVX = true;
-        }
     }
     
     private string PlatformPath
@@ -119,7 +149,7 @@ public class FastNoiseSIMD : ModuleRules
         {
             return new string[]
             {
-                "FastNoiseSIMD.lib",
+                NoiseLib,
             };
         }
     }    
