@@ -13,6 +13,21 @@
 //see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
 //DECLARE_MULTICAST_DELEGATE_OneParam(FVoxelDatabaseOnMetadataChanged, class UVoxelDatabaseProxy*, const FGuid&);
 
+template<typename ValueType>
+struct ModifyValueOp
+{
+    const ValueType& InValue;
+
+    ModifyValueOp(const ValueType& Value)
+        : InValue(Value)
+    {}
+
+    VOXELMATEINLINE void operator()(ValueType& OutValue) const
+    {
+        OutValue = InValue;
+    }
+};
+
 template<typename IterT, typename VoxelT>
 struct NoiseValueOp
 {
@@ -20,13 +35,17 @@ struct NoiseValueOp
     typedef typename VoxelT::ValueType ValueType;
     typedef typename IterT IterType;
 
-    const TArray<TArray<TArrayView<float>>>& Noise3DValues;
-    NoiseValueOp(const TArray<TArray<TArrayView<float>>>& Values) : Noise3DValues(Values) {}
+    const TArray<TArray<TArrayView<float>>>& Noise3DValues;    
+    NoiseValueOp(const TArray<TArray<TArrayView<float>>>& Values)
+        : Noise3DValues(Values)
+    {}
+
     VOXELMATEINLINE void operator()(const IterType& iter) const
     {
         check(iter.isVoxelValue());
         const openvdb::Coord& coord = iter.getCoord();
-        iter.setValue(Noise3DValues[coord.x()][coord.y()][coord.z()]);
+        const ValueType NoiseValue = Noise3DValues[coord.x()][coord.y()][coord.z()];
+        iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(VoxelType(NoiseValue)));
     }
 };
 
@@ -357,6 +376,30 @@ public:
         }
     }
 
+    template<typename GridT, typename IterT>
+    struct GridIter
+    {
+        VOXELMATEINLINE static IterT GetGridIter(const GridT& Grid) {}
+    };
+
+    template<typename GridT>
+    struct GridIter<GridT, typename GridT::ValuesOnIter>
+    {
+        VOXELMATEINLINE static typename GridT::ValuesOnIter GetGridIter(const GridT& Grid) { return Grid.beginValueOn(); }
+    };
+
+    template<typename GridT>
+    struct GridIter<GridT, typename GridT::ValuesOffIter>
+    {
+        VOXELMATEINLINE static typename GridT::ValuesOffIter GetGridIter(const GridT& Grid) { return Grid.beginValueOff(); }
+    };
+
+    template<typename GridT>
+    struct GridIter<GridT, typename GridT::ValuesAllIter>
+    {
+        VOXELMATEINLINE static typename GridT::ValuesAllIter GetGridIter(const GridT& Grid) { return Grid.beginValueAll(); }
+    };
+
     template<typename ValueOpType>
     VOXELMATEINLINE void RunGridOp(const FGuid& GridId, ValueOpType& ValueOp)
     {
@@ -366,7 +409,8 @@ public:
             openvdb::Grid<openvdb::tree::Tree4<ValueOpType::VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<ValueOpType::VoxelType>::Type>>(*FindGrid);
             if (TypedGridPtr)
             {
-                openvdb::tools::foreach<ValueOpType::IterType, ValueOpType>(TypedGridPtr->beginValueOn(), ValueOp);
+                //openvdb::tools::foreach<ValueOpType::IterType, ValueOpType>(TypedGridPtr->beginValueOn(), ValueOp);
+                openvdb::tools::foreach<ValueOpType::IterType, ValueOpType>(GridIter<openvdb::Grid<openvdb::tree::Tree4<ValueOpType::VoxelType>::Type>, ValueOpType::IterType>::GetGridIter(*TypedGridPtr), ValueOp);
             }
             else
             {
