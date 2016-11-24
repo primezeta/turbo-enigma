@@ -152,7 +152,7 @@ void AVoxelGridProxyFloat::FillNoise(const FIntVector& StartIndexCoord, const FI
 
     //Check if a set of noise values was already generated from the given noise configuration within the specified volume
     const openvdb::Coord StartCoord(StartIndexCoord.X, StartIndexCoord.Y, StartIndexCoord.Z);
-    const openvdb::Coord EndCoord(StartIndexCoord.X + FillDimensions.X, StartIndexCoord.Y + FillDimensions.Y, StartIndexCoord.Z + FillDimensions.Z);
+    const openvdb::Coord EndCoord(StartIndexCoord.X + FillDimensions.X - 1, StartIndexCoord.Y + FillDimensions.Y - 1, StartIndexCoord.Z + FillDimensions.Z - 1);
     openvdb::CoordBBox NoiseFillVolume(StartCoord, EndCoord);
 
     //Expand the fill-volume by 1 voxel on all sides so that a noise value is always available when checking adjacent voxels
