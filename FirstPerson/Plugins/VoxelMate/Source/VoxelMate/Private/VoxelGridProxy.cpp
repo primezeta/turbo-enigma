@@ -14,6 +14,10 @@ struct FIntBox
     FIntVector Start;
     FIntVector Size;
 
+    FIntBox(const FIntVector& InStart, const FIntVector& InSize)
+        : Start(InStart), Size(InSize)
+    {}
+
     friend uint32 GetTypeHash(const FIntBox& IntBox)
     {
         return HashCombine(GetTypeHash(IntBox.Start), GetTypeHash(IntBox.Size));
@@ -45,9 +49,11 @@ bool AVoxelGridProxy::SaveVoxelData()
 
 void AVoxelGridProxyFloat::FillNoise(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FNoiseGeneratorConfiguration& Config, const bool& InIsActive)
 {
+    //Associate each particular noise configuration to a cached set of noise values
     FastNoiseSIMDSet& NoiseSet = FastNoiseSIMDSets.FindOrAdd(Config);
     if (!NoiseSet.NoiseModule.IsValid())
     {
+        //This particular noise set has not yet been created so create it using the specified configuration
         NoiseSet.NoiseModule = TSharedPtr<FastNoiseSIMD>(FastNoiseSIMD::NewFastNoiseSIMD(Config.RandomSeed));
         NoiseSet.NoiseModule->SetFrequency(Config.Frequency);        
         NoiseSet.NoiseModule->SetAxisScales(Config.AxisScale.X, Config.AxisScale.Y, Config.AxisScale.Z);
@@ -145,34 +151,48 @@ void AVoxelGridProxyFloat::FillNoise(const FIntVector& StartIndexCoord, const FI
         }
     }
 
-    FIntBox Box;
-    Box.Start = StartIndexCoord;
-    Box.Size = FillDimensions;
+    //Check if a set of noise values was already generated from the given noise configuration within the specified volume
+    const openvdb::Coord StartCoord(StartIndexCoord.X, StartIndexCoord.Y, StartIndexCoord.Z);
+    const openvdb::Coord EndCoord(StartIndexCoord.X + FillDimensions.X, StartIndexCoord.Y + FillDimensions.Y, StartIndexCoord.Z + FillDimensions.Z);
+    openvdb::CoordBBox NoiseFillVolume(StartCoord, EndCoord);
 
+    //Expand the fill-volume by 1 voxel on all sides so that a noise value is always available when checking adjacent voxels
+    NoiseFillVolume.expand((int32)1);
+
+    const openvdb::Coord& VolumeExtents = NoiseFillVolume.extents();
+
+    //Associate existing values to the specified fill dimensions, not the expanded dimensions
+    const FIntBox Volume(StartIndexCoord, FillDimensions);
     TSharedPtr<float> Values;
-    TSharedPtr<float>* FindValues = NoiseSet.GeneratedValues.Find(Box);
+    TSharedPtr<float>* FindValues = NoiseSet.GeneratedValues.Find(Volume);
     if (!FindValues)
     {
-        Values = NoiseSet.GeneratedValues.Add(Box, TSharedPtr<float>(NoiseSet.NoiseModule->GetNoiseSet(Box.Start.X, Box.Start.Y, Box.Start.Z, Box.Size.X, Box.Size.Y, Box.Size.Z)));
+        //Values for these dimensions have not yet been generated, generate them
+        Values = NoiseSet.GeneratedValues.Add(Volume, TSharedPtr<float>(NoiseSet.NoiseModule->GetNoiseSet(
+            NoiseFillVolume.min().x(), NoiseFillVolume.min().y(), NoiseFillVolume.min().z(),
+            VolumeExtents.x(), VolumeExtents.y(), VolumeExtents.z())));
     }
     else
     {
+        //Values for these dimensions were already generated, use those
         Values = *FindValues;
     }
 
+    //
     float* ValuesPtr = Values.Get();
     TArray<TArray<TArrayView<float>>> Noise3DValues;
-    Noise3DValues.Reserve(Box.Size.X);
-    for (int32 x = 0; x < Box.Size.X; ++x)
+    Noise3DValues.Reserve(VolumeExtents.x());
+    for (int32 x = 0; x < VolumeExtents.x(); ++x)
     {
         const int32 yarray = Noise3DValues.Add(TArray<TArrayView<float>>());
-        Noise3DValues[yarray].Reserve(Box.Size.Y);
-        for (int32 y = 0; y < Box.Size.Y; ++y)
+        Noise3DValues[yarray].Reserve(VolumeExtents.y());
+        for (int32 y = 0; y < VolumeExtents.y(); ++y)
         {
-            float* zblock = ValuesPtr + x + Box.Size.X * (y + Box.Size.Y);
-            const int32 zarray = Noise3DValues[yarray].Add(TArrayView<float>(zblock, Box.Size.Z));
+            float* zblock = ValuesPtr + x + VolumeExtents.x() * (y + VolumeExtents.y());
+            const int32 zarray = Noise3DValues[yarray].Add(TArrayView<float>(zblock, VolumeExtents.z()));
         }
     }
+
     typedef NoiseValueOp<openvdb::Grid<openvdb::tree::Tree4<FVoxelDatabaseFloatVoxel>::Type>::ValueOnIter, FVoxelDatabaseFloatVoxel> NoiseValueOpType;
     NoiseValueOpType ValueOp(Noise3DValues);
     UVoxelDatabase::Get().RunGridOp<NoiseValueOpType>(GridId, ValueOp);
