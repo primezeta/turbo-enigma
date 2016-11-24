@@ -27,10 +27,12 @@ public class FastNoiseSIMD : ModuleRules
         if (Arch == SimdArch.AVX)
         {
             Definitions.Add("_AVX_");
+            bUseAVX = true;
         }
         else if (Arch == SimdArch.AVX2)
         {
             Definitions.Add("_AVX2_");
+            bUseAVX = true;
         }
     }
     
