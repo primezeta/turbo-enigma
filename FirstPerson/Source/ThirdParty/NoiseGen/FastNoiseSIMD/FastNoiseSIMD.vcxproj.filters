@@ -15,17 +15,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FastNoiseSIMD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="FastNoiseSIMD_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="FastNoiseSIMD.h">
+    <ClInclude Include="FastNoiseSIMD_internal.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FastNoiseSIMD_internal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FastNoiseSIMD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -1,4 +1,4 @@
-// FastNoiseSIMD_internal.cpp
+// FastNoiseSIMD_internal.hpp
 //
 // MIT License
 //

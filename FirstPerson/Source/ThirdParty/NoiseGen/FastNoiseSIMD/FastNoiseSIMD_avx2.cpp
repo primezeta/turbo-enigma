@@ -45,5 +45,5 @@
 #include <immintrin.h> //AVX2 FMA3
 
 #define SIMD_LEVEL FN_AVX2
-#include "FastNoiseSIMD_internal.cpp"
+#include "FastNoiseSIMD_internal.hpp"
 #endif

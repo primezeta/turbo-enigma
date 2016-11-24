@@ -37,5 +37,5 @@
 #include <smmintrin.h> //SSE4.1
 
 #define SIMD_LEVEL FN_SSE41
-#include "FastNoiseSIMD_internal.cpp"
+#include "FastNoiseSIMD_internal.hpp"
 #endif

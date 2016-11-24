@@ -37,5 +37,5 @@
 #include <emmintrin.h> //SSE2
 
 #define SIMD_LEVEL FN_SSE2
-#include "FastNoiseSIMD_internal.cpp"
+#include "FastNoiseSIMD_internal.hpp"
 #endif

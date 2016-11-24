@@ -141,24 +141,18 @@ FastNoiseSIMD* FastNoiseSIMD::NewFastNoiseSIMD(int seed)
 	GetSIMDLevel();
 
 #ifdef FN_COMPILE_AVX2
-	if (s_currentSIMDLevel >= FN_AVX2)
-		return new FastNoiseSIMD_internal::FASTNOISE_SIMD_CLASS(FN_AVX2)(seed);
-#endif
-
-#ifdef FN_COMPILE_SSE41
-	if (s_currentSIMDLevel >= FN_SSE41)
-		return new FastNoiseSIMD_internal::FASTNOISE_SIMD_CLASS(FN_SSE41)(seed);
-#endif
-
-#ifdef FN_COMPILE_SSE2
-#ifdef FN_COMPILE_NO_SIMD_FALLBACK
-	if (s_currentSIMDLevel >= FN_SSE2)
-#endif
-		return new FastNoiseSIMD_internal::FASTNOISE_SIMD_CLASS(FN_SSE2)(seed);
-#endif
-
-#ifdef FN_COMPILE_NO_SIMD_FALLBACK
+    assert(s_currentSIMDLevel == FN_AVX2);
+    return new FastNoiseSIMD_internal::FASTNOISE_SIMD_CLASS(FN_AVX2)(seed);
+#elif defined(FN_COMPILE_SSE41)
+    assert(s_currentSIMDLevel == FN_SSE41);
+	return new FastNoiseSIMD_internal::FASTNOISE_SIMD_CLASS(FN_SSE41)(seed);
+#elif defined(FN_COMPILE_SSE2)
+    assert(s_currentSIMDLevel == FN_SSE2);
+	return new FastNoiseSIMD_internal::FASTNOISE_SIMD_CLASS(FN_SSE2)(seed);
+#elif defined(FN_COMPILE_NO_SIMD_FALLBACK)
 	return new FastNoiseSIMD_internal::FASTNOISE_SIMD_CLASS(FN_NO_SIMD_FALLBACK)(seed);
+#else
+#error "Unknown architecture!"
 #endif
 }
 
