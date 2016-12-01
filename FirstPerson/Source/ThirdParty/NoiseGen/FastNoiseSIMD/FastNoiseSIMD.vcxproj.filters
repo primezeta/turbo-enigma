@@ -29,14 +29,5 @@
     <ClCompile Include="FastNoiseSIMD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FastNoiseSIMD_avx2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FastNoiseSIMD_sse2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FastNoiseSIMD_sse41.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>
