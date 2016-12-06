@@ -591,7 +591,6 @@
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelGridProxy.cpp" />
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelMate.cpp" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelMatePCH.h" />
-		<ClCompile Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelValueSource.cpp" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\GridCoordinateTransforms.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\NoiseGeneratorConfiguration.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabaseCommon.h" />
