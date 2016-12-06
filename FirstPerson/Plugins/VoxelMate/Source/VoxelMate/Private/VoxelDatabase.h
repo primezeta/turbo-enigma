@@ -74,8 +74,8 @@ struct TSetValuesOp
     const ValueSourceType &ValueSource;
     openvdb::math::Transform &CoordinateTransform;
 
-    TSetValuesOp(const ValueSourceType &VoxelValueSource, openvdb::math::Transform &Transform)
-        : ValueSource(VoxelValueSource), CoordinateTransform(Transform)
+    TSetValuesOp(const TScriptInterface<ValueSourceType> &ValueSourceInterface, openvdb::math::Transform &Transform)
+        : ValueSource(*ValueSourceInterface), CoordinateTransform(Transform)
     {}
 
     VOXELMATEINLINE void operator()(const IterType& iter) const
@@ -84,7 +84,7 @@ struct TSetValuesOp
         const openvdb::Coord &Coord = iter.getCoord();
         const openvdb::Vec3d &Xyz = CoordinateTransform.indexToWorld(Coord);
         ValueType Value;
-        ValueSource.GetValue(Xyz.x(), Xyz.y(), Xyz.z(), Value);
+        ValueSource.GetValue_Implementation(Xyz.x(), Xyz.y(), Xyz.z(), Value);
         iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(Value));
     }
 };
@@ -387,7 +387,7 @@ public:
     }
 
     template<typename VoxelType, typename ValueSourceType, EVoxelIterator VoxelIterType>
-    VOXELMATEINLINE void SetVoxelValuesFromSource(const FGuid& GridId, const ValueSourceType &ValueSource)
+    VOXELMATEINLINE void SetVoxelValuesFromSource(const FGuid& GridId, const TScriptInterface<ValueSourceType> &ValueSource)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)

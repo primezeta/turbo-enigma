@@ -159,15 +159,15 @@ void AVoxelGridProxy##Name::SetValues(EVoxelIterator VoxelIter, const TScriptInt
 {\
     if(VoxelIter == EVoxelIterator::InactiveVoxelsIter)\
     {\
-        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::InactiveVoxelsIter>(GridId, *ValueSourceInterface);\
+        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::InactiveVoxelsIter>(GridId, ValueSourceInterface);\
     }\
     else if (VoxelIter == EVoxelIterator::ActiveVoxelsIter)\
     {\
-        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::ActiveVoxelsIter>(GridId, *ValueSourceInterface);\
+        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::ActiveVoxelsIter>(GridId, ValueSourceInterface);\
     }\
     else\
     {\
-        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::AllVoxelsIter>(GridId, *ValueSourceInterface);\
+        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::AllVoxelsIter>(GridId, ValueSourceInterface);\
     }\
 }
 

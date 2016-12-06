@@ -12,6 +12,7 @@ class VOXELMATE_API IVoxelInt8SourceInterface
     GENERATED_BODY()
 
 public:
-    UFUNCTION(Category = VoxelMate)
+    UFUNCTION(Category = VoxelMate, meta = (CannotImplementInterfaceInBlueprint))
         virtual void GetValue(float x, float y, float z, int8& OutValue) const = 0;
+    virtual void GetValue_Implementation(float x, float y, float z, int8& OutValue) const = 0;
 };
