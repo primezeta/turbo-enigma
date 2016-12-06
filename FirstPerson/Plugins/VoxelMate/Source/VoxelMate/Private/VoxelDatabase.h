@@ -14,13 +14,6 @@
 //see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
 //DECLARE_MULTICAST_DELEGATE_OneParam(FVoxelDatabaseOnMetadataChanged, class UVoxelDatabaseProxy*, const FGuid&);
 
-UENUM(BlueprintType)
-enum class ETransformOp : uint8
-{
-    PreOp,
-    PostOp
-};
-
 template<typename ValueType>
 struct ModifyValueOp
 {
@@ -36,8 +29,29 @@ struct ModifyValueOp
     }
 };
 
+template<EVoxelIterator Iter, typename GridType>
+struct VoxelIteratorAdaptor;
+
+template<typename GridType>
+struct VoxelIteratorAdaptor<EVoxelIterator::InactiveVoxelsIter, GridType>
+{
+    typedef typename GridType::ValueOffIter Type;
+};
+
+template<typename GridType>
+struct VoxelIteratorAdaptor<EVoxelIterator::ActiveVoxelsIter, GridType>
+{
+    typedef typename GridType::ValueOnIter Type;
+};
+
+template<typename GridType>
+struct VoxelIteratorAdaptor<EVoxelIterator::AllVoxelsIter, GridType>
+{
+    typedef typename GridType::ValueAllIter Type;
+};
+
 template<typename IterT, typename VoxelT>
-struct SetValuesOp
+struct TSetValuesOp
 {
     typedef typename VoxelT VoxelType;
     typedef typename VoxelT::ValueType ValueType;
@@ -47,7 +61,7 @@ struct SetValuesOp
     ValueSourceType &ValueSource;
     openvdb::math::Transform &CoordinateTransform;
 
-    SetValuesOp(ValueSourceType &VoxelValueSource, openvdb::math::Transform &Transform)
+    TSetValuesOp(ValueSourceType &VoxelValueSource, openvdb::math::Transform &Transform)
         : ValueSource(VoxelValueSource), CoordinateTransform(Transform)
     {}
 
@@ -359,7 +373,46 @@ public:
     }
 
     template<typename VoxelType>
-    VOXELMATEINLINE void FillGrid(const FGuid& GridId, const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const VoxelType& InValue, const bool& InIsActive)
+    VOXELMATEINLINE void FillGrid(const FGuid& GridId, EVoxelIterator VoxelIter, const typename TVoxelValueSourceAdapter<typename VoxelType::ValueType>::Type &ValueSource, const bool &InVoxelizeActiveTilesAfterFill)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(*FindGrid);
+            if (TypedGridPtr)
+            {
+                typedef VoxelIteratorAdaptor<VoxelIter, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>::Type IterType;
+                typedef TSetValuesOp<IterType, VoxelType> OpType;
+                OpType SetValuesOp(ValueSource, TypedGridPtr->transform());
+
+                if (VoxelIter == EVoxelIterator::InactiveVoxelsIter)
+                {
+                    openvdb::tools::foreach<OpType::IterType, OpType>(TypedGridPtr->beginValueOff(), ValueOp);
+                }
+                else if (VoxelIter == EVoxelIterator::ActiveVoxelsIter)
+                {
+                    openvdb::tools::foreach<OpType::IterType, OpType>(TypedGridPtr->beginValueOn(), ValueOp);
+                }
+                else
+                {
+                    openvdb::tools::foreach<OpType::IterType, OpType>(TypedGridPtr->beginValueAll(), ValueOp);
+                }
+
+                if (InVoxelizeActiveTilesAfterFill)
+                {
+                    TypedGridPtr->tree().voxelizeActiveTiles();
+                }
+            }
+            else
+            {
+                //TODO log error (grid types mismatched)
+                check(false); //TODO handle error
+            }
+        }
+    }
+
+    template<typename VoxelType>
+    VOXELMATEINLINE void FillGrid(const FGuid& GridId, const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const VoxelType& InValue, const bool &InIsActive, const bool &InVoxelizeActiveTilesAfterFill)
     {
         if (FillDimensions.X == 0 || FillDimensions.Y == 0 || FillDimensions.Z == 0)
         {
@@ -378,53 +431,11 @@ public:
                 const openvdb::Coord FillEnd(FillStart.x() + FillDimensions.X - 1, FillStart.y() + FillDimensions.Y - 1, FillStart.z() + FillDimensions.Z - 1);
                 const openvdb::CoordBBox FillBBox(FillStart, FillEnd);
                 TypedGridPtr->fill(FillBBox, InValue, InIsActive);
-                TypedGridPtr->tree().voxelizeActiveTiles();
-            }
-            else
-            {
-                //TODO log error (grid types mismatched)
-                check(false); //TODO handle error
-            }
-        }
-    }
 
-private:
-    template<typename GridT, typename IterT>
-    struct GridIter
-    {
-        VOXELMATEINLINE static IterT GetGridIter(const GridT& Grid) {}
-    };
-
-    template<typename GridT>
-    struct GridIter<GridT, typename GridT::ValuesOnIter>
-    {
-        VOXELMATEINLINE static typename GridT::ValuesOnIter GetGridIter(const GridT& Grid) { return Grid.beginValueOn(); }
-    };
-
-    template<typename GridT>
-    struct GridIter<GridT, typename GridT::ValuesOffIter>
-    {
-        VOXELMATEINLINE static typename GridT::ValuesOffIter GetGridIter(const GridT& Grid) { return Grid.beginValueOff(); }
-    };
-
-    template<typename GridT>
-    struct GridIter<GridT, typename GridT::ValuesAllIter>
-    {
-        VOXELMATEINLINE static typename GridT::ValuesAllIter GetGridIter(const GridT& Grid) { return Grid.beginValueAll(); }
-    };
-
-public:
-    template<typename ValueOpType>
-    VOXELMATEINLINE void RunGridOp(const FGuid& GridId, ValueOpType& ValueOp)
-    {
-        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
-        {
-            openvdb::Grid<openvdb::tree::Tree4<ValueOpType::VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<ValueOpType::VoxelType>::Type>>(*FindGrid);
-            if (TypedGridPtr)
-            {
-                //openvdb::tools::foreach<ValueOpType::IterType, ValueOpType>(TypedGridPtr->beginValueOn(), ValueOp);
-                openvdb::tools::foreach<ValueOpType::IterType, ValueOpType>(GridIter<openvdb::Grid<openvdb::tree::Tree4<ValueOpType::VoxelType>::Type>, ValueOpType::IterType>::GetGridIter(*TypedGridPtr), ValueOp);
+                if (InVoxelizeActiveTilesAfterFill)
+                {
+                    TypedGridPtr->tree().voxelizeActiveTiles();
+                }
             }
             else
             {

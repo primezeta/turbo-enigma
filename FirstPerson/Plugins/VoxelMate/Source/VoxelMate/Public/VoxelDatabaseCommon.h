@@ -75,6 +75,21 @@ enum class ENoiseCellularReturnType : uint8
 };
 
 UENUM(BlueprintType)
+enum class ETransformOp : uint8
+{
+    PreOp,
+    PostOp
+};
+
+UENUM(BlueprintType)
+enum class EVoxelIterator : uint8
+{
+    InactiveVoxelsIter UMETA(DisplayName = "Inactive Voxels Iterator"),
+    ActiveVoxelsIter   UMETA(DisplayName = "Active Voxels Iterator"),
+    AllVoxelsIter      UMETA(DisplayName = "All Voxels Iterator")
+};
+
+UENUM(BlueprintType)
 enum class EVoxelScalarType : uint8
 {
     Bool                        UMETA(DisplayName = "bool"),
