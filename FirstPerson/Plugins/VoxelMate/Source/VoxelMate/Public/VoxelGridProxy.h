@@ -6,7 +6,6 @@
 //#include "Runtime/Engine/Classes/Interfaces/Interface_CollisionDataProvider.h"
 //#include "Editor/UnrealEd/Classes/ThumbnailRendering/SceneThumbnailInfo.h"
 //#include "PhysicsPublic.h"
-#include "ProceduralMeshComponent.h"
 #include "BulkData.h"
 #include "VoxelGridProxy.generated.h"
 
@@ -19,7 +18,6 @@ public:
     AVoxelGridProxy(const FObjectInitializer& ObjectInitializer)
         : Super(ObjectInitializer)
     {
-        GridMeshComponent = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("GridMeshComponent"));
         GridDisplayText = FText::FromString(GetName());
         DataFilePath = TEXT("");
         //TODO idea for faster grid lookup
@@ -52,8 +50,6 @@ public:
         FString DataFilePath;
     //UPROPERTY()
     //    TArray<UVoxelMetadataProxy*> MetadataProxies; //TODO
-    UPROPERTY()
-        UProceduralMeshComponent* GridMeshComponent;
 
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         virtual bool IsAScalarType()
