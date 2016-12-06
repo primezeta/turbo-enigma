@@ -22,7 +22,7 @@ struct VOXELMATE_API FVoxelDouble
 {
     GENERATED_BODY()
 
-        UPROPERTY()
+    UPROPERTY()
         FIntVector IndexCoord;
     UPROPERTY()
         double Value;
@@ -48,7 +48,7 @@ struct VOXELMATE_API FVoxelInt8
 {
     GENERATED_BODY()
 
-        UPROPERTY()
+    UPROPERTY()
         FIntVector IndexCoord;
     UPROPERTY()
         int8 Value;
@@ -61,7 +61,7 @@ struct VOXELMATE_API FVoxelInt16
 {
     GENERATED_BODY()
 
-        UPROPERTY()
+    UPROPERTY()
         FIntVector IndexCoord;
     UPROPERTY()
         int16 Value;
@@ -87,7 +87,7 @@ struct VOXELMATE_API FVoxelInt64
 {
     GENERATED_BODY()
 
-        UPROPERTY()
+    UPROPERTY()
         FIntVector IndexCoord;
     UPROPERTY()
         int64 Value;
@@ -113,7 +113,7 @@ struct VOXELMATE_API FVoxelUint16
 {
     GENERATED_BODY()
 
-        UPROPERTY()
+    UPROPERTY()
         FIntVector IndexCoord;
     UPROPERTY()
         uint16 Value;
@@ -126,7 +126,7 @@ struct VOXELMATE_API FVoxelUint32
 {
     GENERATED_BODY()
 
-        UPROPERTY()
+    UPROPERTY()
         FIntVector IndexCoord;
     UPROPERTY()
         uint32 Value;
@@ -139,7 +139,7 @@ struct VOXELMATE_API FVoxelUint64
 {
     GENERATED_BODY()
 
-        UPROPERTY()
+    UPROPERTY()
         FIntVector IndexCoord;
     UPROPERTY()
         uint64 Value;
@@ -284,7 +284,7 @@ class VOXELMATE_API AVoxelProxyBool : public AActor
 
 public:
     AVoxelProxyBool(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -298,7 +298,7 @@ class VOXELMATE_API AVoxelProxyDouble : public AActor
 
 public:
     AVoxelProxyDouble(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
@@ -312,7 +312,7 @@ class VOXELMATE_API AVoxelProxyFloat : public AActor
 
 public:
     AVoxelProxyFloat(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -326,7 +326,7 @@ class VOXELMATE_API AVoxelProxyInt8 : public AActor
 
 public:
     AVoxelProxyInt8(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
@@ -340,7 +340,7 @@ class VOXELMATE_API AVoxelProxyInt16 : public AActor
 
 public:
     AVoxelProxyInt16(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
@@ -354,7 +354,7 @@ class VOXELMATE_API AVoxelProxyInt32 : public AActor
 
 public:
     AVoxelProxyInt32(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -368,7 +368,7 @@ class VOXELMATE_API AVoxelProxyInt64 : public AActor
 
 public:
     AVoxelProxyInt64(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
@@ -382,7 +382,7 @@ class VOXELMATE_API AVoxelProxyUint8 : public AActor
 
 public:
     AVoxelProxyUint8(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -396,7 +396,7 @@ class VOXELMATE_API AVoxelProxyUint16 : public AActor
 
 public:
     AVoxelProxyUint16(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
@@ -410,7 +410,7 @@ class VOXELMATE_API AVoxelProxyUint32 : public AActor
 
 public:
     AVoxelProxyUint32(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
@@ -424,7 +424,7 @@ class VOXELMATE_API AVoxelProxyUint64 : public AActor
 
 public:
     AVoxelProxyUint64(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
@@ -438,7 +438,7 @@ class VOXELMATE_API AVoxelProxyVector : public AActor
 
 public:
     AVoxelProxyVector(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -452,7 +452,7 @@ class VOXELMATE_API AVoxelProxyVector4 : public AActor
 
 public:
     AVoxelProxyVector4(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -466,7 +466,7 @@ class VOXELMATE_API AVoxelProxyVector2D : public AActor
 
 public:
     AVoxelProxyVector2D(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -480,7 +480,7 @@ class VOXELMATE_API AVoxelProxyColor : public AActor
 
 public:
     AVoxelProxyColor(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -494,7 +494,7 @@ class VOXELMATE_API AVoxelProxyLinearColor : public AActor
 
 public:
     AVoxelProxyLinearColor(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -508,7 +508,7 @@ class VOXELMATE_API AVoxelProxyPackedNormal : public AActor
 
 public:
     AVoxelProxyPackedNormal(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -522,7 +522,7 @@ class VOXELMATE_API AVoxelProxyPackedRGB10A2N : public AActor
 
 public:
     AVoxelProxyPackedRGB10A2N(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -536,7 +536,7 @@ class VOXELMATE_API AVoxelProxyPackedRGBA16N : public AActor
 
 public:
     AVoxelProxyPackedRGBA16N(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -550,7 +550,7 @@ class VOXELMATE_API AVoxelProxyIntPoint : public AActor
 
 public:
     AVoxelProxyIntPoint(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
@@ -564,7 +564,7 @@ class VOXELMATE_API AVoxelProxyIntVector : public AActor
 
 public:
     AVoxelProxyIntVector(const FObjectInitializer& ObjectInitializer)
-        : AActor(ObjectInitializer)
+        : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
