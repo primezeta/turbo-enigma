@@ -3,7 +3,7 @@
 #include "VoxelDatabaseCommon.h"
 #include "VoxelDatabaseProxy.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, NotPlaceable, CustomConstructor, Blueprintable)
+UCLASS(ClassGroup = VoxelMate, NotPlaceable, Blueprintable)
 class VOXELMATE_API UVoxelDatabaseProxy : public UObject
 {
     GENERATED_BODY()
@@ -17,7 +17,9 @@ public:
     virtual void PreSave(const class ITargetPlatform* TargetPlatform) override;
     virtual void PostLoad() override;
 
-    UVoxelDatabaseProxy();
+    UVoxelDatabaseProxy(const FObjectInitializer& ObjectInitializer)
+        : Super(ObjectInitializer)
+    {}
 
     static bool CreateGridDataFile(AVoxelGridProxy* GridProxy, FText& OutFailureReason);
     bool LoadGridData(AVoxelGridProxy* GridProxy);

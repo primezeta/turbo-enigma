@@ -18,10 +18,6 @@ void UVoxelDatabaseProxy::Serialize(FArchive& Ar)
     Ar << *this;
 }
 
-UVoxelDatabaseProxy::UVoxelDatabaseProxy()
-{
-}
-
 void UVoxelDatabaseProxy::PostInitProperties()
 {
     Super::PostInitProperties();
