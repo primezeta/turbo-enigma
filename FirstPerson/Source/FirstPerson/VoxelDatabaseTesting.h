@@ -4,7 +4,7 @@
 #include "VoxelValueSource.h"
 #include "VoxelDatabaseTesting.generated.h"
 
-UCLASS(Category = VoxelMate, BlueprintType)
+UCLASS(Category = VoxelMateTesting, BlueprintType)
 class UVoxelPerlinNoiseSource : public UObject, public IVoxelFloatSourceInterface
 {
     GENERATED_BODY()
@@ -23,11 +23,21 @@ public:
 
     UVoxelPerlinNoiseSource()
     {
-        PerlinNoise.SetFrequency((double)Frequency);
-        PerlinNoise.SetLacunarity((double)Lacunarity);
-        PerlinNoise.SetPersistence((double)Persistence);
-        PerlinNoise.SetOctaveCount(OctaveCount);
+        Frequency = 4.0f;
+        Lacunarity = 0.49f;
+        Persistence = 2.01f;
+        OctaveCount = 9;
+        InitNoise();
     }
+
+    UFUNCTION(Category = VoxelMateTesting, BlueprintCallable)
+        void InitNoise()
+        {
+            PerlinNoise.SetFrequency((double)Frequency);
+            PerlinNoise.SetLacunarity((double)Lacunarity);
+            PerlinNoise.SetPersistence((double)Persistence);
+            PerlinNoise.SetOctaveCount(OctaveCount);
+        }
 
     void GetValue_Implementation(float x, float y, float z, float& OutValue)
     {
