@@ -1,5 +1,5 @@
 #include "VoxelMatePCH.h"
-#include "EngineGridTypes.h"
+#include "GridTypes.h"
 
 const FVoxelDatabaseBoolVoxel FVoxelDatabaseBoolVoxel::ZeroValue(false);
 const FVoxelDatabaseDoubleVoxel FVoxelDatabaseDoubleVoxel::ZeroValue(0.0);

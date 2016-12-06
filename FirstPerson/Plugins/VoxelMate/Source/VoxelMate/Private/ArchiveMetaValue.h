@@ -1,9 +1,6 @@
 #pragma once
-#include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabaseTypeFactory.h"
-
-#pragma warning(push)
-#pragma warning(once:4211 4800 4503 4146)
+#include "openvdb/openvdb.h"
 
 struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
 {
@@ -51,5 +48,3 @@ struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
         return MetaValuePtr;
     }
 };
-
-#pragma warning(pop)

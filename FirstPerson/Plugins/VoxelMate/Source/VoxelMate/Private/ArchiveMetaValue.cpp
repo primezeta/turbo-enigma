@@ -1,5 +1,5 @@
 #include "VoxelMatePCH.h"
-#include "EngineGridTypes.h"
+#include "GridTypes.h"
 #include "ArchiveMetaValue.h"
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/array.hpp>

@@ -1,5 +1,5 @@
 #include "VoxelMatePCH.h"
-#include "VoxelDatabaseCommonPrivate.h"
+//#include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabase.h"
 #include "VoxelGridProxy.h"
 

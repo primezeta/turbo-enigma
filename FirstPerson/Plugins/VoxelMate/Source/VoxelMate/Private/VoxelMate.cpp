@@ -4,8 +4,6 @@
 #include "Core.h"
 #include "ModuleManager.h"
 #include "IPluginManager.h"
-
-#include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabase.h"
 #include "VoxelDatabaseStatics.h"
 #include "VoxelDatabaseProxy.h"

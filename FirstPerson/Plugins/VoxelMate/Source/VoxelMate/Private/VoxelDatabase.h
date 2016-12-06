@@ -3,6 +3,7 @@
 #include "ArchiveMetaValue.h"
 #include "VoxelDatabaseProxy.h"
 #include "VoxelValueSource.h"
+#include "GridCoordinateTransforms.h"
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>

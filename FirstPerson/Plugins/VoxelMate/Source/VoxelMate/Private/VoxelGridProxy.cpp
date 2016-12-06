@@ -1,8 +1,6 @@
 #include "VoxelMatePCH.h"
 #include "VoxelGridProxy.h"
-#include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabase.h"
-
 #include "noise.h"
 
 //TODO idea for faster grid lookup

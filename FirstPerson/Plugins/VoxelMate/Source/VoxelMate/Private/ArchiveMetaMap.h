@@ -1,9 +1,6 @@
 #pragma once
-#include "VoxelDatabaseCommonPrivate.h"
 #include "ArchiveMetaValue.h"
-
-#pragma warning(push)
-#pragma warning(once:4211 4800 4503 4146)
+#include "openvdb/openvdb.h"
 
 struct FMetaMapFactory
 {
@@ -48,5 +45,3 @@ struct FMetaMapFactory
         FMetaMapFactory::InsertMeta<MetaType>(GridMetaMap, MetaName, MetaValue);
     }
 };
-
-#pragma warning(pop)

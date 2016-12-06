@@ -1,2 +1,6 @@
+#pragma warning(push)
+#pragma warning(once:4211 4503 4800 4146)
+
 #include "VoxelMate.h"
-//TODO check out Engine\Source\Runtime\Core\Public\Templates
+
+#pragma warning(pop)

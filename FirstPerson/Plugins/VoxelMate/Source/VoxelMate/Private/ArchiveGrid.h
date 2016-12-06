@@ -1,9 +1,6 @@
 #pragma once
-#include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabaseTypeFactory.h"
-
-#pragma warning(push)
-#pragma warning(once:4211 4800 4503 4146)
+#include "openvdb/openvdb.h"
 
 struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
 {
@@ -95,5 +92,3 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         return GridPtr;
     }
 };
-
-#pragma warning(pop)

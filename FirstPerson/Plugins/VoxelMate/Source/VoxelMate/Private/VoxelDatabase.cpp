@@ -1,5 +1,5 @@
 #include "VoxelMatePCH.h"
-#include "EngineGridTypes.h"
+#include "GridTypes.h"
 #include "VoxelDatabaseStatics.h"
 #include "VoxelDatabase.h"
 #include "ArchiveTransformMap.h"
