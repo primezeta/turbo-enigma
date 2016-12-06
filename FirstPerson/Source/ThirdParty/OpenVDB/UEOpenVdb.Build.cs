@@ -100,7 +100,7 @@ public class UEOpenVdb : ModuleRules
             return new string[]
             {
                 //if (WindowsPlatform.Compiler == WindowsCompiler.VisualStudio2015)
-                Path.Combine(ModuleDirectory, "Binaries", "VS2015", PlatformPath, ConfigurationPath),
+                Path.Combine(ThirdPartyPath, "Binaries", "VS2015", PlatformPath, ConfigurationPath),
                 Path.Combine(Path.GetPathRoot(Environment.SystemDirectory), "boost", "boost_1_61_0", "lib64-msvc-14.0"),
             };
         }
