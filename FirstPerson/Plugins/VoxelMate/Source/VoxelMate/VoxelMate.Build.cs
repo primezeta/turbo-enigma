@@ -28,7 +28,6 @@ public class VoxelMate : ModuleRules
                 "CoreUObject",
                 "Engine",
                 "InputCore",
-                "ProceduralMeshComponent",
             }
             );
 
@@ -37,10 +36,9 @@ public class VoxelMate : ModuleRules
 			new string[]
 			{
                 "UEOpenVdb",
-                "RenderCore", //For GVectorPackingConstants
-                "UnrealEd", //For linking to GEditor extern
+                "RenderCore", //For GVectorPackingConstants (FPackedNormal)
                 "LibNoise",
-			}
+            }
             );
 	}
 }
