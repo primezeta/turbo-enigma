@@ -244,7 +244,7 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
-class VOXELMATE_API AVoxelGridProxyColor : public AVoxelScalarGridProxy
+class AVoxelGridProxyColor : public AVoxelScalarGridProxy
 {
     GENERATED_BODY()
 

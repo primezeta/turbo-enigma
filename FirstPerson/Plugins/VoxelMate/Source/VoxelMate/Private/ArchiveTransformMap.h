@@ -55,8 +55,6 @@ struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::Ma
     }
 };
 
-#pragma warning(pop)
-
 template<> struct TTransformMapTypeTranslator<FAffineCoordinateTransform>
 {
     typedef openvdb::math::AffineMap Type;

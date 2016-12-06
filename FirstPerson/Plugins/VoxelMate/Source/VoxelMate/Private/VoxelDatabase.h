@@ -547,9 +547,9 @@ public:
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
         {
-            const openvdb::Coord Box0(InCoordinateTransform.Box.Min.X, InCoordinateTransform.Box.Min.Y, InCoordinateTransform.Box.Min.Z);
-            const openvdb::Coord Box1(InCoordinateTransform.Box.Max.X, InCoordinateTransform.Box.Max.Y, InCoordinateTransform.Box.Max.Z);
-            const openvdb::BBoxd BoundingBox(Box0 < Box1 ? Box0.asVec3d() : Box1.asVec3d(), Box0 > Box1 ? Box0.asVec3d() : Box1.asVec3d());
+            const openvdb::Vec3d Box0(InCoordinateTransform.Box.Min.X, InCoordinateTransform.Box.Min.Y, InCoordinateTransform.Box.Min.Z);
+            const openvdb::Vec3d Box1(InCoordinateTransform.Box.Max.X, InCoordinateTransform.Box.Max.Y, InCoordinateTransform.Box.Max.Z);
+            const openvdb::BBoxd BoundingBox(Box0 < Box1 ? Box0 : Box1, Box0 > Box1 ? Box0 : Box1);
             const float &Taper = InCoordinateTransform.Taper;
             const float &Depth = InCoordinateTransform.Depth;
             (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::NonlinearFrustumMap(BoundingBox, Taper, Depth)))));

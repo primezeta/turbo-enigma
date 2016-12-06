@@ -145,7 +145,7 @@ FArchive& operator<<(FArchive& Ar, openvdb::Metadata& MetaValue)
     {
         DataBytes.SetNumUninitialized(DataArraySize, false);
     }
-    check(DataArraySize > 0 && DataBytes.Num() == DataArraySize);
+    check(DataArraySize > 0 && (openvdb::Index32)DataBytes.Num() == DataArraySize);
 
     //Create an i/o stream for reading/writing the tarray
     ANSICHAR* BufferStart = DataBytes.GetData();

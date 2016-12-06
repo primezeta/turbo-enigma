@@ -49,7 +49,7 @@ const FVoxelDatabaseInt32RangeMeta FVoxelDatabaseInt32RangeMeta::ZeroValue(FInt3
 const FVoxelDatabaseFloatIntervalMeta FVoxelDatabaseFloatIntervalMeta::ZeroValue(FFloatInterval(0.0f, 0.0f));
 const FVoxelDatabaseInt32IntervalMeta FVoxelDatabaseInt32IntervalMeta::ZeroValue(FInt32Interval(0, 0));
 const FVoxelDatabaseFloatRangeBoundMeta FVoxelDatabaseFloatRangeBoundMeta::ZeroValue(FFloatRangeBound(0.0f));
-const FVoxelDatabaseInt32RangeBoundMeta FVoxelDatabaseInt32RangeBoundMeta::ZeroValue(FInt32RangeBound(0.0f));
+const FVoxelDatabaseInt32RangeBoundMeta FVoxelDatabaseInt32RangeBoundMeta::ZeroValue(FInt32RangeBound(0));
 const FVoxelDatabaseTwoVectorsMeta FVoxelDatabaseTwoVectorsMeta::ZeroValue(FTwoVectors(FVector::ZeroVector, FVector::ZeroVector));
 const FVoxelDatabasePlaneMeta FVoxelDatabasePlaneMeta::ZeroValue(FPlane(0.0f, 0.0f, 0.0f, 0.0f));
 const FVoxelDatabaseRotatorMeta FVoxelDatabaseRotatorMeta::ZeroValue(FRotator::ZeroRotator);
