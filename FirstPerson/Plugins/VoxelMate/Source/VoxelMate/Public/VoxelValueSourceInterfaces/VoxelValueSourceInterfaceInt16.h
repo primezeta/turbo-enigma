@@ -12,6 +12,6 @@ class VOXELMATE_API IVoxelInt16SourceInterface
     GENERATED_BODY()
 
 public:
-    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = VoxelMate)
-        void GetValue(float x, float y, float z);
+    UFUNCTION(Category = VoxelMate)
+        virtual void GetValue(float x, float y, float z, int16& OutValue) = 0;
 };
