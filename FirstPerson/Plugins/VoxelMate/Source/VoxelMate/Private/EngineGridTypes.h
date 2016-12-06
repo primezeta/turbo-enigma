@@ -2,7 +2,7 @@
 #include "Platform.h"
 #include "EngineMinimal.h"
 #include "VoxelData.h"
-#include "GridTransformMaps.h"
+#include "GridCoordinateTransforms.h"
 #include "VoxelDatabaseCommonPrivate.h"
 
 #pragma warning(push)
@@ -504,70 +504,56 @@ VOXELMATEINLINE void WriteValue<FText>(OutputStreamType& os, const FText& InValu
 }
 
 template<>
-VOXELMATEINLINE void WriteValue<FAffineMap>(OutputStreamType& os, const FAffineMap& InValue)
+VOXELMATEINLINE void WriteValue<FAffineCoordinateTransform>(OutputStreamType& os, const FAffineCoordinateTransform& InValue)
 {
-    WriteValue<FMatrix>(os, static_cast<FMatrix>(InValue));
+    WriteValue<FMatrix>(os, InValue.Matrix);
 }
 
 template<>
-VOXELMATEINLINE void WriteValue<FUnitaryMap>(OutputStreamType& os, const FUnitaryMap& InValue)
+VOXELMATEINLINE void WriteValue<FUnitaryCoordinateTransform>(OutputStreamType& os, const FUnitaryCoordinateTransform& InValue)
 {
-    WriteValue<FVector>(os, InValue.GetRotationAxis());
-    WriteValue<float>(os, 2.f * FMath::Acos(InValue.W));
+    WriteValue<FVector>(os, InValue.Quat.GetRotationAxis());
+    WriteValue<float>(os, 2.f * FMath::Acos(InValue.Quat.W));
 }
 
 template<>
-VOXELMATEINLINE void WriteValue<FScaleMap>(OutputStreamType& os, const FScaleMap& InValue)
+VOXELMATEINLINE void WriteValue<FScaleCoordinateTransform>(OutputStreamType& os, const FScaleCoordinateTransform& InValue)
 {
-    WriteValue<float>(os, InValue.FScaleMatrix::GetColumn(0)[0]);
-    WriteValue<float>(os, InValue.FScaleMatrix::GetColumn(1)[1]);
-    WriteValue<float>(os, InValue.FScaleMatrix::GetColumn(2)[2]);
+    WriteValue<FVector>(os, InValue.ScaleVec);
 }
 
 template<>
-VOXELMATEINLINE void WriteValue<FUniformScaleMap>(OutputStreamType& os, const FUniformScaleMap& InValue)
+VOXELMATEINLINE void WriteValue<FUniformScaleCoordinateTransform>(OutputStreamType& os, const FUniformScaleCoordinateTransform& InValue)
 {
-    WriteValue<float>(os, InValue.FScaleMatrix::GetColumn(0)[0]);
+    WriteValue<float>(os, InValue.ScaleValue);
 }
 
 template<>
-VOXELMATEINLINE void WriteValue<FTranslationMap>(OutputStreamType& os, const FTranslationMap& InValue)
+VOXELMATEINLINE void WriteValue<FTranslationCoordinateTransform>(OutputStreamType& os, const FTranslationCoordinateTransform& InValue)
 {
-    WriteValue<FVector>(os, InValue.FTranslationMatrix::GetColumn(0));
-    WriteValue<FVector>(os, InValue.FTranslationMatrix::GetColumn(1));
-    WriteValue<FVector>(os, InValue.FTranslationMatrix::GetColumn(2));
+    WriteValue<FVector>(os, InValue.TranslationVec);
 }
 
 template<>
-VOXELMATEINLINE void WriteValue<FScaleTranslationMap>(OutputStreamType& os, const FScaleTranslationMap& InValue)
+VOXELMATEINLINE void WriteValue<FScaleTranslationCoordinateTransform>(OutputStreamType& os, const FScaleTranslationCoordinateTransform& InValue)
 {
-    WriteValue<float>(os, InValue.FScaleMatrix::GetColumn(0)[0]);
-    WriteValue<float>(os, InValue.FScaleMatrix::GetColumn(1)[1]);
-    WriteValue<float>(os, InValue.FScaleMatrix::GetColumn(2)[2]);
-    //WriteValue<float>(os, InValue.FTranslationMatrix::GetColumn(0)[3]);
-    //WriteValue<float>(os, InValue.FTranslationMatrix::GetColumn(1)[3]);
-    //WriteValue<float>(os, InValue.FTranslationMatrix::GetColumn(2)[3]);
-    WriteValue<FVector>(os, InValue.FTranslationMatrix::GetOrigin());//TODO: Confirm that GetOrigin returns the translation
+    WriteValue<FVector>(os, InValue.ScaleVec);
+    WriteValue<FVector>(os, InValue.TranslationVec);
 }
 
 template<>
-VOXELMATEINLINE void WriteValue<FUniformScaleTranslationMap>(OutputStreamType& os, const FUniformScaleTranslationMap& InValue)
+VOXELMATEINLINE void WriteValue<FUniformScaleTranslationCoordinateTransform>(OutputStreamType& os, const FUniformScaleTranslationCoordinateTransform& InValue)
 {
-    WriteValue<float>(os, InValue.FScaleMatrix::GetColumn(0)[0]);
-    //WriteValue<float>(os, InValue.FTranslationMatrix::GetColumn(0)[3]);
-    //WriteValue<float>(os, InValue.FTranslationMatrix::GetColumn(1)[3]);
-    //WriteValue<float>(os, InValue.FTranslationMatrix::GetColumn(2)[3]);
-    WriteValue<FVector>(os, InValue.FTranslationMatrix::GetOrigin());//TODO: Confirm that GetOrigin returns the translation
+    WriteValue<float>(os, InValue.ScaleValue);
+    WriteValue<FVector>(os, InValue.TranslationVec);
 }
 
 template<>
-VOXELMATEINLINE void WriteValue<FNonlinearFrustumMap>(OutputStreamType& os, const FNonlinearFrustumMap& InValue)
+VOXELMATEINLINE void WriteValue<FNonlinearFrustumCoordinateTransform>(OutputStreamType& os, const FNonlinearFrustumCoordinateTransform& InValue)
 {
+    WriteValue<FBox>(os, InValue.Box);
     WriteValue<float>(os, InValue.Taper);
     WriteValue<float>(os, InValue.Depth);
-    WriteValue<FVector>(os, InValue.Min);
-    WriteValue<FVector>(os, InValue.Max);
-    WriteValue<uint8>(os, InValue.IsValid);
 }
 
 template<>
@@ -1079,55 +1065,55 @@ VOXELMATEINLINE bool AreValuesEqual<FText>(const FText& InLhs, const FText& InRh
 }
 
 template<>
-VOXELMATEINLINE bool AreValuesEqual<FAffineMap>(const FAffineMap& InLhs, const FAffineMap& InRhs)
+VOXELMATEINLINE bool AreValuesEqual<FAffineCoordinateTransform>(const FAffineCoordinateTransform& InLhs, const FAffineCoordinateTransform& InRhs)
 {
-    return static_cast<FMatrix>(InLhs).Equals(static_cast<FMatrix>(InRhs));
+    return AreValuesEqual<FMatrix>(InLhs.Matrix, InRhs.Matrix);
 }
 
 template<>
-VOXELMATEINLINE bool AreValuesEqual<FUnitaryMap>(const FUnitaryMap& InLhs, const FUnitaryMap& InRhs)
+VOXELMATEINLINE bool AreValuesEqual<FUnitaryCoordinateTransform>(const FUnitaryCoordinateTransform& InLhs, const FUnitaryCoordinateTransform& InRhs)
 {
-    return static_cast<FQuat>(InLhs).Equals(static_cast<FQuat>(InRhs));
+    return AreValuesEqual<FQuat>(InLhs.Quat, InRhs.Quat);
 }
 
 template<>
-VOXELMATEINLINE bool AreValuesEqual<FScaleMap>(const FScaleMap& InLhs, const FScaleMap& InRhs)
+VOXELMATEINLINE bool AreValuesEqual<FScaleCoordinateTransform>(const FScaleCoordinateTransform& InLhs, const FScaleCoordinateTransform& InRhs)
 {
-    return static_cast<FScaleMatrix>(InLhs).Equals(static_cast<FScaleMatrix>(InRhs));
+    return AreValuesEqual<FVector>(InLhs.ScaleVec, InRhs.ScaleVec);
 }
 
 template<>
-VOXELMATEINLINE bool AreValuesEqual<FUniformScaleMap>(const FUniformScaleMap& InLhs, const FUniformScaleMap& InRhs)
+VOXELMATEINLINE bool AreValuesEqual<FUniformScaleCoordinateTransform>(const FUniformScaleCoordinateTransform& InLhs, const FUniformScaleCoordinateTransform& InRhs)
 {
-    return static_cast<FScaleMatrix>(InLhs).Equals(static_cast<FScaleMatrix>(InRhs));
+    return AreValuesEqual<float>(InLhs.ScaleValue, InRhs.ScaleValue);
 }
 
 template<>
-VOXELMATEINLINE bool AreValuesEqual<FTranslationMap>(const FTranslationMap& InLhs, const FTranslationMap& InRhs)
+VOXELMATEINLINE bool AreValuesEqual<FTranslationCoordinateTransform>(const FTranslationCoordinateTransform& InLhs, const FTranslationCoordinateTransform& InRhs)
 {
-    return static_cast<FTranslationMatrix>(InLhs).Equals(static_cast<FTranslationMatrix>(InRhs));
+    return AreValuesEqual<FVector>(InLhs.TranslationVec, InRhs.TranslationVec);
 }
 
 template<>
-VOXELMATEINLINE bool AreValuesEqual<FScaleTranslationMap>(const FScaleTranslationMap& InLhs, const FScaleTranslationMap& InRhs)
+VOXELMATEINLINE bool AreValuesEqual<FScaleTranslationCoordinateTransform>(const FScaleTranslationCoordinateTransform& InLhs, const FScaleTranslationCoordinateTransform& InRhs)
 {
-    return static_cast<FScaleMatrix>(InLhs).Equals(static_cast<FScaleMatrix>(InRhs)) &&
-           static_cast<FTranslationMatrix>(InLhs).Equals(static_cast<FTranslationMatrix>(InRhs));
+    return AreValuesEqual<FVector>(InLhs.ScaleVec, InRhs.ScaleVec) &&
+           AreValuesEqual<FVector>(InLhs.TranslationVec, InRhs.TranslationVec);
 }
 
 template<>
-VOXELMATEINLINE bool AreValuesEqual<FUniformScaleTranslationMap>(const FUniformScaleTranslationMap& InLhs, const FUniformScaleTranslationMap& InRhs)
+VOXELMATEINLINE bool AreValuesEqual<FUniformScaleTranslationCoordinateTransform>(const FUniformScaleTranslationCoordinateTransform& InLhs, const FUniformScaleTranslationCoordinateTransform& InRhs)
 {
-    return static_cast<FScaleMatrix>(InLhs).Equals(static_cast<FScaleMatrix>(InRhs)) &&
-           static_cast<FTranslationMatrix>(InLhs).Equals(static_cast<FTranslationMatrix>(InRhs));
+    return AreValuesEqual<float>(InLhs.ScaleValue, InRhs.ScaleValue) &&
+           AreValuesEqual<FVector>(InLhs.TranslationVec, InRhs.TranslationVec);
 }
 
 template<>
-VOXELMATEINLINE bool AreValuesEqual<FNonlinearFrustumMap>(const FNonlinearFrustumMap& InLhs, const FNonlinearFrustumMap& InRhs)
+VOXELMATEINLINE bool AreValuesEqual<FNonlinearFrustumCoordinateTransform>(const FNonlinearFrustumCoordinateTransform& InLhs, const FNonlinearFrustumCoordinateTransform& InRhs)
 {
-    return AreValuesEqual<FBox>(static_cast<FBox>(InLhs), static_cast<FBox>(InRhs)) &&
-           FMath::IsNearlyEqual(InLhs.Taper, InRhs.Taper) &&
-           FMath::IsNearlyEqual(InLhs.Depth, InRhs.Depth);
+    return AreValuesEqual<FBox>(InLhs.Box, InRhs.Box) &&
+           AreValuesEqual<float>(InLhs.Taper, InRhs.Taper) &&
+           AreValuesEqual<float>(InLhs.Depth, InRhs.Depth);
 }
 
 template<>
@@ -2304,14 +2290,14 @@ typedef typename TVoxelDatabaseMetadataType<FStringClassReference> FVoxelDatabas
 typedef typename TVoxelDatabaseMetadataType<FString> FVoxelDatabaseStringMeta;
 typedef typename TVoxelDatabaseMetadataType<FName> FVoxelDatabaseNameMeta;
 typedef typename TVoxelDatabaseMetadataType<FText> FVoxelDatabaseTextMeta;
-typedef typename TVoxelDatabaseMetadataType<FAffineMap> FVoxelDatabaseAffineMapMetadataMeta;
-typedef typename TVoxelDatabaseMetadataType<FUnitaryMap> FVoxelDatabaseUnitaryMapMetadataMeta;
-typedef typename TVoxelDatabaseMetadataType<FScaleMap> FVoxelDatabaseScaleMapMetadataMeta;
-typedef typename TVoxelDatabaseMetadataType<FUniformScaleMap> FVoxelDatabaseUniformScaleMapMetadataMeta;
-typedef typename TVoxelDatabaseMetadataType<FTranslationMap> FVoxelDatabaseTranslationMapMetadataMeta;
-typedef typename TVoxelDatabaseMetadataType<FScaleTranslationMap> FVoxelDatabaseScaleTranslationMapMetadataMeta;
-typedef typename TVoxelDatabaseMetadataType<FUniformScaleTranslationMap> FVoxelDatabaseUniformScaleTranslationMapMetadataMeta;
-typedef typename TVoxelDatabaseMetadataType<FNonlinearFrustumMap> FVoxelDatabaseNonlinearFrustumMapMetadataMeta;
+typedef typename TVoxelDatabaseMetadataType<FAffineCoordinateTransform> FVoxelDatabaseAffineCoordinateTransformMeta;
+typedef typename TVoxelDatabaseMetadataType<FUnitaryCoordinateTransform> FVoxelDatabaseUnitaryCoordinateTransformMeta;
+typedef typename TVoxelDatabaseMetadataType<FScaleCoordinateTransform> FVoxelDatabaseScaleCoordinateTransformMeta;
+typedef typename TVoxelDatabaseMetadataType<FUniformScaleCoordinateTransform> FVoxelDatabaseUniformScaleCoordinateTransformMeta;
+typedef typename TVoxelDatabaseMetadataType<FTranslationCoordinateTransform> FVoxelDatabaseTranslationCoordinateTransformMeta;
+typedef typename TVoxelDatabaseMetadataType<FScaleTranslationCoordinateTransform> FVoxelDatabaseScaleTranslationCoordinateTransformMeta;
+typedef typename TVoxelDatabaseMetadataType<FUniformScaleTranslationCoordinateTransform> FVoxelDatabaseUniformScaleTranslationCoordinateTransformMeta;
+typedef typename TVoxelDatabaseMetadataType<FNonlinearFrustumCoordinateTransform> FVoxelDatabaseNonlinearFrustumCoordinateTransformMeta;
 
 //TODO specialize typeNameAsString to extract the type name of the wrapped type like so:
 //template<> VOXELMATEINLINE const char* openvdb::typeNameAsString<FVoxelDatabaseBool>()
@@ -2709,44 +2695,44 @@ template<> VOXELMATEINLINE FVoxelDatabaseTextMeta openvdb::zeroVal<FVoxelDatabas
     return FVoxelDatabaseTextMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseAffineMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseAffineMapMetadataMeta>()
+template<> VOXELMATEINLINE FVoxelDatabaseAffineCoordinateTransformMeta openvdb::zeroVal<FVoxelDatabaseAffineCoordinateTransformMeta>()
 {
-    return FVoxelDatabaseAffineMapMetadataMeta::ZeroValue;
+    return FVoxelDatabaseAffineCoordinateTransformMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUnitaryMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseUnitaryMapMetadataMeta>()
+template<> VOXELMATEINLINE FVoxelDatabaseUnitaryCoordinateTransformMeta openvdb::zeroVal<FVoxelDatabaseUnitaryCoordinateTransformMeta>()
 {
-    return FVoxelDatabaseUnitaryMapMetadataMeta::ZeroValue;
+    return FVoxelDatabaseUnitaryCoordinateTransformMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseScaleMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseScaleMapMetadataMeta>()
+template<> VOXELMATEINLINE FVoxelDatabaseScaleCoordinateTransformMeta openvdb::zeroVal<FVoxelDatabaseScaleCoordinateTransformMeta>()
 {
-    return FVoxelDatabaseScaleMapMetadataMeta::ZeroValue;
+    return FVoxelDatabaseScaleCoordinateTransformMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUniformScaleMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseUniformScaleMapMetadataMeta>()
+template<> VOXELMATEINLINE FVoxelDatabaseUniformScaleCoordinateTransformMeta openvdb::zeroVal<FVoxelDatabaseUniformScaleCoordinateTransformMeta>()
 {
-    return FVoxelDatabaseUniformScaleMapMetadataMeta::ZeroValue;
+    return FVoxelDatabaseUniformScaleCoordinateTransformMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseTranslationMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseTranslationMapMetadataMeta>()
+template<> VOXELMATEINLINE FVoxelDatabaseTranslationCoordinateTransformMeta openvdb::zeroVal<FVoxelDatabaseTranslationCoordinateTransformMeta>()
 {
-    return FVoxelDatabaseTranslationMapMetadataMeta::ZeroValue;
+    return FVoxelDatabaseTranslationCoordinateTransformMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseScaleTranslationMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseScaleTranslationMapMetadataMeta>()
+template<> VOXELMATEINLINE FVoxelDatabaseScaleTranslationCoordinateTransformMeta openvdb::zeroVal<FVoxelDatabaseScaleTranslationCoordinateTransformMeta>()
 {
-    return FVoxelDatabaseScaleTranslationMapMetadataMeta::ZeroValue;
+    return FVoxelDatabaseScaleTranslationCoordinateTransformMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseUniformScaleTranslationMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseUniformScaleTranslationMapMetadataMeta>()
+template<> VOXELMATEINLINE FVoxelDatabaseUniformScaleTranslationCoordinateTransformMeta openvdb::zeroVal<FVoxelDatabaseUniformScaleTranslationCoordinateTransformMeta>()
 {
-    return FVoxelDatabaseUniformScaleTranslationMapMetadataMeta::ZeroValue;
+    return FVoxelDatabaseUniformScaleTranslationCoordinateTransformMeta::ZeroValue;
 }
 
-template<> VOXELMATEINLINE FVoxelDatabaseNonlinearFrustumMapMetadataMeta openvdb::zeroVal<FVoxelDatabaseNonlinearFrustumMapMetadataMeta>()
+template<> VOXELMATEINLINE FVoxelDatabaseNonlinearFrustumCoordinateTransformMeta openvdb::zeroVal<FVoxelDatabaseNonlinearFrustumCoordinateTransformMeta>()
 {
-    return FVoxelDatabaseNonlinearFrustumMapMetadataMeta::ZeroValue;
+    return FVoxelDatabaseNonlinearFrustumCoordinateTransformMeta::ZeroValue;
 }
 
 //template<> struct openvdb::math::Tolerance<FVoxelDatabaseBoolVoxel>()

@@ -91,14 +91,14 @@ void FVoxelDatabaseTypeFactory<openvdb::Metadata>::RegisterSupportedTypes()
     FMetaValueFactory::Register<FVoxelDatabaseStringMeta>();
     FMetaValueFactory::Register<FVoxelDatabaseNameMeta>();
     FMetaValueFactory::Register<FVoxelDatabaseTextMeta>();
-    FMetaValueFactory::Register<FVoxelDatabaseAffineMapMetadataMeta>();
-    FMetaValueFactory::Register<FVoxelDatabaseUnitaryMapMetadataMeta>();
-    FMetaValueFactory::Register<FVoxelDatabaseScaleMapMetadataMeta>();
-    FMetaValueFactory::Register<FVoxelDatabaseUniformScaleMapMetadataMeta>();
-    FMetaValueFactory::Register<FVoxelDatabaseTranslationMapMetadataMeta>();
-    FMetaValueFactory::Register<FVoxelDatabaseScaleTranslationMapMetadataMeta>();
-    FMetaValueFactory::Register<FVoxelDatabaseUniformScaleTranslationMapMetadataMeta>();
-    FMetaValueFactory::Register<FVoxelDatabaseNonlinearFrustumMapMetadataMeta>();
+    FMetaValueFactory::Register<FVoxelDatabaseAffineCoordinateTransformMeta>();
+    FMetaValueFactory::Register<FVoxelDatabaseUnitaryCoordinateTransformMeta>();
+    FMetaValueFactory::Register<FVoxelDatabaseScaleCoordinateTransformMeta>();
+    FMetaValueFactory::Register<FVoxelDatabaseUniformScaleCoordinateTransformMeta>();
+    FMetaValueFactory::Register<FVoxelDatabaseTranslationCoordinateTransformMeta>();
+    FMetaValueFactory::Register<FVoxelDatabaseScaleTranslationCoordinateTransformMeta>();
+    FMetaValueFactory::Register<FVoxelDatabaseUniformScaleTranslationCoordinateTransformMeta>();
+    FMetaValueFactory::Register<FVoxelDatabaseNonlinearFrustumCoordinateTransformMeta>();
     FVoxelDatabaseTypeFactory<openvdb::Metadata>::IsInitialized = true;
 }
 

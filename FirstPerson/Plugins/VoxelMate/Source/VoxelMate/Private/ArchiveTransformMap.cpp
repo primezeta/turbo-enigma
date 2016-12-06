@@ -34,14 +34,14 @@ void FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::RegisterSupportedTypes()
     }
     openvdb::math::MapRegistry::clear();
     FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::RegisteredTypeNames.Empty();
-    FTransformMapFactory::Register<FAffineMap>();
-    FTransformMapFactory::Register<FUnitaryMap>();
-    FTransformMapFactory::Register<FScaleMap>();
-    FTransformMapFactory::Register<FUniformScaleMap>();
-    FTransformMapFactory::Register<FTranslationMap>();
-    FTransformMapFactory::Register<FScaleTranslationMap>();
-    FTransformMapFactory::Register<FUniformScaleTranslationMap>();
-    FTransformMapFactory::Register<FNonlinearFrustumMap>();
+    FTransformMapFactory::Register<FAffineCoordinateTransform>();
+    FTransformMapFactory::Register<FUnitaryCoordinateTransform>();
+    FTransformMapFactory::Register<FScaleCoordinateTransform>();
+    FTransformMapFactory::Register<FUniformScaleCoordinateTransform>();
+    FTransformMapFactory::Register<FTranslationCoordinateTransform>();
+    FTransformMapFactory::Register<FScaleTranslationCoordinateTransform>();
+    FTransformMapFactory::Register<FUniformScaleTranslationCoordinateTransform>();
+    FTransformMapFactory::Register<FNonlinearFrustumCoordinateTransform>();
     FVoxelDatabaseTypeFactory<openvdb::math::MapBase>::IsInitialized = true;
 }
 

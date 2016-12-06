@@ -3,7 +3,7 @@
 #include "VoxelDatabaseCommonPrivate.h"
 #include "VoxelDatabase.h"
 
-#include "FastNoiseSIMD.h"
+#include "noise.h"
 
 //TODO idea for faster grid lookup
 //TArray<FGridFactory::ValueTypeWeakPtr> CachedGrids; //Careful of anyone accessing this from other threads
@@ -28,13 +28,122 @@ struct FIntBox
     }
 };
 
-struct FastNoiseSIMDSet
+struct NoiseSet
 {
-    TSharedPtr<FastNoiseSIMD> NoiseModule;
-    TMap<FIntBox, TSharedPtr<float>> GeneratedValues;
+    TSharedPtr<noise::module::Module> NoiseModule;
 };
 
-TMap<FNoiseGeneratorConfiguration, FastNoiseSIMDSet> FastNoiseSIMDSets;
+TMap<FNoiseGeneratorConfiguration, NoiseSet> NoiseSets;
+
+void AVoxelGridProxy::ResetCoordinateTransformToAffine(const FAffineCoordinateTransform& InCoordinateTransform)
+{
+    UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
+}
+
+void AVoxelGridProxy::ResetCoordinateTransformToUnitary(const FUnitaryCoordinateTransform& InCoordinateTransform)
+{
+    UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
+}
+
+void AVoxelGridProxy::ResetCoordinateTransformToScale(const FScaleCoordinateTransform& InCoordinateTransform)
+{
+    UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
+}
+
+void AVoxelGridProxy::ResetCoordinateTransformToUniformScale(const FUniformScaleCoordinateTransform& InCoordinateTransform)
+{
+    UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
+}
+
+void AVoxelGridProxy::ResetCoordinateTransformToTranslation(const FTranslationCoordinateTransform& InCoordinateTransform)
+{
+    UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
+}
+
+void AVoxelGridProxy::ResetCoordinateTransformToScaleTranslation(const FScaleTranslationCoordinateTransform& InCoordinateTransform)
+{
+    UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
+}
+
+void AVoxelGridProxy::ResetCoordinateTransformToUniformScaleTranslation(const FUniformScaleTranslationCoordinateTransform& InCoordinateTransform)
+{
+    UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
+}
+
+void AVoxelGridProxy::ResetCoordinateTransformToNonlinearFrustum(const FNonlinearFrustumCoordinateTransform& InCoordinateTransform)
+{
+    UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
+}
+
+void AVoxelGridProxy::PrependCoordinateTransformRotation(float AngleRadians, EAxis::Type Axis)
+{
+    UVoxelDatabase::Get().GridRotation(GridId, ETransformOp::PreOp, AngleRadians, Axis);
+}
+
+void AVoxelGridProxy::PrependCoordinateTransformTranslation(const FVector& InTranslation)
+{
+    UVoxelDatabase::Get().GridTranslation(GridId, ETransformOp::PreOp, InTranslation);
+}
+
+void AVoxelGridProxy::PrependCoordinateTransformScale(const FVector& InScale)
+{
+    UVoxelDatabase::Get().GridScale(GridId, ETransformOp::PreOp, InScale);
+}
+
+void AVoxelGridProxy::PrependCoordinateTransformUniformScale(float Scale)
+{
+    UVoxelDatabase::Get().GridUniformScale(GridId, ETransformOp::PreOp, Scale);
+}
+
+void AVoxelGridProxy::PrependCoordinateTransformShear(float Shear, EAxis::Type FirstAxis, EAxis::Type SecondAxis)
+{
+    UVoxelDatabase::Get().GridShear(GridId, ETransformOp::PreOp, Shear, FirstAxis, SecondAxis);
+}
+
+void AVoxelGridProxy::PrependCoordinateTransformMatrix4dMultiply(const FPlane &InFirstRow, const FPlane &InSecondRow, const FPlane &InThirdRow, const FPlane &InFourthRow)
+{
+    UVoxelDatabase::Get().GridMatrix4dMultiply(GridId, ETransformOp::PreOp, InFirstRow, InSecondRow, InThirdRow, InFourthRow);
+}
+
+void AVoxelGridProxy::PrependCoordinateTransformMatrix3dMultiply(const FVector &InFirstRow, const FVector &InSecondRow, const FVector &InThirdRow)
+{
+    UVoxelDatabase::Get().GridMatrix3dMultiply(GridId, ETransformOp::PreOp, InFirstRow, InSecondRow, InThirdRow);
+}
+
+void AVoxelGridProxy::AppendCoordinateTransformRotation(float AngleRadians, EAxis::Type Axis)
+{
+    UVoxelDatabase::Get().GridRotation(GridId, ETransformOp::PostOp, AngleRadians, Axis);
+}
+
+void AVoxelGridProxy::AppendCoordinateTransformTranslation(const FVector& InTranslation)
+{
+    UVoxelDatabase::Get().GridTranslation(GridId, ETransformOp::PostOp, InTranslation);
+}
+
+void AVoxelGridProxy::AppendCoordinateTransformScale(const FVector& InScale)
+{
+    UVoxelDatabase::Get().GridScale(GridId, ETransformOp::PostOp, InScale);
+}
+
+void AVoxelGridProxy::AppendCoordinateTransformUniformScale(float Scale)
+{
+    UVoxelDatabase::Get().GridUniformScale(GridId, ETransformOp::PostOp, Scale);
+}
+
+void AVoxelGridProxy::AppendCoordinateTransformShear(float Shear, EAxis::Type FirstAxis, EAxis::Type SecondAxis)
+{
+    UVoxelDatabase::Get().GridShear(GridId, ETransformOp::PostOp, Shear, FirstAxis, SecondAxis);
+}
+
+void AVoxelGridProxy::AppendCoordinateTransformMatrix4dMultiply(const FPlane &InFirstRow, const FPlane &InSecondRow, const FPlane &InThirdRow, const FPlane &InFourthRow)
+{
+    UVoxelDatabase::Get().GridMatrix4dMultiply(GridId, ETransformOp::PostOp, InFirstRow, InSecondRow, InThirdRow, InFourthRow);
+}
+
+void AVoxelGridProxy::AppendCoordinateTransformMatrix3dMultiply(const FVector &InFirstRow, const FVector &InSecondRow, const FVector &InThirdRow)
+{
+    UVoxelDatabase::Get().GridMatrix3dMultiply(GridId, ETransformOp::PostOp, InFirstRow, InSecondRow, InThirdRow);
+}
 
 bool AVoxelGridProxy::LoadVoxelData()
 {
@@ -48,153 +157,78 @@ bool AVoxelGridProxy::SaveVoxelData()
 
 void AVoxelGridProxyFloat::FillNoise(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FNoiseGeneratorConfiguration& Config, const bool& InIsActive)
 {
-    //Associate each particular noise configuration to a cached set of noise values
-    FastNoiseSIMDSet& NoiseSet = FastNoiseSIMDSets.FindOrAdd(Config);
-    if (!NoiseSet.NoiseModule.IsValid())
-    {
-        //This particular noise set has not yet been created so create it using the specified configuration
-        NoiseSet.NoiseModule = TSharedPtr<FastNoiseSIMD>(FastNoiseSIMD::NewFastNoiseSIMD(Config.RandomSeed));
-        NoiseSet.NoiseModule->SetFrequency(Config.Frequency);        
-        NoiseSet.NoiseModule->SetAxisScales(Config.AxisScale.X, Config.AxisScale.Y, Config.AxisScale.Z);
-        NoiseSet.NoiseModule->SetFractalOctaves(Config.OctaveCount);
-        NoiseSet.NoiseModule->SetFractalLacunarity(Config.Lacunarity);
-        NoiseSet.NoiseModule->SetFractalGain(Config.Gain);
+    ////Associate each particular noise configuration to a cached set of noise values
+    //NoiseSet& NoiseSet = NoiseSets.FindOrAdd(Config);
+    //if (!NoiseSet.NoiseModule.IsValid())
+    //{
+    //    //This particular noise set has not yet been created so create it using the specified configuration
+    //    NoiseSet.NoiseModule = TSharedPtr<noise::module::Module>(TSharedPtr<noise::module::Module>(new noise::module::Perlin()));
+    //    check(Config.NoiseType == ENoiseType::Perlin);
+    //    NoiseSet.NoiseModule->SetSeed(Config.RandomSeed);
+    //    NoiseSet.NoiseModule->SetFrequency(Config.Frequency);
+    //    NoiseSet.NoiseModule->SetOctaveCount(Config.OctaveCount);
+    //    NoiseSet.NoiseModule->SetLacunarity(Config.Lacunarity);
+    //    NoiseSet.NoiseModule->SetPersistence(Config.Gain);
+    //}
 
-        switch (Config.NoiseType)
-        {
-        case ENoiseType::Value:
-            NoiseSet.NoiseModule->SetNoiseType(Config.FractalMode == ENoiseFractalMode::None ? FastNoiseSIMD::NoiseType::Value : FastNoiseSIMD::NoiseType::ValueFractal);
-            break;
-        case ENoiseType::Perlin:
-            NoiseSet.NoiseModule->SetNoiseType(Config.FractalMode == ENoiseFractalMode::None ? FastNoiseSIMD::NoiseType::Perlin : FastNoiseSIMD::NoiseType::PerlinFractal);
-            break;
-        case ENoiseType::Simplex:
-            NoiseSet.NoiseModule->SetNoiseType(Config.FractalMode == ENoiseFractalMode::None ? FastNoiseSIMD::NoiseType::Simplex : FastNoiseSIMD::NoiseType::SimplexFractal);
-            break;
-        case ENoiseType::White:
-            NoiseSet.NoiseModule->SetNoiseType(FastNoiseSIMD::NoiseType::WhiteNoise);
-            break;
-        case ENoiseType::Cellular:
-            NoiseSet.NoiseModule->SetNoiseType(FastNoiseSIMD::NoiseType::Cellular);
-            break;
-        default:
-            //TODO log error (unexpected noise type)
-            NoiseSet.NoiseModule->SetNoiseType(Config.FractalMode == ENoiseFractalMode::None ? FastNoiseSIMD::NoiseType::Value : FastNoiseSIMD::NoiseType::ValueFractal);
-            break;
-        }
+    ////Check if a set of noise values was already generated from the given noise configuration within the specified volume
+    //const openvdb::Coord StartCoord(StartIndexCoord.X, StartIndexCoord.Y, StartIndexCoord.Z);
+    //const openvdb::Coord EndCoord(StartIndexCoord.X + FillDimensions.X - 1, StartIndexCoord.Y + FillDimensions.Y - 1, StartIndexCoord.Z + FillDimensions.Z - 1);
+    //openvdb::CoordBBox NoiseFillVolume(StartCoord, EndCoord);
 
-        switch (Config.FractalMode)
-        {
-        case ENoiseFractalMode::None:
-            NoiseSet.NoiseModule->SetFractalType(FastNoiseSIMD::FractalType::FBM);
-            break;
-        case ENoiseFractalMode::FractionalBrownianMotion:
-            NoiseSet.NoiseModule->SetFractalType(FastNoiseSIMD::FractalType::FBM);
-            break;
-        case ENoiseFractalMode::Billow:
-            NoiseSet.NoiseModule->SetFractalType(FastNoiseSIMD::FractalType::Billow);
-            break;
-        case ENoiseFractalMode::RigidMulti:
-            NoiseSet.NoiseModule->SetFractalType(FastNoiseSIMD::FractalType::RigidMulti);
-            break;
-        default:
-            //TODO log error (unexpected noise type)
-            NoiseSet.NoiseModule->SetFractalType(FastNoiseSIMD::FractalType::FBM);
-            break;
-        }
+    ////Expand the fill-volume by 1 voxel on all sides so that a noise value is always available when checking adjacent voxels
+    //NoiseFillVolume.expand((int32)1);
 
-        switch (Config.CellularDistanceMode)
-        {
-        case ENoiseCellularDistanceMode::Euclidean:
-            NoiseSet.NoiseModule->SetCellularDistanceFunction(FastNoiseSIMD::CellularDistanceFunction::Euclidean);
-            break;
-        case ENoiseCellularDistanceMode::Manhattan:
-            NoiseSet.NoiseModule->SetCellularDistanceFunction(FastNoiseSIMD::CellularDistanceFunction::Manhattan);
-            break;
-        case ENoiseCellularDistanceMode::Natural:
-            NoiseSet.NoiseModule->SetCellularDistanceFunction(FastNoiseSIMD::CellularDistanceFunction::Natural);
-            break;
-        default:
-            //TODO log error (unexpected noise type)
-            NoiseSet.NoiseModule->SetCellularDistanceFunction(FastNoiseSIMD::CellularDistanceFunction::Euclidean);
-            break;
-        }
+    //const openvdb::Coord& VolumeExtents = NoiseFillVolume.extents();
 
-        switch (Config.CellularReturnType)
-        {
-        case ENoiseCellularReturnType::CellValue:
-            NoiseSet.NoiseModule->SetCellularReturnType(FastNoiseSIMD::CellularReturnType::CellValue);
-            break;
-        case ENoiseCellularReturnType::Distance:
-            NoiseSet.NoiseModule->SetCellularReturnType(FastNoiseSIMD::CellularReturnType::Distance);
-            break;
-        case ENoiseCellularReturnType::Distance2:
-            NoiseSet.NoiseModule->SetCellularReturnType(FastNoiseSIMD::CellularReturnType::Distance2);
-            break;
-        case ENoiseCellularReturnType::Distance2Add:
-            NoiseSet.NoiseModule->SetCellularReturnType(FastNoiseSIMD::CellularReturnType::Distance2Add);
-            break;
-        case ENoiseCellularReturnType::Distance2Sub:
-            NoiseSet.NoiseModule->SetCellularReturnType(FastNoiseSIMD::CellularReturnType::Distance2Sub);
-            break;
-        case ENoiseCellularReturnType::Distance2Mul:
-            NoiseSet.NoiseModule->SetCellularReturnType(FastNoiseSIMD::CellularReturnType::Distance2Mul);
-            break;
-        case ENoiseCellularReturnType::Distance2Div:
-            NoiseSet.NoiseModule->SetCellularReturnType(FastNoiseSIMD::CellularReturnType::Distance2Div);
-            break;
-        default:
-            //TODO log error (unexpected noise type)
-            NoiseSet.NoiseModule->SetCellularReturnType(FastNoiseSIMD::CellularReturnType::Distance);
-            break;
-        }
-    }
+    ////Associate existing values to the specified fill dimensions, not the expanded dimensions
+    //const FIntBox Volume(StartIndexCoord, FillDimensions);
+    //TSharedPtr<float> Values;
+    //TArray<float>* FindValues = NoiseSet.GeneratedValues.Find(Volume);
+    //if (!FindValues)
+    //{
+    //    TArray<float>& Values = NoiseSet.GeneratedValues.Add(Volume, TArray<float>());
+    //    Values.Reserve(NoiseFillVolume.volume());
+    //    const int32 Width = NoiseFillVolume.dim().asVec3i().x();
+    //    const int32 Depth = NoiseFillVolume.dim().asVec3i().y();
+    //    for (auto x = NoiseFillVolume.min().x(); x <= NoiseFillVolume.max().x(); ++x)
+    //    {
+    //        for (auto y = NoiseFillVolume.min().y(); y <= NoiseFillVolume.max().y(); ++y)
+    //        {
+    //            for (auto z = NoiseFillVolume.min().z(); z <= NoiseFillVolume.max().z(); ++z)
+    //            {
+    //                const int32 ValueIndex = x + Width * (y + Depth*z);
+    //                Values[ValueIndex] = NoiseSet.NoiseModule->GetValue();
+    //            }
+    //        }
+    //    }
+    //    //Values for these dimensions have not yet been generated, generate them
+    //    Values = NoiseSet.GeneratedValues.Add(Volume, TSharedPtr<float>(NoiseSet.NoiseModule->));
+    //}
+    //else
+    //{
+    //    //Values for these dimensions were already generated, use those
+    //    Values = *FindValues;
+    //}
 
-    //Check if a set of noise values was already generated from the given noise configuration within the specified volume
-    const openvdb::Coord StartCoord(StartIndexCoord.X, StartIndexCoord.Y, StartIndexCoord.Z);
-    const openvdb::Coord EndCoord(StartIndexCoord.X + FillDimensions.X - 1, StartIndexCoord.Y + FillDimensions.Y - 1, StartIndexCoord.Z + FillDimensions.Z - 1);
-    openvdb::CoordBBox NoiseFillVolume(StartCoord, EndCoord);
+    ////
+    //float* ValuesPtr = Values.Get();
+    //TArray<TArray<TArrayView<float>>> Noise3DValues;
+    //Noise3DValues.Reserve(VolumeExtents.x());
+    //for (int32 x = 0; x < VolumeExtents.x(); ++x)
+    //{
+    //    const int32 yarray = Noise3DValues.Add(TArray<TArrayView<float>>());
+    //    Noise3DValues[yarray].Reserve(VolumeExtents.y());
+    //    for (int32 y = 0; y < VolumeExtents.y(); ++y)
+    //    {
+    //        float* zblock = ValuesPtr + x + VolumeExtents.x() * (y + VolumeExtents.y());
+    //        const int32 zarray = Noise3DValues[yarray].Add(TArrayView<float>(zblock, VolumeExtents.z()));
+    //    }
+    //}
 
-    //Expand the fill-volume by 1 voxel on all sides so that a noise value is always available when checking adjacent voxels
-    NoiseFillVolume.expand((int32)1);
-
-    const openvdb::Coord& VolumeExtents = NoiseFillVolume.extents();
-
-    //Associate existing values to the specified fill dimensions, not the expanded dimensions
-    const FIntBox Volume(StartIndexCoord, FillDimensions);
-    TSharedPtr<float> Values;
-    TSharedPtr<float>* FindValues = NoiseSet.GeneratedValues.Find(Volume);
-    if (!FindValues)
-    {
-        //Values for these dimensions have not yet been generated, generate them
-        Values = NoiseSet.GeneratedValues.Add(Volume, TSharedPtr<float>(NoiseSet.NoiseModule->GetNoiseSet(
-            NoiseFillVolume.min().x(), NoiseFillVolume.min().y(), NoiseFillVolume.min().z(),
-            VolumeExtents.x(), VolumeExtents.y(), VolumeExtents.z())));
-    }
-    else
-    {
-        //Values for these dimensions were already generated, use those
-        Values = *FindValues;
-    }
-
-    //
-    float* ValuesPtr = Values.Get();
-    TArray<TArray<TArrayView<float>>> Noise3DValues;
-    Noise3DValues.Reserve(VolumeExtents.x());
-    for (int32 x = 0; x < VolumeExtents.x(); ++x)
-    {
-        const int32 yarray = Noise3DValues.Add(TArray<TArrayView<float>>());
-        Noise3DValues[yarray].Reserve(VolumeExtents.y());
-        for (int32 y = 0; y < VolumeExtents.y(); ++y)
-        {
-            float* zblock = ValuesPtr + x + VolumeExtents.x() * (y + VolumeExtents.y());
-            const int32 zarray = Noise3DValues[yarray].Add(TArrayView<float>(zblock, VolumeExtents.z()));
-        }
-    }
-
-    typedef NoiseValueOp<openvdb::Grid<openvdb::tree::Tree4<FVoxelDatabaseFloatVoxel>::Type>::ValueOnIter, FVoxelDatabaseFloatVoxel> NoiseValueOpType;
-    NoiseValueOpType ValueOp(Noise3DValues);
-    UVoxelDatabase::Get().RunGridOp<NoiseValueOpType>(GridId, ValueOp);
+    //typedef NoiseValueOp<openvdb::Grid<openvdb::tree::Tree4<FVoxelDatabaseFloatVoxel>::Type>::ValueOnIter, FVoxelDatabaseFloatVoxel> NoiseValueOpType;
+    //NoiseValueOpType ValueOp(Noise3DValues);
+    //UVoxelDatabase::Get().RunGridOp<NoiseValueOpType>(GridId, ValueOp);
 }
 
 //TODO Get/SetVoxelValue from VoxelDatabaseProxy

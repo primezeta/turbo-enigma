@@ -2,6 +2,7 @@
 #include "ArchiveGrid.h"
 #include "ArchiveMetaValue.h"
 #include "VoxelDatabaseProxy.h"
+#include "VoxelValueSource.h"
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -12,6 +13,13 @@
 //TODO Use FText for any strings displayed to the user
 //see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
 //DECLARE_MULTICAST_DELEGATE_OneParam(FVoxelDatabaseOnMetadataChanged, class UVoxelDatabaseProxy*, const FGuid&);
+
+UENUM(BlueprintType)
+enum class ETransformOp : uint8
+{
+    PreOp,
+    PostOp
+};
 
 template<typename ValueType>
 struct ModifyValueOp
@@ -29,23 +37,27 @@ struct ModifyValueOp
 };
 
 template<typename IterT, typename VoxelT>
-struct NoiseValueOp
+struct SetValuesOp
 {
     typedef typename VoxelT VoxelType;
     typedef typename VoxelT::ValueType ValueType;
     typedef typename IterT IterType;
+    typedef typename TVoxelValueSourceAdapter<ValueType>::Type ValueSourceType;
 
-    const TArray<TArray<TArrayView<float>>>& Noise3DValues;    
-    NoiseValueOp(const TArray<TArray<TArrayView<float>>>& Values)
-        : Noise3DValues(Values)
+    ValueSourceType &ValueSource;
+    openvdb::math::Transform &CoordinateTransform;
+
+    SetValuesOp(ValueSourceType &VoxelValueSource, openvdb::math::Transform &Transform)
+        : ValueSource(VoxelValueSource), CoordinateTransform(Transform)
     {}
 
     VOXELMATEINLINE void operator()(const IterType& iter) const
     {
         check(iter.isVoxelValue());
-        const openvdb::Coord& coord = iter.getCoord();
-        const ValueType NoiseValue = Noise3DValues[coord.x()][coord.y()][coord.z()];
-        iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(VoxelType(NoiseValue)));
+        const openvdb::Coord &Coord = iter.getCoord();
+        const openvdb::Vec3d &Xyz = Transform.indexToWorld(Coord);
+        const ValueType Value = ValueSource.GetValue(Xyz.x(), Xyz.y(), Xyz.z());
+        iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(Value));
     }
 };
 
@@ -376,6 +388,7 @@ public:
         }
     }
 
+private:
     template<typename GridT, typename IterT>
     struct GridIter
     {
@@ -400,6 +413,7 @@ public:
         VOXELMATEINLINE static typename GridT::ValuesAllIter GetGridIter(const GridT& Grid) { return Grid.beginValueAll(); }
     };
 
+public:
     template<typename ValueOpType>
     VOXELMATEINLINE void RunGridOp(const FGuid& GridId, ValueOpType& ValueOp)
     {
@@ -421,7 +435,7 @@ public:
     }
 
     template<typename MetadataType>
-    bool UVoxelDatabase::AddMetadata(FGuid& OutMetadataId)
+    bool AddMetadata(FGuid& OutMetadataId)
     {
         bool IsMetadataAdded = false;
         FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create<MetadataType>();
@@ -433,6 +447,244 @@ public:
             IsMetadataAdded = true;
         }
         return IsMetadataAdded;
+    }
+
+    void SetCoordinateTransform(const FGuid& GridId, const FAffineCoordinateTransform& InCoordinateTransform)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const FVector4 &Col0 = InCoordinateTransform.Matrix.GetColumn(0);
+            const FVector4 &Col1 = InCoordinateTransform.Matrix.GetColumn(1);
+            const FVector4 &Col2 = InCoordinateTransform.Matrix.GetColumn(2);
+            const openvdb::math::Mat3d AffineMatrix(
+                Col0.X, Col1.X, Col2.X,
+                Col0.Y, Col1.Y, Col2.Y,
+                Col0.Z, Col1.Z, Col2.Z
+            );
+            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::AffineMap(AffineMatrix)))));
+        }
+    }
+
+    void SetCoordinateTransform(const FGuid& GridId, const FUnitaryCoordinateTransform& InCoordinateTransform)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            FVector Axis = FVector::ZeroVector;
+            float Angle = 0.0f;
+            InCoordinateTransform.Quat.ToAxisAndAngle(Axis, Angle);
+            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UnitaryMap(openvdb::Vec3d(Axis.X, Axis.Y, Axis.Z), Angle)))));
+        }
+    }
+
+    void SetCoordinateTransform(const FGuid& GridId, const FScaleCoordinateTransform& InCoordinateTransform)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::Vec3d Scale(InCoordinateTransform.ScaleVec.X, InCoordinateTransform.ScaleVec.Y, InCoordinateTransform.ScaleVec.Z);
+            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::ScaleMap(Scale)))));
+        }
+    }
+
+    void SetCoordinateTransform(const FGuid& GridId, const FUniformScaleCoordinateTransform& InCoordinateTransform)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const float &Scale(InCoordinateTransform.ScaleValue);
+            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UniformScaleMap(Scale)))));
+        }
+    }
+
+    void SetCoordinateTransform(const FGuid& GridId, const FTranslationCoordinateTransform& InCoordinateTransform)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::Vec3d Translation(InCoordinateTransform.TranslationVec.X, InCoordinateTransform.TranslationVec.Y, InCoordinateTransform.TranslationVec.Z);
+            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::TranslationMap(Translation)))));
+        }
+    }
+
+    void SetCoordinateTransform(const FGuid& GridId, const FScaleTranslationCoordinateTransform& InCoordinateTransform)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::Vec3d Scale(InCoordinateTransform.ScaleVec.X, InCoordinateTransform.ScaleVec.Y, InCoordinateTransform.ScaleVec.Z);
+            const openvdb::Vec3d Translation(InCoordinateTransform.TranslationVec.X, InCoordinateTransform.TranslationVec.Y, InCoordinateTransform.TranslationVec.Z);
+            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::ScaleTranslateMap(Scale, Translation)))));
+        }
+    }
+
+    void SetCoordinateTransform(const FGuid& GridId, const FUniformScaleTranslationCoordinateTransform& InCoordinateTransform)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const float &Scale = InCoordinateTransform.ScaleValue;
+            const openvdb::Vec3d Translation(InCoordinateTransform.TranslationVec.X, InCoordinateTransform.TranslationVec.Y, InCoordinateTransform.TranslationVec.Z);
+            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UniformScaleTranslateMap(Scale, Translation)))));
+        }
+    }
+
+    void SetCoordinateTransform(const FGuid& GridId, const FNonlinearFrustumCoordinateTransform& InCoordinateTransform)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::Coord Box0(InCoordinateTransform.Box.Min.X, InCoordinateTransform.Box.Min.Y, InCoordinateTransform.Box.Min.Z);
+            const openvdb::Coord Box1(InCoordinateTransform.Box.Max.X, InCoordinateTransform.Box.Max.Y, InCoordinateTransform.Box.Max.Z);
+            const openvdb::BBoxd BoundingBox(Box0 < Box1 ? Box0.asVec3d() : Box1.asVec3d(), Box0 > Box1 ? Box0.asVec3d() : Box1.asVec3d());
+            const float &Taper = InCoordinateTransform.Taper;
+            const float &Depth = InCoordinateTransform.Depth;
+            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::NonlinearFrustumMap(BoundingBox, Taper, Depth)))));
+        }
+    }
+
+    void GridRotation(const FGuid& GridId, ETransformOp Op, float Radians, EAxis::Type Axis)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::math::Axis RotationAxis =
+                Axis == EAxis::X ? openvdb::math::Axis::X_AXIS :
+                Axis == EAxis::Y ? openvdb::math::Axis::Y_AXIS :
+                openvdb::math::Axis::Z_AXIS;
+
+            if (Op == ETransformOp::PreOp)
+            {
+                (*FindGrid)->transform().preRotate(Radians, RotationAxis);
+            }
+            else
+            {
+                (*FindGrid)->transform().postRotate(Radians, RotationAxis);
+            }
+        }
+    }
+
+    void GridTranslation(const FGuid& GridId, ETransformOp Op, const FVector &InTranslation)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::Vec3d Translation(InTranslation.X, InTranslation.Y, InTranslation.Z);
+
+            if (Op == ETransformOp::PreOp)
+            {
+                (*FindGrid)->transform().preTranslate(Translation);
+            }
+            else
+            {
+                (*FindGrid)->transform().postTranslate(Translation);
+            }
+        }
+    }
+
+    void GridScale(const FGuid& GridId, ETransformOp Op, const FVector &InScale)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::Vec3d Scale(InScale.X, InScale.Y, InScale.Z);
+
+            if (Op == ETransformOp::PreOp)
+            {
+                (*FindGrid)->transform().preScale(Scale);
+            }
+            else
+            {
+                (*FindGrid)->transform().postScale(Scale);
+            }
+        }
+    }
+
+    void GridUniformScale(const FGuid& GridId, ETransformOp Op, float Scale)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            if (Op == ETransformOp::PreOp)
+            {
+                (*FindGrid)->transform().preScale(Scale);
+            }
+            else
+            {
+                (*FindGrid)->transform().postScale(Scale);
+            }            
+        }
+    }
+
+    void GridShear(const FGuid& GridId, ETransformOp Op, float Shear, EAxis::Type Axis0, EAxis::Type Axis1)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::math::Axis ShearAxis0 =
+                Axis0 == EAxis::X ? openvdb::math::Axis::X_AXIS :
+                Axis0 == EAxis::Y ? openvdb::math::Axis::Y_AXIS :
+                openvdb::math::Axis::Z_AXIS;
+            const openvdb::math::Axis ShearAxis1 =
+                Axis1 == EAxis::X ? openvdb::math::Axis::X_AXIS :
+                Axis1 == EAxis::Y ? openvdb::math::Axis::Y_AXIS :
+                openvdb::math::Axis::Z_AXIS;
+
+            if (Op == ETransformOp::PreOp)
+            {
+                (*FindGrid)->transform().preShear(Shear, ShearAxis0, ShearAxis1);
+            }
+            else
+            {
+                (*FindGrid)->transform().postShear(Shear, ShearAxis0, ShearAxis1);
+            }
+        }
+    }
+
+    void GridMatrix4dMultiply(const FGuid& GridId, ETransformOp Op, const FPlane &InX, const FPlane &InY, const FPlane &InZ, const FPlane &InW)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::math::Mat4d Matrix(
+                InX.X, InX.Y, InX.Z, InX.W,
+                InY.X, InY.Y, InY.Z, InY.W,
+                InZ.X, InZ.Y, InZ.Z, InZ.W,
+                InW.X, InW.Y, InW.Z, InW.W
+            );
+
+            if (Op == ETransformOp::PreOp)
+            {
+                (*FindGrid)->transform().preMult(Matrix);
+            }
+            else
+            {
+                (*FindGrid)->transform().postMult(Matrix);
+            }            
+        }
+    }
+
+    void GridMatrix3dMultiply(const FGuid& GridId, ETransformOp Op, const FVector& InX, const FVector& InY, const FVector& InZ)
+    {
+        const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+        if (FindGrid != nullptr)
+        {
+            const openvdb::math::Mat3d Matrix(
+                InX.X, InX.Y, InX.Z,
+                InY.X, InY.Y, InY.Z,
+                InZ.X, InZ.Y, InZ.Z
+            );
+
+            if (Op == ETransformOp::PreOp)
+            {
+                (*FindGrid)->transform().preMult(Matrix);
+            }
+            else
+            {
+                (*FindGrid)->transform().postMult(Matrix);
+            }
+        }
     }
 
 private:
