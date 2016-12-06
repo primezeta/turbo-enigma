@@ -29,7 +29,6 @@ public class VoxelMate : ModuleRules
                 "Engine",
                 "UEOpenVdb",
                 "RenderCore", //For GVectorPackingConstants (FPackedNormal)
-                "LibNoise",
             }
             );
 	}

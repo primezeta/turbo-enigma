@@ -1,7 +1,6 @@
 #include "VoxelMatePCH.h"
 #include "VoxelGridProxy.h"
 #include "VoxelDatabase.h"
-#include "noise.h"
 
 //TODO idea for faster grid lookup
 //TArray<FGridFactory::ValueTypeWeakPtr> CachedGrids; //Careful of anyone accessing this from other threads

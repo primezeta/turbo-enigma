@@ -7,6 +7,6 @@ public class FirstPerson : ModuleRules
 	public FirstPerson(TargetInfo Target)
 	{
         bUseRTTI = true;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay" });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "LibNoise", "VoxelMate" });
     }
 }
