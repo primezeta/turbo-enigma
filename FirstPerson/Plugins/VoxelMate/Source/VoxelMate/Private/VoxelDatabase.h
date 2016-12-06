@@ -77,7 +77,7 @@ struct TSetValuesOp
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, NotBlueprintable, CustomConstructor)
-class VOXELMATE_API UVoxelDatabase : public UObject
+class UVoxelDatabase : public UObject
 {
     GENERATED_BODY()
 
