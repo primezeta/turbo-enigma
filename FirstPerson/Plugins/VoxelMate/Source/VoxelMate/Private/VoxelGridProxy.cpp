@@ -155,8 +155,8 @@ bool AVoxelGridProxy::SaveVoxelData()
     return false;
 }
 
-void AVoxelGridProxyFloat::FillNoise(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FNoiseGeneratorConfiguration& Config, const bool& InIsActive)
-{
+//void AVoxelGridProxyFloat::FillNoise(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FNoiseGeneratorConfiguration& Config, const bool& InIsActive)
+//{
     ////Associate each particular noise configuration to a cached set of noise values
     //NoiseSet& NoiseSet = NoiseSets.FindOrAdd(Config);
     //if (!NoiseSet.NoiseModule.IsValid())
@@ -229,7 +229,7 @@ void AVoxelGridProxyFloat::FillNoise(const FIntVector& StartIndexCoord, const FI
     //typedef NoiseValueOp<openvdb::Grid<openvdb::tree::Tree4<FVoxelDatabaseFloatVoxel>::Type>::ValueOnIter, FVoxelDatabaseFloatVoxel> NoiseValueOpType;
     //NoiseValueOpType ValueOp(Noise3DValues);
     //UVoxelDatabase::Get().RunGridOp<NoiseValueOpType>(GridId, ValueOp);
-}
+//}
 
 //TODO Get/SetVoxelValue from VoxelDatabaseProxy
 #define GRID_PROXY_IMPLEMENTATION(ValueType, Name)\
@@ -257,9 +257,9 @@ void AVoxelGridProxy##Name::SetVoxelValueAndIsActive(const FIntVector& IndexCoor
 {\
     UVoxelDatabase::Get().SetVoxelValue<FVoxelDatabase##Name##Voxel>(GridId, IndexCoord, InValue, InIsActive);\
 }\
-void AVoxelGridProxy##Name::FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const ValueType& InValue, const bool& InIsActive)\
+void AVoxelGridProxy##Name::FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const ValueType& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill)\
 {\
-    UVoxelDatabase::Get().FillGrid<FVoxelDatabase##Name##Voxel>(GridId, StartIndexCoord, FillDimensions, InValue, InIsActive);\
+    UVoxelDatabase::Get().FillGrid<FVoxelDatabase##Name##Voxel>(GridId, StartIndexCoord, FillDimensions, InValue, InIsActive, InVoxelizeActiveTilesAfterFill);\
 }
 
 GRID_PROXY_IMPLEMENTATION(bool, Bool)

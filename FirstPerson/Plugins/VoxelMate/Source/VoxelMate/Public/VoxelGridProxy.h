@@ -240,7 +240,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const bool& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const bool& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const bool& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -262,7 +262,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FColor& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FColor& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FColor& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable)
@@ -285,7 +285,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const double& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const double& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const double& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -307,9 +307,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const float& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const float& InValue, const bool& InIsActive);
-    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillNoise(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FNoiseGeneratorConfiguration& Config, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const float& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -332,7 +330,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int8& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int8& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int8& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -355,7 +353,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int16& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int16& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int16& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -377,7 +375,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int32& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int32& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int32& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -400,7 +398,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int64& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int64& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int64& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -422,7 +420,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const uint8& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint8& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint8& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -445,7 +443,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const uint16& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint16& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint16& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -468,7 +466,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const uint32& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint32& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint32& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -491,7 +489,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const uint64& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint64& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint64& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -513,7 +511,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -535,7 +533,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector2D& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector2D& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector2D& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -557,7 +555,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector4& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector4& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector4& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -579,7 +577,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FIntPoint& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FIntPoint& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FIntPoint& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -601,7 +599,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FIntVector& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FIntVector& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FIntVector& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -623,7 +621,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FLinearColor& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FLinearColor& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FLinearColor& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -645,7 +643,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FPackedNormal& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedNormal& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedNormal& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -667,7 +665,7 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FPackedRGB10A2N& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedRGB10A2N& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedRGB10A2N& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -689,5 +687,5 @@ public:
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FPackedRGBA16N& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
-        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedRGBA16N& InValue, const bool& InIsActive);
+        void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedRGBA16N& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
 };
