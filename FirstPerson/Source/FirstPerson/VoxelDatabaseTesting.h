@@ -4,7 +4,7 @@
 #include "VoxelValueSource.h"
 #include "VoxelDatabaseTesting.generated.h"
 
-UCLASS(Category = VoxelMateTesting, BlueprintType)
+UCLASS(Category = VoxelMateTesting, BlueprintType, Blueprintable)
 class UVoxelPerlinNoiseSource : public UObject, public IVoxelFloatSourceInterface
 {
     GENERATED_BODY()
@@ -31,6 +31,12 @@ public:
     }
 
     UFUNCTION(Category = VoxelMateTesting, BlueprintCallable)
+        static UVoxelPerlinNoiseSource* CreatePerlinNoiseSource(UObject* Owner)
+        {
+            return NewObject<UVoxelPerlinNoiseSource>(Owner);
+        }
+
+    UFUNCTION(Category = VoxelMateTesting, BlueprintCallable)
         void InitNoise()
         {
             PerlinNoise.SetFrequency((double)Frequency);
@@ -39,7 +45,7 @@ public:
             PerlinNoise.SetOctaveCount(OctaveCount);
         }
 
-    void GetValue_Implementation(float x, float y, float z, float& OutValue) const
+    FORCEINLINE void GetValue_Implementation(float x, float y, float z, float& OutValue) const override
     {
         OutValue = (float)PerlinNoise.GetValue((double)x, (double)y, (double)z);
     }
