@@ -15,6 +15,135 @@
 //see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
 //DECLARE_MULTICAST_DELEGATE_OneParam(FVoxelDatabaseOnMetadataChanged, class UVoxelDatabaseProxy*, const FGuid&);
 
+template<typename ValueT>
+struct TVoxelValueSourceAdapter;
+
+template<>
+struct TVoxelValueSourceAdapter<bool>
+{
+    typedef IVoxelBoolSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<uint8>
+{
+    typedef IVoxelUint8SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<uint16>
+{
+    typedef IVoxelUint16SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<uint32>
+{
+    typedef IVoxelUint32SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<uint64>
+{
+    typedef IVoxelUint64SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<int8>
+{
+    typedef IVoxelInt8SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<int16>
+{
+    typedef IVoxelInt16SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<int32>
+{
+    typedef IVoxelInt32SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<int64>
+{
+    typedef IVoxelInt64SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FColor>
+{
+    typedef IVoxelColorSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<float>
+{
+    typedef IVoxelFloatSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<double>
+{
+    typedef IVoxelDoubleSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FPackedNormal>
+{
+    typedef IVoxelPackedNormalSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FPackedRGB10A2N>
+{
+    typedef IVoxelPackedRGB10A2NSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FPackedRGBA16N>
+{
+    typedef IVoxelPackedRGBA16NSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FIntPoint>
+{
+    typedef IVoxelIntPointSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FIntVector>
+{
+    typedef IVoxelIntVectorSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FVector>
+{
+    typedef IVoxelVectorSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FVector4>
+{
+    typedef IVoxelVector4SourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FVector2D>
+{
+    typedef IVoxelVector2DSourceInterface Type;
+};
+
+template<>
+struct TVoxelValueSourceAdapter<FLinearColor>
+{
+    typedef IVoxelLinearColorSourceInterface Type;
+};
+
 template<typename ValueType>
 struct ModifyValueOp
 {
@@ -71,7 +200,8 @@ struct TSetValuesOp
         check(iter.isVoxelValue());
         const openvdb::Coord &Coord = iter.getCoord();
         const openvdb::Vec3d &Xyz = Transform.indexToWorld(Coord);
-        const ValueType Value = ValueSource.GetValue(Xyz.x(), Xyz.y(), Xyz.z());
+        ValueType Value;
+        ValueSource.GetValue(Xyz.x(), Xyz.y(), Xyz.z(), Value);
         iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(Value));
     }
 };
