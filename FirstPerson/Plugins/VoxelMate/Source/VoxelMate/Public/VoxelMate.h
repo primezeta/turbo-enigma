@@ -7,7 +7,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogVoxelMate, Log, All)
 
 //TODO investigate UBlueprintFunctionLibrary
-class VOXELMATE_API FVoxelMateModule : public IModuleInterface
+class FVoxelMateModule : public IModuleInterface
 {
 public:
 
