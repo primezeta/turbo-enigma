@@ -20,21 +20,13 @@ public class VoxelMate : ModuleRules
                 "VoxelMate/Private",
             });
 
-        PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Core",
-				"Projects",
-                "CoreUObject",
-                "Engine",
-                "InputCore",
-            }
-            );
-
-
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+                "Core",
+                "Projects",
+                "CoreUObject",
+                "Engine",
                 "UEOpenVdb",
                 "RenderCore", //For GVectorPackingConstants (FPackedNormal)
                 "LibNoise",
