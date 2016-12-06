@@ -237,6 +237,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const bool& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const bool& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelBoolSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -259,6 +261,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FColor& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FColor& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelColorSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable)
@@ -282,6 +286,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const double& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const double& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelDoubleSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -304,6 +310,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const float& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const float& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelFloatSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -327,6 +335,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int8& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int8& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelInt8SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -350,6 +360,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int16& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int16& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelInt16SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -372,6 +384,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int32& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int32& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelInt32SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -395,6 +409,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const int64& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int64& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelInt64SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -417,6 +433,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const uint8& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint8& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelUInt8SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -440,6 +458,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const uint16& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint16& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelUInt16SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -463,6 +483,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const uint32& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint32& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelUInt32SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -486,6 +508,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const uint64& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint64& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelUInt64SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -508,6 +532,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelVectorSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -530,6 +556,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector2D& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector2D& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelVector2DSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -552,6 +580,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FVector4& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector4& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelVector4SourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -574,6 +604,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FIntPoint& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FIntPoint& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelIntPointSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -596,6 +628,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FIntVector& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FIntVector& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelIntVectorSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -618,6 +652,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FLinearColor& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FLinearColor& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelLinearColorSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -640,6 +676,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FPackedNormal& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedNormal& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelPackedNormalSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -662,6 +700,8 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FPackedRGB10A2N& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedRGB10A2N& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelPackedRGB10A2NSourceInterface>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -684,4 +724,6 @@ public:
         void SetVoxelValueAndIsActive(const FIntVector& IndexCoord, const FPackedRGBA16N& InValue, const bool& InIsActive);
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FPackedRGBA16N& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill);
+    UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+        void SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxelPackedRGBA16NSourceInterface>& ValueSourceInterface);
 };

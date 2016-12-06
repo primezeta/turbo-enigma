@@ -96,7 +96,7 @@ struct VOXELMATE_API FVoxelInt64
 };
 
 USTRUCT(BlueprintType)
-struct VOXELMATE_API FVoxelUint8
+struct VOXELMATE_API FVoxelUInt8
 {
     GENERATED_BODY()
 
@@ -109,7 +109,7 @@ struct VOXELMATE_API FVoxelUint8
 };
 
 USTRUCT()
-struct VOXELMATE_API FVoxelUint16
+struct VOXELMATE_API FVoxelUInt16
 {
     GENERATED_BODY()
 
@@ -122,7 +122,7 @@ struct VOXELMATE_API FVoxelUint16
 };
 
 USTRUCT()
-struct VOXELMATE_API FVoxelUint32
+struct VOXELMATE_API FVoxelUInt32
 {
     GENERATED_BODY()
 
@@ -135,7 +135,7 @@ struct VOXELMATE_API FVoxelUint32
 };
 
 USTRUCT()
-struct VOXELMATE_API FVoxelUint64
+struct VOXELMATE_API FVoxelUInt64
 {
     GENERATED_BODY()
 
@@ -376,59 +376,59 @@ public:
 };
 
 UCLASS(ClassGroup = VoxelMate, Blueprintable)
-class VOXELMATE_API AVoxelProxyUint8 : public AActor
+class VOXELMATE_API AVoxelProxyUInt8 : public AActor
 {
     GENERATED_BODY()
 
 public:
-    AVoxelProxyUint8(const FObjectInitializer& ObjectInitializer)
+    AVoxelProxyUInt8(const FObjectInitializer& ObjectInitializer)
         : Super(ObjectInitializer)
     {}
 
     UPROPERTY(BlueprintReadWrite)
-        FVoxelUint8 VoxelData;
+        FVoxelUInt8 VoxelData;
 };
 
 UCLASS(ClassGroup = VoxelMate)
-class VOXELMATE_API AVoxelProxyUint16 : public AActor
+class VOXELMATE_API AVoxelProxyUInt16 : public AActor
 {
     GENERATED_BODY()
 
 public:
-    AVoxelProxyUint16(const FObjectInitializer& ObjectInitializer)
+    AVoxelProxyUInt16(const FObjectInitializer& ObjectInitializer)
         : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
-        FVoxelUint16 VoxelData;
+        FVoxelUInt16 VoxelData;
 };
 
 UCLASS(ClassGroup = VoxelMate)
-class VOXELMATE_API AVoxelProxyUint32 : public AActor
+class VOXELMATE_API AVoxelProxyUInt32 : public AActor
 {
     GENERATED_BODY()
 
 public:
-    AVoxelProxyUint32(const FObjectInitializer& ObjectInitializer)
+    AVoxelProxyUInt32(const FObjectInitializer& ObjectInitializer)
         : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
-        FVoxelUint32 VoxelData;
+        FVoxelUInt32 VoxelData;
 };
 
 UCLASS(ClassGroup = VoxelMate)
-class VOXELMATE_API AVoxelProxyUint64 : public AActor
+class VOXELMATE_API AVoxelProxyUInt64 : public AActor
 {
     GENERATED_BODY()
 
 public:
-    AVoxelProxyUint64(const FObjectInitializer& ObjectInitializer)
+    AVoxelProxyUInt64(const FObjectInitializer& ObjectInitializer)
         : Super(ObjectInitializer)
     {}
 
     UPROPERTY()
-        FVoxelUint64 VoxelData;
+        FVoxelUInt64 VoxelData;
 };
 
 UCLASS(ClassGroup = VoxelMate, Blueprintable)

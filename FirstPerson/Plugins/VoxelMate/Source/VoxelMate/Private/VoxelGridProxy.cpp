@@ -6,33 +6,6 @@
 //TODO idea for faster grid lookup
 //TArray<FGridFactory::ValueTypeWeakPtr> CachedGrids; //Careful of anyone accessing this from other threads
 
-struct FIntBox
-{
-    FIntVector Start;
-    FIntVector Size;
-
-    FIntBox(const FIntVector& InStart, const FIntVector& InSize)
-        : Start(InStart), Size(InSize)
-    {}
-
-    friend uint32 GetTypeHash(const FIntBox& IntBox)
-    {
-        return HashCombine(GetTypeHash(IntBox.Start), GetTypeHash(IntBox.Size));
-    }
-
-    friend bool operator==(const FIntBox& InLhs, const FIntBox& InRhs)
-    {
-        return InLhs.Start == InRhs.Start && InLhs.Size == InRhs.Size;
-    }
-};
-
-struct NoiseSet
-{
-    TSharedPtr<noise::module::Module> NoiseModule;
-};
-
-TMap<FNoiseGeneratorConfiguration, NoiseSet> NoiseSets;
-
 void AVoxelGridProxy::ResetCoordinateTransformToAffine(const FAffineCoordinateTransform& InCoordinateTransform)
 {
     UVoxelDatabase::Get().SetCoordinateTransform(GridId, InCoordinateTransform);
@@ -153,82 +126,6 @@ bool AVoxelGridProxy::SaveVoxelData()
     return false;
 }
 
-//void AVoxelGridProxyFloat::FillNoise(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FNoiseGeneratorConfiguration& Config, const bool& InIsActive)
-//{
-    ////Associate each particular noise configuration to a cached set of noise values
-    //NoiseSet& NoiseSet = NoiseSets.FindOrAdd(Config);
-    //if (!NoiseSet.NoiseModule.IsValid())
-    //{
-    //    //This particular noise set has not yet been created so create it using the specified configuration
-    //    NoiseSet.NoiseModule = TSharedPtr<noise::module::Module>(TSharedPtr<noise::module::Module>(new noise::module::Perlin()));
-    //    check(Config.NoiseType == ENoiseType::Perlin);
-    //    NoiseSet.NoiseModule->SetSeed(Config.RandomSeed);
-    //    NoiseSet.NoiseModule->SetFrequency(Config.Frequency);
-    //    NoiseSet.NoiseModule->SetOctaveCount(Config.OctaveCount);
-    //    NoiseSet.NoiseModule->SetLacunarity(Config.Lacunarity);
-    //    NoiseSet.NoiseModule->SetPersistence(Config.Gain);
-    //}
-
-    ////Check if a set of noise values was already generated from the given noise configuration within the specified volume
-    //const openvdb::Coord StartCoord(StartIndexCoord.X, StartIndexCoord.Y, StartIndexCoord.Z);
-    //const openvdb::Coord EndCoord(StartIndexCoord.X + FillDimensions.X - 1, StartIndexCoord.Y + FillDimensions.Y - 1, StartIndexCoord.Z + FillDimensions.Z - 1);
-    //openvdb::CoordBBox NoiseFillVolume(StartCoord, EndCoord);
-
-    ////Expand the fill-volume by 1 voxel on all sides so that a noise value is always available when checking adjacent voxels
-    //NoiseFillVolume.expand((int32)1);
-
-    //const openvdb::Coord& VolumeExtents = NoiseFillVolume.extents();
-
-    ////Associate existing values to the specified fill dimensions, not the expanded dimensions
-    //const FIntBox Volume(StartIndexCoord, FillDimensions);
-    //TSharedPtr<float> Values;
-    //TArray<float>* FindValues = NoiseSet.GeneratedValues.Find(Volume);
-    //if (!FindValues)
-    //{
-    //    TArray<float>& Values = NoiseSet.GeneratedValues.Add(Volume, TArray<float>());
-    //    Values.Reserve(NoiseFillVolume.volume());
-    //    const int32 Width = NoiseFillVolume.dim().asVec3i().x();
-    //    const int32 Depth = NoiseFillVolume.dim().asVec3i().y();
-    //    for (auto x = NoiseFillVolume.min().x(); x <= NoiseFillVolume.max().x(); ++x)
-    //    {
-    //        for (auto y = NoiseFillVolume.min().y(); y <= NoiseFillVolume.max().y(); ++y)
-    //        {
-    //            for (auto z = NoiseFillVolume.min().z(); z <= NoiseFillVolume.max().z(); ++z)
-    //            {
-    //                const int32 ValueIndex = x + Width * (y + Depth*z);
-    //                Values[ValueIndex] = NoiseSet.NoiseModule->GetValue();
-    //            }
-    //        }
-    //    }
-    //    //Values for these dimensions have not yet been generated, generate them
-    //    Values = NoiseSet.GeneratedValues.Add(Volume, TSharedPtr<float>(NoiseSet.NoiseModule->));
-    //}
-    //else
-    //{
-    //    //Values for these dimensions were already generated, use those
-    //    Values = *FindValues;
-    //}
-
-    ////
-    //float* ValuesPtr = Values.Get();
-    //TArray<TArray<TArrayView<float>>> Noise3DValues;
-    //Noise3DValues.Reserve(VolumeExtents.x());
-    //for (int32 x = 0; x < VolumeExtents.x(); ++x)
-    //{
-    //    const int32 yarray = Noise3DValues.Add(TArray<TArrayView<float>>());
-    //    Noise3DValues[yarray].Reserve(VolumeExtents.y());
-    //    for (int32 y = 0; y < VolumeExtents.y(); ++y)
-    //    {
-    //        float* zblock = ValuesPtr + x + VolumeExtents.x() * (y + VolumeExtents.y());
-    //        const int32 zarray = Noise3DValues[yarray].Add(TArrayView<float>(zblock, VolumeExtents.z()));
-    //    }
-    //}
-
-    //typedef NoiseValueOp<openvdb::Grid<openvdb::tree::Tree4<FVoxelDatabaseFloatVoxel>::Type>::ValueOnIter, FVoxelDatabaseFloatVoxel> NoiseValueOpType;
-    //NoiseValueOpType ValueOp(Noise3DValues);
-    //UVoxelDatabase::Get().RunGridOp<NoiseValueOpType>(GridId, ValueOp);
-//}
-
 //TODO Get/SetVoxelValue from VoxelDatabaseProxy
 #define GRID_PROXY_IMPLEMENTATION(ValueType, Name)\
 const ValueType& AVoxelGridProxy##Name::GetVoxelValue(const FIntVector& IndexCoord) const\
@@ -258,6 +155,21 @@ void AVoxelGridProxy##Name::SetVoxelValueAndIsActive(const FIntVector& IndexCoor
 void AVoxelGridProxy##Name::FillValue(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const ValueType& InValue, const bool& InIsActive, const bool& InVoxelizeActiveTilesAfterFill)\
 {\
     UVoxelDatabase::Get().FillGrid<FVoxelDatabase##Name##Voxel>(GridId, StartIndexCoord, FillDimensions, InValue, InIsActive, InVoxelizeActiveTilesAfterFill);\
+}\
+void AVoxelGridProxy##Name::SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxel##Name##SourceInterface>& ValueSourceInterface)\
+{\
+    if(VoxelIter == EVoxelIterator::InactiveVoxelsIter)\
+    {\
+        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::InactiveVoxelsIter>(GridId, *ValueSourceInterface);\
+    }\
+    else if (VoxelIter == EVoxelIterator::ActiveVoxelsIter)\
+    {\
+        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::ActiveVoxelsIter>(GridId, *ValueSourceInterface);\
+    }\
+    else\
+    {\
+        UVoxelDatabase::Get().SetVoxelValuesFromSource<FVoxelDatabase##Name##Voxel, IVoxel##Name##SourceInterface, EVoxelIterator::AllVoxelsIter>(GridId, *ValueSourceInterface);\
+    }\
 }
 
 GRID_PROXY_IMPLEMENTATION(bool, Bool)

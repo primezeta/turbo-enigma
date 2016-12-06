@@ -23,8 +23,7 @@ struct FAffineCoordinateTransform
         : Matrix(InX, InY, InZ, FVector(0.0f, 0.0f, 1.0f))
     {}
 
-    UPROPERTY()
-        FMatrix Matrix;
+    FMatrix Matrix;
 };
 
 USTRUCT(BlueprintType)
@@ -40,8 +39,7 @@ struct FUnitaryCoordinateTransform
         : Quat(Axis, AngleRadians)
     {}
 
-    UPROPERTY()
-        FQuat Quat;
+    FQuat Quat;
 };
 
 USTRUCT(BlueprintType)
@@ -57,8 +55,7 @@ struct FScaleCoordinateTransform
         : ScaleVec(Scale.GetAbs())
     {}
 
-    UPROPERTY()
-        FVector ScaleVec;
+    FVector ScaleVec;
 };
 
 USTRUCT(BlueprintType)
@@ -74,8 +71,7 @@ struct FUniformScaleCoordinateTransform
         : ScaleValue(FMath::Abs(Scale))
     {}
 
-    UPROPERTY()
-        float ScaleValue;
+    float ScaleValue;
 };
 
 USTRUCT(BlueprintType)
@@ -91,8 +87,7 @@ struct FTranslationCoordinateTransform
         : TranslationVec(Translation)
     {}
 
-    UPROPERTY()
-        FVector TranslationVec;
+    FVector TranslationVec;
 };
 
 USTRUCT(BlueprintType)
@@ -108,10 +103,8 @@ struct FScaleTranslationCoordinateTransform
         : ScaleVec(Scale.GetAbs()), TranslationVec(Translation)
     {}
 
-    UPROPERTY()
-        FVector ScaleVec;
-    UPROPERTY()
-        FVector TranslationVec;
+    FVector ScaleVec;
+    FVector TranslationVec;
 };
 
 USTRUCT(BlueprintType)
@@ -127,10 +120,8 @@ struct FUniformScaleTranslationCoordinateTransform
         : ScaleValue(FMath::Abs(Scale)), TranslationVec(Translation)
     {}
 
-    UPROPERTY()
-        float ScaleValue;
-    UPROPERTY()
-        FVector TranslationVec;
+    float ScaleValue;
+    FVector TranslationVec;
 };
 
 USTRUCT(BlueprintType)
@@ -146,10 +137,7 @@ struct FNonlinearFrustumCoordinateTransform
         : Box(BoxMin, BoxMax), Taper(FMath::Abs(FrustumTaper)), Depth(FMath::Abs(FrustumDepth))
     {}
 
-    UPROPERTY()
-        FBox Box;
-    UPROPERTY()
-        float Taper;
-    UPROPERTY()
-        float Depth;
+    FBox Box;
+    float Taper;
+    float Depth;
 };

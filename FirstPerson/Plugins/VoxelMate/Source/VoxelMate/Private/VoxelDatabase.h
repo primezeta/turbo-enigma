@@ -15,135 +15,6 @@
 //see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
 //DECLARE_MULTICAST_DELEGATE_OneParam(FVoxelDatabaseOnMetadataChanged, class UVoxelDatabaseProxy*, const FGuid&);
 
-template<typename ValueT>
-struct TVoxelValueSourceAdapter;
-
-template<>
-struct TVoxelValueSourceAdapter<bool>
-{
-    typedef IVoxelBoolSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<uint8>
-{
-    typedef IVoxelUint8SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<uint16>
-{
-    typedef IVoxelUint16SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<uint32>
-{
-    typedef IVoxelUint32SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<uint64>
-{
-    typedef IVoxelUint64SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<int8>
-{
-    typedef IVoxelInt8SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<int16>
-{
-    typedef IVoxelInt16SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<int32>
-{
-    typedef IVoxelInt32SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<int64>
-{
-    typedef IVoxelInt64SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FColor>
-{
-    typedef IVoxelColorSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<float>
-{
-    typedef IVoxelFloatSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<double>
-{
-    typedef IVoxelDoubleSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FPackedNormal>
-{
-    typedef IVoxelPackedNormalSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FPackedRGB10A2N>
-{
-    typedef IVoxelPackedRGB10A2NSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FPackedRGBA16N>
-{
-    typedef IVoxelPackedRGBA16NSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FIntPoint>
-{
-    typedef IVoxelIntPointSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FIntVector>
-{
-    typedef IVoxelIntVectorSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FVector>
-{
-    typedef IVoxelVectorSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FVector4>
-{
-    typedef IVoxelVector4SourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FVector2D>
-{
-    typedef IVoxelVector2DSourceInterface Type;
-};
-
-template<>
-struct TVoxelValueSourceAdapter<FLinearColor>
-{
-    typedef IVoxelLinearColorSourceInterface Type;
-};
-
 template<typename ValueType>
 struct ModifyValueOp
 {
@@ -166,27 +37,39 @@ template<typename GridType>
 struct VoxelIteratorAdaptor<EVoxelIterator::InactiveVoxelsIter, GridType>
 {
     typedef typename GridType::ValueOffIter Type;
+    VOXELMATEINLINE static Type& SelectIter(GridType& Grid)
+    {
+        return Grid.beginValueOff();
+    }
 };
 
 template<typename GridType>
 struct VoxelIteratorAdaptor<EVoxelIterator::ActiveVoxelsIter, GridType>
 {
     typedef typename GridType::ValueOnIter Type;
+    VOXELMATEINLINE static Type& SelectIter(GridType& Grid)
+    {
+        return Grid.beginValueOn();
+    }
 };
 
 template<typename GridType>
 struct VoxelIteratorAdaptor<EVoxelIterator::AllVoxelsIter, GridType>
 {
     typedef typename GridType::ValueAllIter Type;
+    VOXELMATEINLINE static Type& SelectIter(GridType& Grid)
+    {
+        return Grid.beginValueAll();
+    }
 };
 
-template<typename IterT, typename VoxelT>
+template<typename IterT, typename VoxelT, typename ValueSourceT>
 struct TSetValuesOp
 {
     typedef typename VoxelT VoxelType;
     typedef typename VoxelT::ValueType ValueType;
     typedef typename IterT IterType;
-    typedef typename TVoxelValueSourceAdapter<ValueType>::Type ValueSourceType;
+    typedef typename ValueSourceT ValueSourceType;
 
     ValueSourceType &ValueSource;
     openvdb::math::Transform &CoordinateTransform;
@@ -199,7 +82,7 @@ struct TSetValuesOp
     {
         check(iter.isVoxelValue());
         const openvdb::Coord &Coord = iter.getCoord();
-        const openvdb::Vec3d &Xyz = Transform.indexToWorld(Coord);
+        const openvdb::Vec3d &Xyz = CoordinateTransform.indexToWorld(Coord);
         ValueType Value;
         ValueSource.GetValue(Xyz.x(), Xyz.y(), Xyz.z(), Value);
         iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(Value));
@@ -503,8 +386,8 @@ public:
         }
     }
 
-    template<typename VoxelType>
-    VOXELMATEINLINE void FillGrid(const FGuid& GridId, EVoxelIterator VoxelIter, const typename TVoxelValueSourceAdapter<typename VoxelType::ValueType>::Type &ValueSource, const bool &InVoxelizeActiveTilesAfterFill)
+    template<typename VoxelType, typename ValueSourceType, EVoxelIterator VoxelIterType>
+    VOXELMATEINLINE void SetVoxelValuesFromSource(const FGuid& GridId, ValueSourceType &ValueSource)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -512,27 +395,12 @@ public:
             openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(*FindGrid);
             if (TypedGridPtr)
             {
-                typedef VoxelIteratorAdaptor<VoxelIter, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>::Type IterType;
-                typedef TSetValuesOp<IterType, VoxelType> OpType;
+                typedef VoxelIteratorAdaptor<VoxelIterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> IterAdaptor;
+                typedef IterAdaptor::Type IterType;
+                typedef TSetValuesOp<IterType, VoxelType, ValueSourceType> OpType;
+
                 OpType SetValuesOp(ValueSource, TypedGridPtr->transform());
-
-                if (VoxelIter == EVoxelIterator::InactiveVoxelsIter)
-                {
-                    openvdb::tools::foreach<OpType::IterType, OpType>(TypedGridPtr->beginValueOff(), ValueOp);
-                }
-                else if (VoxelIter == EVoxelIterator::ActiveVoxelsIter)
-                {
-                    openvdb::tools::foreach<OpType::IterType, OpType>(TypedGridPtr->beginValueOn(), ValueOp);
-                }
-                else
-                {
-                    openvdb::tools::foreach<OpType::IterType, OpType>(TypedGridPtr->beginValueAll(), ValueOp);
-                }
-
-                if (InVoxelizeActiveTilesAfterFill)
-                {
-                    TypedGridPtr->tree().voxelizeActiveTiles();
-                }
+                openvdb::tools::foreach<IterType, OpType>(IterAdaptor::SelectIter(*TypedGridPtr), SetValuesOp);
             }
             else
             {
