@@ -1,13 +1,13 @@
 #pragma once
-#include "VoxelValueSourceInterfaceUint32.generated.h"
+#include "VoxelValueSourceInterfaceUInt32.generated.h"
 
 UINTERFACE()
-class VOXELMATE_API UVoxelUint32SourceInterface : public UInterface
+class VOXELMATE_API UVoxelUInt32SourceInterface : public UInterface
 {
     GENERATED_BODY()
 };
 
-class VOXELMATE_API IVoxelUint32SourceInterface
+class VOXELMATE_API IVoxelUInt32SourceInterface
 {
     GENERATED_BODY()
 
