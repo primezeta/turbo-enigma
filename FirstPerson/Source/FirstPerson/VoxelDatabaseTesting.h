@@ -39,7 +39,7 @@ public:
             PerlinNoise.SetOctaveCount(OctaveCount);
         }
 
-    void GetValue_Implementation(float x, float y, float z, float& OutValue)
+    void GetValue_Implementation(float x, float y, float z, float& OutValue) const
     {
         OutValue = (float)PerlinNoise.GetValue((double)x, (double)y, (double)z);
     }

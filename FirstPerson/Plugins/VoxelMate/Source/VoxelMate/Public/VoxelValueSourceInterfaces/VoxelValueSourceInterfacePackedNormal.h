@@ -13,5 +13,5 @@ class VOXELMATE_API IVoxelPackedNormalSourceInterface
 
 public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = VoxelMate)
-        void GetValue(float x, float y, float z, FPackedNormal& OutValue);
+        void GetValue(float x, float y, float z, FPackedNormal& OutValue) const;
 };

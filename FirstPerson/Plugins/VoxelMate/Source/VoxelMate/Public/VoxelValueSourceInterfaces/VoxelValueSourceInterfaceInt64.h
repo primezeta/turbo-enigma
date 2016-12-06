@@ -13,5 +13,5 @@ class VOXELMATE_API IVoxelInt64SourceInterface
 
 public:
     UFUNCTION(Category = VoxelMate)
-        virtual void GetValue(float x, float y, float z, int64& OutValue) = 0;
+        virtual void GetValue(float x, float y, float z, int64& OutValue) const = 0;
 };

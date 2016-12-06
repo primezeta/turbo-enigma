@@ -13,5 +13,5 @@ class VOXELMATE_API IVoxelLinearColorSourceInterface
 
 public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = VoxelMate)
-        void GetValue(float x, float y, float z, FLinearColor& OutValue);
+        void GetValue(float x, float y, float z, FLinearColor& OutValue) const;
 };

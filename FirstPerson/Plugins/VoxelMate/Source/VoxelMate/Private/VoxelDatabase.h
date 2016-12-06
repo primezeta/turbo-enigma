@@ -71,10 +71,10 @@ struct TSetValuesOp
     typedef typename IterT IterType;
     typedef typename ValueSourceT ValueSourceType;
 
-    ValueSourceType &ValueSource;
+    const ValueSourceType &ValueSource;
     openvdb::math::Transform &CoordinateTransform;
 
-    TSetValuesOp(ValueSourceType &VoxelValueSource, openvdb::math::Transform &Transform)
+    TSetValuesOp(const ValueSourceType &VoxelValueSource, openvdb::math::Transform &Transform)
         : ValueSource(VoxelValueSource), CoordinateTransform(Transform)
     {}
 
@@ -387,7 +387,7 @@ public:
     }
 
     template<typename VoxelType, typename ValueSourceType, EVoxelIterator VoxelIterType>
-    VOXELMATEINLINE void SetVoxelValuesFromSource(const FGuid& GridId, ValueSourceType &ValueSource)
+    VOXELMATEINLINE void SetVoxelValuesFromSource(const FGuid& GridId, const ValueSourceType &ValueSource)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)

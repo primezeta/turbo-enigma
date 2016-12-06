@@ -13,5 +13,5 @@ class VOXELMATE_API IVoxelVectorSourceInterface
 
 public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = VoxelMate)
-        void GetValue(float x, float y, float z, FVector& OutValue);
+        void GetValue(float x, float y, float z, FVector& OutValue) const;
 };

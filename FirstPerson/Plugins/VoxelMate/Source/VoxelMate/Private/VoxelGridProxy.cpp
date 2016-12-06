@@ -155,7 +155,7 @@ void AVoxelGridProxy##Name::FillValue(const FIntVector& StartIndexCoord, const F
 {\
     UVoxelDatabase::Get().FillGrid<FVoxelDatabase##Name##Voxel>(GridId, StartIndexCoord, FillDimensions, InValue, InIsActive, InVoxelizeActiveTilesAfterFill);\
 }\
-void AVoxelGridProxy##Name::SetValues(EVoxelIterator VoxelIter, TScriptInterface<IVoxel##Name##SourceInterface>& ValueSourceInterface)\
+void AVoxelGridProxy##Name::SetValues(EVoxelIterator VoxelIter, const TScriptInterface<IVoxel##Name##SourceInterface>& ValueSourceInterface)\
 {\
     if(VoxelIter == EVoxelIterator::InactiveVoxelsIter)\
     {\

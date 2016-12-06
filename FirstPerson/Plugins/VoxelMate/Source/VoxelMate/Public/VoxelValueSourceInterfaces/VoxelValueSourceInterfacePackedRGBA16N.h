@@ -13,5 +13,5 @@ class VOXELMATE_API IVoxelPackedRGBA16NSourceInterface
 
 public:
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = VoxelMate)
-        void GetValue(float x, float y, float z, FPackedRGBA16N& OutValue);
+        void GetValue(float x, float y, float z, FPackedRGBA16N& OutValue) const;
 };

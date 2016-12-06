@@ -13,5 +13,5 @@ class VOXELMATE_API IVoxelUInt16SourceInterface
 
 public:
     UFUNCTION(Category = VoxelMate)
-        virtual void GetValue(float x, float y, float z, uint16& OutValue) = 0;
+        virtual void GetValue(float x, float y, float z, uint16& OutValue) const = 0;
 };

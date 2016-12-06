@@ -13,5 +13,5 @@ class VOXELMATE_API IVoxelDoubleSourceInterface
 
 public:
     UFUNCTION(Category = VoxelMate)
-        virtual void GetValue(float x, float y, float z, double& OutValue) = 0;
+        virtual void GetValue(float x, float y, float z, double& OutValue) const = 0;
 };
