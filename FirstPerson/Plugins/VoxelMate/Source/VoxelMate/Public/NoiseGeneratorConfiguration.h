@@ -3,7 +3,7 @@
 #include "NoiseGeneratorConfiguration.generated.h"
 
 USTRUCT(BlueprintType)
-struct VOXELMATE_API FNoiseGeneratorConfiguration
+struct FNoiseGeneratorConfiguration
 {
     GENERATED_BODY()
 
