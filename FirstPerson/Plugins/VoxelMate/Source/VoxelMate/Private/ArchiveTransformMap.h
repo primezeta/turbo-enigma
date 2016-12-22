@@ -1,6 +1,4 @@
 #pragma once
-#include "GridTypes.h"
-#include "VoxelDatabaseStatics.h"
 #include "VoxelDatabaseTypeFactory.h"
 #include "openvdb/openvdb.h"
 #include <openvdb/math/Maps.h>
@@ -10,14 +8,6 @@ struct TTransformMapTypeTranslator;
 
 struct FTransformMapFactory : public FVoxelDatabaseTypeFactory<openvdb::math::MapBase>
 {
-    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, FTransformMapFactory::ValueTypePtr& TransformMapPtr);
-    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::math::MapBase& TransformMap);
-    VOXELMATEINLINE bool Serialize(FArchive& Ar)
-    {
-        Ar << ValuePtr;
-        return true;
-    }
-
     template<typename MapType>
     static void Register()
     {

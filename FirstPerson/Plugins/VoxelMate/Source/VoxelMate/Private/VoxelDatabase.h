@@ -1,125 +1,62 @@
 #pragma once
+#include "EngineMinimal.h"
+#include "VoxelDatabaseStatics.h"
 #include "ArchiveGrid.h"
 #include "ArchiveMetaValue.h"
 #include "VoxelDatabaseProxy.h"
-#include "VoxelValueSource.h"
 #include "GridCoordinateTransforms.h"
-#include <boost/iostreams/stream.hpp>
-#include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/device/back_inserter.hpp>
 #include <vector>
 #include <openvdb/tools/ValueTransformer.h>
+#include <openvdb/io/Archive.h>
 #include "VoxelDatabase.generated.h"
 
-//TODO Use FText for any strings displayed to the user
-//see https://docs.unrealengine.com/latest/INT/Programming/UnrealArchitecture/StringHandling/FText/
-//DECLARE_MULTICAST_DELEGATE_OneParam(FVoxelDatabaseOnMetadataChanged, class UVoxelDatabaseProxy*, const FGuid&);
+//TODO: See UWorldProxy which has checks for access from non-game threads. Might need to do the same for AVoxelDatabase
 
-template<typename ValueType>
-struct ModifyValueOp
-{
-    const ValueType& InValue;
-
-    ModifyValueOp(const ValueType& Value)
-        : InValue(Value)
-    {}
-
-    VOXELMATEINLINE void operator()(ValueType& OutValue) const
-    {
-        OutValue = InValue;
-    }
-};
-
-template<EVoxelIterator Iter, typename GridType>
-struct VoxelIteratorAdaptor;
-
-template<typename GridType>
-struct VoxelIteratorAdaptor<EVoxelIterator::InactiveVoxelsIter, GridType>
-{
-    typedef typename GridType::ValueOffIter Type;
-    VOXELMATEINLINE static Type& SelectIter(GridType& Grid)
-    {
-        return Grid.beginValueOff();
-    }
-};
-
-template<typename GridType>
-struct VoxelIteratorAdaptor<EVoxelIterator::ActiveVoxelsIter, GridType>
-{
-    typedef typename GridType::ValueOnIter Type;
-    VOXELMATEINLINE static Type& SelectIter(GridType& Grid)
-    {
-        return Grid.beginValueOn();
-    }
-};
-
-template<typename GridType>
-struct VoxelIteratorAdaptor<EVoxelIterator::AllVoxelsIter, GridType>
-{
-    typedef typename GridType::ValueAllIter Type;
-    VOXELMATEINLINE static Type& SelectIter(GridType& Grid)
-    {
-        return Grid.beginValueAll();
-    }
-};
-
-template<typename IterT, typename VoxelT, typename ValueSourceT>
-struct TSetValuesOp
-{
-    typedef typename VoxelT VoxelType;
-    typedef typename VoxelT::ValueType ValueType;
-    typedef typename IterT IterType;
-    typedef typename ValueSourceT ValueSourceType;
-
-    const ValueSourceType &ValueSource;
-    openvdb::math::Transform &CoordinateTransform;
-
-    TSetValuesOp(const TScriptInterface<ValueSourceType> &ValueSourceInterface, openvdb::math::Transform &Transform)
-        : ValueSource(*ValueSourceInterface), CoordinateTransform(Transform)
-    {}
-
-    VOXELMATEINLINE void operator()(const IterType& iter) const
-    {
-        check(iter.isVoxelValue());
-        const openvdb::Coord &Coord = iter.getCoord();
-        const openvdb::Vec3d &Xyz = CoordinateTransform.indexToWorld(Coord);
-        ValueType Value;
-        ValueSource.GetValue_Implementation(Xyz.x(), Xyz.y(), Xyz.z(), Value);
-        iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(Value));
-    }
-};
-
-UCLASS(ClassGroup = VoxelMate, NotPlaceable, NotBlueprintable, CustomConstructor)
-class UVoxelDatabase : public UObject
+UCLASS(ClassGroup = VoxelMate, NotBlueprintable, NotPlaceable, CustomConstructor)
+class AVoxelDatabase : public AActor
 {
     GENERATED_BODY()
 
 public:
-    static UVoxelDatabase& Get()
-    {
-        extern UVoxelDatabase* VoxelMateVoxelDatabase;
-        check(VoxelMateVoxelDatabase);
-        return *VoxelMateVoxelDatabase;
-    }
+	static AVoxelDatabase* VoxelMateVoxelDatabase;
 
     UPROPERTY()
-        UVoxelDatabaseProxy* VoxelDatabaseProxy;
-    UPROPERTY()
-        FString DataPath;
+        AVoxelDatabaseProxy* AuthDatabaseProxy;
+    UPROPERTY(Transient)
+        AVoxelDatabaseProxy* LocalDatabaseProxy;
+    UPROPERTY(Transient, ReplicatedUsing = OnRep_SetDatabaseProxy)
+        AVoxelDatabaseProxy* DatabaseProxy;
     
-    friend FArchive& operator<<(FArchive& Ar, UVoxelDatabase& VoxelDatabase)
+    UFUNCTION(Server, Reliable, WithValidation)
+        void SetDatabaseProxy();
+    void SetDatabaseProxy_Implementation()
     {
-        if (!VoxelDatabase.IsDefaultSubobject())
+        OnRep_SetDatabaseProxy();
+    }
+
+    UFUNCTION()
+        void OnRep_SetDatabaseProxy()
         {
-            Ar << VoxelDatabase.Metadata;
-            Ar << VoxelDatabase.Grids; //TODO handle grids that share trees
+            LocalDatabaseProxy = DatabaseProxy;
         }
+
+    UFUNCTION()
+        bool SetDatabaseProxy_Validate()
+        {
+            return true;//TODO
+        }
+
+    friend FArchive& operator<<(FArchive& Ar, AVoxelDatabase& VoxelDatabase)
+    {
+		VoxelDatabase.SerializeDatabaseMetadata(Ar);
+		VoxelDatabase.SerializeAllGrids(Ar);
         return Ar;
     }
 
     virtual void Serialize(FArchive& Ar) override
     {
-        Ar << *this;
+        Super::Serialize(Ar);
+		Ar << *this;
     }
 
     virtual void BeginDestroy() override
@@ -127,21 +64,17 @@ public:
         Super::BeginDestroy();
     }
 
-    void InitializeTypes();
-    void UninitializeTypes();
+    static void Startup();
+	static void Shutdown();
 
     const TArray<FString>& GetRegisteredGridTypeNames() const;
     const TArray<FString>& GetRegisteredMetadataTypeNames() const;
     const TArray<FString>& GetRegisteredTransformMapTypeNames() const;
-
-    void GetGridsDisplay(TMap<FGuid, FText>& OutGridsDisplay) const;
-    void GetMetadataDisplay(TMap<FGuid, FText>& OutMetadataDisplay) const;
-    UVoxelDatabaseProxy* GetDatabaseProxy();
-    bool AddMetadata(const FString& TypeName, FGuid& OutMetadataId);
+	
     //TODO bool AddGridInstance
 
     template<typename VoxelType>
-    bool UVoxelDatabase::AddGrid(const FText& GridDisplayText, bool SaveFloatAsHalf, FGuid& OutGridId)
+    bool AddGrid(const FText& GridDisplayText, bool SaveFloatAsHalf, FGuid& OutGridId)
     {
         bool IsGridAdded = false;
         OutGridId = FGuid::NewGuid();
@@ -150,7 +83,8 @@ public:
             FGridFactory::ValueTypePtr GridPtr = FGridFactory::Create<VoxelType>();
             GridPtr->setName(TCHAR_TO_UTF8(*OutGridId.ToString()));
             GridPtr->setSaveFloatAsHalf(SaveFloatAsHalf);
-            FMetaMapFactory::InsertGridMeta<FText>(*GridPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, GridDisplayText);
+            FMetaMapFactory::InsertGridMeta<FMetadataText>(*GridPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, FMetadataText(GridDisplayText));
+			AllocatedGrids.push_back(GridPtr);
             Grids.Add(OutGridId, GridPtr);
             IsGridAdded = true;
         }
@@ -163,13 +97,13 @@ public:
     }
 
     template<typename VoxelType>
-    int32 UVoxelDatabase::ShallowCopyGrid(const FGuid& InGridId, const FText& GridDisplayText)
+    int32 ShallowCopyGrid(const FGuid& InGridId, const FText& GridDisplayText)
     {
         int32 GridCopyIndex = -1;
         FGridFactory::ValueTypePtr GridCopyPtr = FGridFactory::ShallowCopyGrid<VoxelType>(OriginalGridPtr);
         if (GridCopyPtr != nullptr)
         {
-            FMetaMapFactory::InsertGridMeta<FText>(*GridCopyPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, GridDisplayText);
+            FMetaMapFactory::InsertGridMeta<FMetadataText>(*GridCopyPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, FMetadataText(GridDisplayText));
 
             const openvdb::Name& OriginalGridName = GridPtr->getName();
             GridCopyIndex = GridCopies.Num(InGridId);
@@ -189,33 +123,7 @@ public:
     }
 
     template<typename VoxelType>
-    int32 UVoxelDatabase::DeepCopyGrid(const FGuid& InGridId, const FText& GridDisplayText)
-    {
-        int32 GridCopyIndex = -1;
-        FGridFactory::ValueTypePtr GridCopyPtr = FGridFactory::DeepCopyGrid<VoxelType>(OriginalGridPtr);
-        if (GridCopyPtr != nullptr)
-        {
-            FMetaMapFactory::InsertGridMeta<FText>(*GridCopyPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, GridDisplayText);
-
-            const openvdb::Name& OriginalGridName = GridPtr->getName();
-            GridCopyIndex = GridCopies.Num(InGridId);
-
-            std::ostringstream GridCopyName;
-            GridCopyName << GridPtr->getName() << "_" << GridCopyIndex;
-            GridPtr->setName(GridCopyName.str());
-
-            GridCopies.AddUnique(InGridId, GridCopyPtr);
-            IsGridCopied = true;
-        }
-        else
-        {
-            //TODO log error (could not copy grid; possibly different types)
-        }
-        return GridCopyIndex;
-    }
-
-    template<typename VoxelType>
-    bool UVoxelDatabase::DuplicateGrid(const FGuid& InGridId, const FText& GridDisplayText, FGuid& OutDuplicateGridId)
+    bool DuplicateGrid(const FGuid& InGridId, const FText& GridDisplayText, FGuid& OutDuplicateGridId)
     {
         FGridFactory::ValueTypePtr* FindGrid = Grids.Find(InGridId);
         if (!FindGrid)
@@ -230,9 +138,10 @@ public:
         {
             OutDuplicateGridId = FGuid::NewGuid();
             check(!Grids.Contains(OutDuplicateGridId));
-            GridPtr->setName(TCHAR_TO_UTF8(*OutDuplicateGridId.ToString()));
-            //Note:: save-float-as-half is automatically copied via the grid metadata
-            FMetaMapFactory::InsertGridMeta<FText>(*GridPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, GridDisplayText);
+
+            //Note: save-float-as-half is automatically copied via the grid metadata
+            FMetaMapFactory::InsertGridMeta<FMetadataText>(*GridDuplicatePtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, FMetadataText(GridDisplayText));
+			AllocatedGrids.push_back(*GridDuplicatePtr);
             Grids.Add(OutDuplicateGridId, GridDuplicatePtr);
             IsGridDuplicated = true;
         }
@@ -387,7 +296,7 @@ public:
     }
 
     template<typename VoxelType, typename ValueSourceType, EVoxelIterator VoxelIterType>
-    VOXELMATEINLINE void SetVoxelValuesFromSource(const FGuid& GridId, const TScriptInterface<ValueSourceType> &ValueSource)
+    VOXELMATEINLINE void SetVoxelValuesFromSource(const FGuid& GridId, const ValueSourceType &ValueSource)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -395,9 +304,9 @@ public:
             openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(*FindGrid);
             if (TypedGridPtr)
             {
-                typedef VoxelIteratorAdaptor<VoxelIterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> IterAdaptor;
+                typedef VoxelDatabaseUtil::VoxelIteratorAdaptor<VoxelIterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> IterAdaptor;
                 typedef IterAdaptor::Type IterType;
-                typedef TSetValuesOp<IterType, VoxelType, ValueSourceType> OpType;
+                typedef VoxelDatabaseUtil::TSetValuesOp<IterType, VoxelType, ValueSourceType> OpType;
 
                 OpType SetValuesOp(ValueSource, TypedGridPtr->transform());
                 openvdb::tools::foreach<IterType, OpType>(IterAdaptor::SelectIter(*TypedGridPtr), SetValuesOp);
@@ -444,6 +353,11 @@ public:
         }
     }
 
+    void ExtractGridSurface()
+    {
+
+    }
+
     template<typename MetadataType>
     bool AddMetadata(FGuid& OutMetadataId)
     {
@@ -452,8 +366,8 @@ public:
         if (MetaPtr != nullptr)
         {
             OutMetadataId = FGuid::NewGuid();
-            check(!Metadata.Contains(OutMetadataId));
-            Metadata.Add(OutMetadataId, MetaPtr);
+            check(!DatabaseMetadata.Contains(OutMetadataId));
+			DatabaseMetadata.insertMeta(OutMetadataId.ToString(), *MetaPtr);
             IsMetadataAdded = true;
         }
         return IsMetadataAdded;
@@ -462,95 +376,72 @@ public:
     void SetCoordinateTransform(const FGuid& GridId, const FAffineCoordinateTransform& InCoordinateTransform)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
+        if (FindGrid != nullptr && *FindGrid != nullptr)
         {
-            const FVector4 &Col0 = InCoordinateTransform.Matrix.GetColumn(0);
-            const FVector4 &Col1 = InCoordinateTransform.Matrix.GetColumn(1);
-            const FVector4 &Col2 = InCoordinateTransform.Matrix.GetColumn(2);
-            const openvdb::math::Mat3d AffineMatrix(
-                Col0.X, Col1.X, Col2.X,
-                Col0.Y, Col1.Y, Col2.Y,
-                Col0.Z, Col1.Z, Col2.Z
-            );
-            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::AffineMap(AffineMatrix)))));
+            VoxelDatabaseStatics::SetGridCoordinateTransform<FAffineCoordinateTransform>(**FindGrid, InCoordinateTransform);
         }
     }
 
     void SetCoordinateTransform(const FGuid& GridId, const FUnitaryCoordinateTransform& InCoordinateTransform)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
+        if (FindGrid != nullptr && *FindGrid != nullptr)
         {
-            FVector Axis = FVector::ZeroVector;
-            float Angle = 0.0f;
-            InCoordinateTransform.Quat.ToAxisAndAngle(Axis, Angle);
-            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UnitaryMap(openvdb::Vec3d(Axis.X, Axis.Y, Axis.Z), Angle)))));
+            VoxelDatabaseStatics::SetGridCoordinateTransform<FUnitaryCoordinateTransform>(**FindGrid, InCoordinateTransform);
         }
     }
 
     void SetCoordinateTransform(const FGuid& GridId, const FScaleCoordinateTransform& InCoordinateTransform)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
+        if (FindGrid != nullptr && *FindGrid != nullptr)
         {
-            const openvdb::Vec3d Scale(InCoordinateTransform.ScaleVec.X, InCoordinateTransform.ScaleVec.Y, InCoordinateTransform.ScaleVec.Z);
-            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::ScaleMap(Scale)))));
+            VoxelDatabaseStatics::SetGridCoordinateTransform<FScaleCoordinateTransform>(**FindGrid, InCoordinateTransform);
         }
     }
 
     void SetCoordinateTransform(const FGuid& GridId, const FUniformScaleCoordinateTransform& InCoordinateTransform)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
+        if (FindGrid != nullptr && *FindGrid != nullptr)
         {
-            const float &Scale(InCoordinateTransform.ScaleValue);
-            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UniformScaleMap(Scale)))));
+            VoxelDatabaseStatics::SetGridCoordinateTransform<FUniformScaleCoordinateTransform>(**FindGrid, InCoordinateTransform);
         }
     }
 
     void SetCoordinateTransform(const FGuid& GridId, const FTranslationCoordinateTransform& InCoordinateTransform)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
+        if (FindGrid != nullptr && *FindGrid != nullptr)
         {
-            const openvdb::Vec3d Translation(InCoordinateTransform.TranslationVec.X, InCoordinateTransform.TranslationVec.Y, InCoordinateTransform.TranslationVec.Z);
-            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::TranslationMap(Translation)))));
+            VoxelDatabaseStatics::SetGridCoordinateTransform<FTranslationCoordinateTransform>(**FindGrid, InCoordinateTransform);
         }
     }
 
     void SetCoordinateTransform(const FGuid& GridId, const FScaleTranslationCoordinateTransform& InCoordinateTransform)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
+        if (FindGrid != nullptr && *FindGrid != nullptr)
         {
-            const openvdb::Vec3d Scale(InCoordinateTransform.ScaleVec.X, InCoordinateTransform.ScaleVec.Y, InCoordinateTransform.ScaleVec.Z);
-            const openvdb::Vec3d Translation(InCoordinateTransform.TranslationVec.X, InCoordinateTransform.TranslationVec.Y, InCoordinateTransform.TranslationVec.Z);
-            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::ScaleTranslateMap(Scale, Translation)))));
+            VoxelDatabaseStatics::SetGridCoordinateTransform<FScaleTranslationCoordinateTransform>(**FindGrid, InCoordinateTransform);
         }
     }
 
     void SetCoordinateTransform(const FGuid& GridId, const FUniformScaleTranslationCoordinateTransform& InCoordinateTransform)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
+        if (FindGrid != nullptr && *FindGrid != nullptr)
         {
-            const float &Scale = InCoordinateTransform.ScaleValue;
-            const openvdb::Vec3d Translation(InCoordinateTransform.TranslationVec.X, InCoordinateTransform.TranslationVec.Y, InCoordinateTransform.TranslationVec.Z);
-            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UniformScaleTranslateMap(Scale, Translation)))));
+            VoxelDatabaseStatics::SetGridCoordinateTransform<FUniformScaleTranslationCoordinateTransform>(**FindGrid, InCoordinateTransform);
         }
     }
 
     void SetCoordinateTransform(const FGuid& GridId, const FNonlinearFrustumCoordinateTransform& InCoordinateTransform)
     {
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
-        if (FindGrid != nullptr)
+        if (FindGrid != nullptr && *FindGrid != nullptr)
         {
-            const openvdb::Vec3d Box0(InCoordinateTransform.Box.Min.X, InCoordinateTransform.Box.Min.Y, InCoordinateTransform.Box.Min.Z);
-            const openvdb::Vec3d Box1(InCoordinateTransform.Box.Max.X, InCoordinateTransform.Box.Max.Y, InCoordinateTransform.Box.Max.Z);
-            const openvdb::BBoxd BoundingBox(Box0 < Box1 ? Box0 : Box1, Box0 > Box1 ? Box0 : Box1);
-            const float &Taper = InCoordinateTransform.Taper;
-            const float &Depth = InCoordinateTransform.Depth;
-            (*FindGrid)->setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::NonlinearFrustumMap(BoundingBox, Taper, Depth)))));
+            VoxelDatabaseStatics::SetGridCoordinateTransform<FNonlinearFrustumCoordinateTransform>(**FindGrid, InCoordinateTransform);
         }
     }
 
@@ -559,11 +450,7 @@ public:
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
         {
-            const openvdb::math::Axis RotationAxis =
-                Axis == EAxis::X ? openvdb::math::Axis::X_AXIS :
-                Axis == EAxis::Y ? openvdb::math::Axis::Y_AXIS :
-                openvdb::math::Axis::Z_AXIS;
-
+            const openvdb::math::Axis RotationAxis = VoxelDatabaseStatics::GetAxisType(Axis);
             if (Op == ETransformOp::PreOp)
             {
                 (*FindGrid)->transform().preRotate(Radians, RotationAxis);
@@ -632,14 +519,8 @@ public:
         const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
         {
-            const openvdb::math::Axis ShearAxis0 =
-                Axis0 == EAxis::X ? openvdb::math::Axis::X_AXIS :
-                Axis0 == EAxis::Y ? openvdb::math::Axis::Y_AXIS :
-                openvdb::math::Axis::Z_AXIS;
-            const openvdb::math::Axis ShearAxis1 =
-                Axis1 == EAxis::X ? openvdb::math::Axis::X_AXIS :
-                Axis1 == EAxis::Y ? openvdb::math::Axis::Y_AXIS :
-                openvdb::math::Axis::Z_AXIS;
+            const openvdb::math::Axis ShearAxis0 = VoxelDatabaseStatics::GetAxisType(Axis0);
+            const openvdb::math::Axis ShearAxis1 = VoxelDatabaseStatics::GetAxisType(Axis1);
 
             if (Op == ETransformOp::PreOp)
             {
@@ -699,18 +580,134 @@ public:
 
 private:
     friend class FVoxelMateModule;
-    //TODO idea for faster grid lookup
-    //friend class AVoxelGridProxy;
+    AVoxelDatabase();
 
-    UVoxelDatabase()
-    {
-        AddToRoot();
-        FString VoxelDatabaseName;
-        GetName(VoxelDatabaseName);
-        DataPath = FPaths::GameUserDeveloperDir() + VoxelDatabaseName + TEXT("/Data/");
-    }
-
-    TMap<FGuid, FMetaValueFactory::ValueTypePtr> Metadata;
-    TMap<FGuid, FGridFactory::ValueTypePtr> Grids;
+	openvdb::MetaMap DatabaseMetadata;
+	openvdb::GridPtrVec AllocatedGrids;
+	TMap<FGuid, FGridFactory::ValueTypePtr> Grids;
     TMultiMap<FGuid, FGridFactory::ValueTypePtr> GridCopies;
+
+	void SerializeDatabaseMetadata(FArchive& Ar)
+	{
+		if (Ar.IsLoading())
+		{
+			ReadMetadata(Ar);
+		}
+		else
+		{
+			WriteMetadata(Ar);
+		}
+	}
+
+	void SerializeAllGrids(FArchive& Ar)
+	{
+		int32 GridCount = -1;
+		if (Ar.IsLoading())
+		{
+			Ar << GridCount;
+			for (int32 i = 0; i < GridCount; ++i)
+			{
+				ReadGrid(Ar);
+			}
+		}
+		else
+		{
+			//First get the non-null grid count
+			for (auto i = AllocatedGrids.begin(); i != AllocatedGrids.end(); ++i)
+			{
+				if ((*i) != nullptr)
+				{
+					GridCount++;
+				}
+			}
+
+			Ar << GridCount;
+			for (auto i = AllocatedGrids.begin(); i != AllocatedGrids.end(); ++i)
+			{
+				WriteGrid(Ar, *i);
+			}
+		}
+	}
+
+	VOXELMATEINLINE void ReadMetadata(FArchive& Ar)
+	{
+		check(Ar.IsLoading());
+
+		TArray<ANSICHAR> DatabaseMetadataBytes;
+		Ar << DatabaseMetadataBytes;
+
+		FStreamReader DatabaseDataFileStream(DatabaseMetadataBytes, Ar.IsPersistent());
+		DatabaseMetadata.readMeta(DatabaseDataFileStream.GetStream());
+	}
+
+	VOXELMATEINLINE void WriteMetadata(FArchive& Ar)
+	{
+		check(Ar.IsSaving());
+		
+		TArray<ANSICHAR> DatabaseMetadataBytes;
+		FStreamWriter DatabaseDataFileStream(DatabaseMetadataBytes, Ar.IsPersistent());
+		DatabaseMetadata.writeMeta(DatabaseDataFileStream.GetStream());
+
+		Ar << DatabaseMetadataBytes;
+	}
+
+	VOXELMATEINLINE void ReadGrid(FArchive& Ar)
+	{
+		check(Ar.IsLoading());
+
+		FString GridName;
+		Ar << GridName;
+
+		FString GridTypeName;
+		Ar << GridTypeName;
+
+		openvdb::GridBase::Ptr GridPtr = FGridFactory::CreateType(GridTypeName);
+		if (GridPtr != nullptr)
+		{
+			TArray<ANSICHAR> GridBytes;
+			Ar << GridBytes;
+
+			FStreamReader GridReader(GridBytes, Ar.IsPersistent());
+			GridPtr->readMeta(GridReader.GetStream());
+			GridPtr->readTopology(GridReader.GetStream());
+			GridPtr->readTransform(GridReader.GetStream());
+			GridPtr->readBuffers(GridReader.GetStream());
+
+			FGuid GridId;
+			FGuid::Parse(UTF8_TO_TCHAR(GridPtr->getName().c_str()), GridId);
+			Grids.Add(GridId, GridPtr);
+			AllocatedGrids.push_back(GridPtr);
+		}
+		else
+		{
+			//Skip past the array portion
+			int32 GridByteCount = 0;
+			Ar << GridByteCount;
+
+			const int64 CurrentPos = Ar.Tell();
+			Ar.Seek(CurrentPos + (int64)GridByteCount);
+		}
+	}
+
+	VOXELMATEINLINE void WriteGrid(FArchive& Ar, const openvdb::GridBase::Ptr& GridPtr)
+	{
+		check(Ar.IsSaving());
+
+		if (GridPtr != nullptr)
+		{
+			FString GridName = UTF8_TO_TCHAR(GridPtr->getName().c_str());
+			Ar << GridName;
+
+			FString GridTypeName = UTF8_TO_TCHAR(GridPtr->type().c_str());
+			Ar << GridTypeName;
+
+			TArray<ANSICHAR> GridBytes;
+			FStreamWriter GridWriter(GridBytes, Ar.IsPersistent());
+			GridPtr->writeMeta(GridWriter.GetStream());
+			GridPtr->writeTopology(GridWriter.GetStream());
+			GridPtr->writeTransform(GridWriter.GetStream());
+			GridPtr->writeBuffers(GridWriter.GetStream());
+			Ar << GridBytes;
+		}
+	}
 };

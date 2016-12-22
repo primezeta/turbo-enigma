@@ -1,10 +1,33 @@
 #include "VoxelMatePCH.h"
-#include "GridTypes.h"
-#include "VoxelDatabaseStatics.h"
 #include "VoxelDatabase.h"
 #include "ArchiveTransformMap.h"
 
-void UVoxelDatabase::InitializeTypes()
+AVoxelDatabase* AVoxelDatabase::VoxelMateVoxelDatabase = nullptr;
+
+AVoxelDatabase::AVoxelDatabase()
+    : AuthDatabaseProxy(nullptr), LocalDatabaseProxy(nullptr)
+{
+    SetReplicates(true);
+    SetReplicateMovement(false);
+    SetActorEnableCollision(false);
+    bNetTemporary = 0;
+    bAutoDestroyWhenFinished = 1;
+    bCanBeDamaged = 0;
+
+    if (GetNetMode() != ENetMode::NM_Client)
+    {
+        AuthDatabaseProxy = NewObject<AVoxelDatabaseProxy>(this);
+		DatabaseProxy = AuthDatabaseProxy;
+    }
+}
+
+void AVoxelDatabase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AVoxelDatabase, DatabaseProxy);
+}
+
+void AVoxelDatabase::Startup()
 {
     //TODO: Note that the following BLOSC related stuff is in openvdb::initialize
 //#ifdef OPENVDB_USE_BLOSC
@@ -19,95 +42,24 @@ void UVoxelDatabase::InitializeTypes()
     FTransformMapFactory::RegisterSupportedTypes();
 }
 
-void UVoxelDatabase::UninitializeTypes()
+void AVoxelDatabase::Shutdown()
 {
     FGridFactory::UnregisterSupportedTypes();
     FMetaValueFactory::UnregisterSupportedTypes();
     FTransformMapFactory::UnregisterSupportedTypes();
 }
 
-const TArray<FString>& UVoxelDatabase::GetRegisteredGridTypeNames() const
+const TArray<FString>& AVoxelDatabase::GetRegisteredGridTypeNames() const
 {
     return FGridFactory::GetRegisteredTypeNames();
 }
 
-const TArray<FString>& UVoxelDatabase::GetRegisteredMetadataTypeNames() const
+const TArray<FString>& AVoxelDatabase::GetRegisteredMetadataTypeNames() const
 {
     return FMetaValueFactory::GetRegisteredTypeNames();
 }
 
-const TArray<FString>& UVoxelDatabase::GetRegisteredTransformMapTypeNames() const
+const TArray<FString>& AVoxelDatabase::GetRegisteredTransformMapTypeNames() const
 {
     return FTransformMapFactory::GetRegisteredTypeNames();
-}
-
-void UVoxelDatabase::GetGridsDisplay(TMap<FGuid, FText>& OutGridsDisplay) const
-{
-    for (auto i = Grids.CreateConstIterator(); i; ++i)
-    {
-        if (i.Value() != nullptr)
-        {
-            openvdb::TypedMetadata<FVoxelDatabaseTextMeta>::Ptr MetaValuePtr = i->Value->getMetadata<openvdb::TypedMetadata<FVoxelDatabaseTextMeta>>(TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText));
-            check(MetaValuePtr != nullptr);
-            const FGuid& GridId = i.Key();
-            OutGridsDisplay.Emplace(GridId, MetaValuePtr->value().Value);
-        }
-    }
-}
-
-void UVoxelDatabase::GetMetadataDisplay(TMap<FGuid, FText>& OutMetadataDisplay) const
-{
-    for (auto i = Metadata.CreateConstIterator(); i; ++i)
-    {
-        if (i.Value() != nullptr)
-        {
-            //Display the metavalue according to its string representation
-            const FGuid& MetaId = i.Key();
-            OutMetadataDisplay.Emplace(MetaId, FText::FromString(FString(UTF8_TO_TCHAR(i.Value()->str().c_str()))));
-        }
-    }
-}
-
-UVoxelDatabaseProxy* UVoxelDatabase::GetDatabaseProxy()
-{
-    if (VoxelDatabaseProxy && VoxelDatabaseProxy->IsValidLowLevel())
-    {
-        return VoxelDatabaseProxy;
-    }
-
-    VoxelDatabaseProxy = NewObject<UVoxelDatabaseProxy>(this);
-    check(VoxelDatabaseProxy);
-
-    //for (auto i = Grids.CreateConstIterator(); i; ++i)
-    //{
-    //    FGridFactory::ValueTypePtr GridPtr = i.Value();
-    //    if (GridPtr != nullptr)
-    //    {
-    //        AVoxelGridProxy* GridProxy = nullptr;
-    //        if (GridPtr->isType<openvdb::Grid<openvdb::tree::Tree4<bool>::Type>>())
-    //        {
-    //            GridProxy = NewObject<AVoxelGridProxyBool>(VoxelDatabaseProxy);
-    //        }
-    //        //TODO other types
-
-    //        if (GridProxy)
-    //        {
-    //            GridProxy->GridId = i.Key();
-    //            const openvdb::Name GridDisplayTextMetaName = TCHAR_TO_UTF8(*VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText);
-    //            openvdb::TypedMetadata<FVoxelDatabaseText>::ConstPtr GridDisplayTextMetaPtr = GridPtr->getMetadata<openvdb::TypedMetadata<FVoxelDatabaseText>>(GridDisplayTextMetaName);
-    //            if (GridDisplayTextMetaPtr != nullptr)
-    //            {
-    //                GridProxy->GridDisplayText = GridDisplayTextMetaPtr->value().Value;
-    //            }
-    //            else
-    //            {
-    //                GridProxy->GridDisplayText = FText::FromString(FString(UTF8_TO_TCHAR(GridPtr->getName().c_str())));
-    //            }
-
-    //            VoxelDatabaseProxy->GridProxies.Add(GridProxy);
-    //        }
-    //    }
-    //}
-
-    return VoxelDatabaseProxy;
 }

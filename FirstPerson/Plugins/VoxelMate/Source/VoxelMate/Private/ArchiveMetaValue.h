@@ -4,21 +4,13 @@
 
 struct FMetaValueFactory : public FVoxelDatabaseTypeFactory<openvdb::Metadata>
 {
-    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, FMetaValueFactory::ValueTypePtr& MetaValuePtr);
-    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::Metadata& MetaValue);
-    VOXELMATEINLINE bool Serialize(FArchive& Ar)
-    {
-        Ar << ValuePtr;
-        return true;
-    }
-
     template<typename MetaType>
     static void Register()
     {
         try
         {
             openvdb::TypedMetadata<MetaType>::registerType();
-            FMetaValueFactory::RegisteredTypeNames.Add(FName::NameToDisplayString(UTF8_TO_TCHAR(openvdb::typeNameAsString<MetaType::ValueType>()), false));
+            FMetaValueFactory::RegisteredTypeNames.Add(FName::NameToDisplayString(UTF8_TO_TCHAR(openvdb::typeNameAsString<MetaType>()), false));
         }
         catch (const openvdb::KeyError& e)
         {

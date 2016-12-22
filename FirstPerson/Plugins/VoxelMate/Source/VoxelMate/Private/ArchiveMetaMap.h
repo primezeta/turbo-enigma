@@ -4,14 +4,12 @@
 
 struct FMetaMapFactory
 {
-    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::MetaMap& MetaMap);
-
     template<typename MetaType>
     VOXELMATEINLINE static void InsertMeta(openvdb::MetaMap& MetaMap, const openvdb::Name& MetaName, const MetaType& MetaValue)
     {
         try
         {
-            MetaMap.insertMeta(MetaName, openvdb::TypedMetadata<TVoxelDatabaseMetadataType<MetaType>>(MetaValue));
+            MetaMap.insertMeta(MetaName, openvdb::TypedMetadata<MetaType>(MetaValue));
         }
         catch (const openvdb::ValueError &e)
         {

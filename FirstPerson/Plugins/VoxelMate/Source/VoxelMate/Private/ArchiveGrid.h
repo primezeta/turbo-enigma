@@ -7,21 +7,13 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
     static TMap<FString, int32> CachedTopologySizeByTreeType;
     uint8 CompressionFlags;
 
-    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, FGridFactory::ValueTypePtr& GridPtr);
-    VOXELMATEINLINE friend FArchive& operator<<(FArchive& Ar, openvdb::GridBase& Grid);
-    VOXELMATEINLINE bool Serialize(FArchive& Ar)
-    {
-        Ar << ValuePtr;
-        return true;
-    }
-
     template<typename VoxelType>
     static void Register()
     {
         try
         {
             openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::registerGrid();
-            RegisteredTypeNames.Add(FName::NameToDisplayString(UTF8_TO_TCHAR(openvdb::typeNameAsString<VoxelType::ValueType>()), false));
+            RegisteredTypeNames.Add(FName::NameToDisplayString(UTF8_TO_TCHAR(openvdb::typeNameAsString<VoxelType>()), false));
         }
         catch (const openvdb::KeyError& e)
         {
@@ -50,6 +42,20 @@ struct FGridFactory : public FVoxelDatabaseTypeFactory<openvdb::GridBase>
         check(GridPtr != nullptr);
         return GridPtr;
     }
+
+	static ValueTypePtr CreateType(const FString& TypeName)
+	{
+		ValueTypePtr GridPtr = nullptr;
+		try
+		{
+			GridPtr = openvdb::GridBase::createGrid(TCHAR_TO_UTF8(*TypeName));
+		}
+		catch (const openvdb::LookupError& e)
+		{
+			(void)e; //TODO log error (grid type name is not registered)
+		}
+		return GridPtr;
+	}
 
     template<typename VoxelType>
     static typename openvdb::Grid<typename openvdb::tree::Tree4<VoxelType>::Type>::Ptr ShallowCopyGrid(ValueTypeConstPtr& InGridPtr)

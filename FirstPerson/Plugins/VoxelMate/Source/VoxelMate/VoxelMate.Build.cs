@@ -20,7 +20,7 @@ public class VoxelMate : ModuleRules
                 "VoxelMate/Private",
             });
 
-		PrivateDependencyModuleNames.AddRange(
+        PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
                 "Core",

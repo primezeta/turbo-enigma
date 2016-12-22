@@ -21,7 +21,7 @@ struct FAffineCoordinateTransform
     //Therefore the only valid FMatrix constructor is the following:
     FAffineCoordinateTransform(const FVector& InX, const FVector& InY, const FVector& InZ)
         : Matrix(InX, InY, InZ, FVector(0.0f, 0.0f, 1.0f))
-    {}
+	{}
 
     FMatrix Matrix;
 };

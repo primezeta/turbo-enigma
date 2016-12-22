@@ -1,36 +1,38 @@
 #pragma once
 #include "EngineMinimal.h"
 #include "VoxelDatabaseCommon.h"
+#include "VoxelGridProxy.h"
 #include "VoxelDatabaseProxy.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, NotPlaceable, Blueprintable)
-class VOXELMATE_API UVoxelDatabaseProxy : public UObject
+UCLASS(ClassGroup = VoxelMate, NotBlueprintable, NotPlaceable, BlueprintType, CustomConstructor)
+class VOXELMATE_API AVoxelDatabaseProxy : public AActor
 {
     GENERATED_BODY()
 
 public:
-    friend FArchive& operator<<(FArchive& Ar, UVoxelDatabaseProxy& DatabaseProxy);
-    virtual void Serialize(FArchive& Ar) override;
-    virtual void PostInitProperties() override;
+    friend FArchive& operator<<(FArchive& Ar, AVoxelDatabaseProxy& DatabaseProxy)
+    {
+        if (!DatabaseProxy.IsDefaultSubobject())
+        {
+            Ar << DatabaseProxy.GridProxies;
+        }
+        return Ar;
+    }
+
+    virtual void AVoxelDatabaseProxy::Serialize(FArchive& Ar) override
+    {
+        Super::Serialize(Ar);
+        Ar << *this;
+    }
+
     virtual bool IsReadyForFinishDestroy() override;
     virtual void BeginDestroy() override;
-    virtual void PreSave(const class ITargetPlatform* TargetPlatform) override;
-    virtual void PostLoad() override;
 
-    UVoxelDatabaseProxy(const FObjectInitializer& ObjectInitializer)
-        : Super(ObjectInitializer)
-    {}
-
-    static bool CreateGridDataFile(AVoxelGridProxy* GridProxy, FText& OutFailureReason);
-    bool LoadGridData(AVoxelGridProxy* GridProxy);
-    bool SaveGridData(AVoxelGridProxy* GridProxy);
-
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(Category = VoxelDatabaseProxy, BlueprintReadOnly, Replicated)
         TArray<AVoxelGridProxy*> GridProxies;
     //UPROPERTY()
         //UVoxelMetadataProxy* DatabaseMetadataProxy; //TODO
-    UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
-        static UVoxelDatabaseProxy* OpenDatabaseProxy();
+
     UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
         AVoxelGridProxy* AddScalarGrid(EVoxelScalarType VoxelType, const FText& GridDisplayText);
     UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
@@ -39,4 +41,9 @@ public:
         AVoxelGridProxy* AddVectorGrid(EVoxelVectorType VoxelType, const FText& GridDisplayText);
     UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
         AVoxelGridProxy* AddFloatVectorGrid(EVoxelFloatVectorType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf);
+
+private:
+    //Must be created via FVoxelMateModule::OpenDatabaseProxy
+    friend class FVoxelMateModule;
+    AVoxelDatabaseProxy();
 };

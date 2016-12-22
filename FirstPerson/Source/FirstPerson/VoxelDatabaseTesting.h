@@ -1,11 +1,11 @@
 #pragma once
 #include "EngineMinimal.H"
 #include "module/perlin.h"
-#include "VoxelValueSource.h"
+#include "VoxelValueSources.h"
 #include "VoxelDatabaseTesting.generated.h"
 
 UCLASS(Category = VoxelMateTesting, BlueprintType, Blueprintable)
-class UVoxelPerlinNoiseSource : public UObject, public IVoxelFloatSourceInterface
+class UVoxelPerlinNoiseSource : public UVoxelFloatSource
 {
     GENERATED_BODY()
 
