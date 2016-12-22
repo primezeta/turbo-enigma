@@ -19,6 +19,21 @@ class AVoxelDatabase : public AActor
 
 public:
 	static AVoxelDatabase* VoxelMateVoxelDatabase;
+	static void InitVoxelMateDatabase()
+	{
+		if (!VoxelMateVoxelDatabase)
+		{
+			VoxelMateVoxelDatabase = NewObject<AVoxelDatabase>();
+			//VoxelMateVoxelDatabase->IsSafeForRootSet() TODO
+			VoxelMateVoxelDatabase->AddToRoot();
+
+			if (VoxelMateVoxelDatabase->GetNetMode() != ENetMode::NM_Client)
+			{
+				VoxelMateVoxelDatabase->AuthDatabaseProxy = NewObject<AVoxelDatabaseProxy>(VoxelMateVoxelDatabase);
+				VoxelMateVoxelDatabase->DatabaseProxy = VoxelMateVoxelDatabase->AuthDatabaseProxy;
+			}
+		}
+	}
 
     UPROPERTY()
         AVoxelDatabaseProxy* AuthDatabaseProxy;

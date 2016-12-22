@@ -34,13 +34,8 @@ void FVoxelMateModule::StartupModule()
 	//	}
 	//}
 
+	AVoxelDatabase::InitVoxelMateDatabase();
 	AVoxelDatabase::Startup();
-	if (!AVoxelDatabase::VoxelMateVoxelDatabase)
-	{
-		AVoxelDatabase::VoxelMateVoxelDatabase = NewObject<AVoxelDatabase>();
-		//AVoxelDatabase::VoxelMateVoxelDatabase->IsSafeForRootSet() TODO
-		AVoxelDatabase::VoxelMateVoxelDatabase->AddToRoot();
-	}
 }
 
 void FVoxelMateModule::ShutdownModule()

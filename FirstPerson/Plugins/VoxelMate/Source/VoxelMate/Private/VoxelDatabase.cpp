@@ -13,12 +13,6 @@ AVoxelDatabase::AVoxelDatabase()
     bNetTemporary = 0;
     bAutoDestroyWhenFinished = 1;
     bCanBeDamaged = 0;
-
-    if (GetNetMode() != ENetMode::NM_Client)
-    {
-        AuthDatabaseProxy = NewObject<AVoxelDatabaseProxy>(this);
-		DatabaseProxy = AuthDatabaseProxy;
-    }
 }
 
 void AVoxelDatabase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
