@@ -30,7 +30,7 @@ public:
         InitNoise();
     }
 
-    UFUNCTION(Category = VoxelMateTesting, BlueprintCallable)
+    UFUNCTION(Category = VoxelMateTesting, BlueprintPure, BlueprintCallable)
         static UVoxelPerlinNoiseSource* CreatePerlinNoiseSource(UObject* Owner)
         {
             UVoxelPerlinNoiseSource* PerlinNoiseSource = NewObject<UVoxelPerlinNoiseSource>(Owner);
