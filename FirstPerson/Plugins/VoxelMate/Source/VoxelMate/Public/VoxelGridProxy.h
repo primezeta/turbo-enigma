@@ -100,6 +100,8 @@ public:
 		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const bool& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
 	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
 		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelBoolSource>& ValueSourceInterface);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void ExtractSurface(EVoxelIterator VoxelIter);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -129,6 +131,8 @@ public:
 		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const float& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
 	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
 		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelFloatSource>& ValueSourceInterface);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void ExtractSurface(EVoxelIterator VoxelIter);
 
 	UPROPERTY(Category = VoxelGridProxy, BlueprintReadOnly)
 		bool IsFloatSavedAsHalf;
@@ -146,6 +150,8 @@ public:
 		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int32& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
 	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
 		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelInt32Source>& ValueSourceInterface);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void ExtractSurface(EVoxelIterator VoxelIter);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -160,6 +166,8 @@ public:
 		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint8& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
 	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
 		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelUInt8Source>& ValueSourceInterface);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void ExtractSurface(EVoxelIterator VoxelIter);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -189,6 +197,8 @@ public:
 		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
 	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
 		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelVectorSource>& ValueSourceInterface);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void ExtractSurface(EVoxelIterator VoxelIter);
 
 	UPROPERTY(Category = VoxelGridProxy, BlueprintReadOnly)
 		bool IsFloatSavedAsHalf;
@@ -206,4 +216,6 @@ public:
 		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FIntVector& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
 	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
 		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelIntVectorSource>& ValueSourceInterface);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void ExtractSurface(EVoxelIterator VoxelIter);
 };

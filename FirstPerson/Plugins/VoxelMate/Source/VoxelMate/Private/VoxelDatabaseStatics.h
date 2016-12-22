@@ -366,4 +366,109 @@ namespace VoxelDatabaseUtil
             iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(VoxelType(Value)));
         }
     };
+
+	template<typename IterType, typename GridType>
+	class TExtractSurfaceOp;
+
+	template<typename GridType>
+	class TExtractSurfaceOp<typename GridType::ValueOnIter, GridType>
+	{
+	public:
+		typedef typename GridType::ValueOnIter IterType;
+		typedef typename GridType::Accessor AccessorType;
+		typedef typename GridType::TreeType::ValueType ValueType;
+
+		TExtractSurfaceOp(GridType &Grid)
+			: GridAcc(Grid.tree()), SurfaceValue(Grid.tree().background())
+		{}
+
+		VOXELMATEINLINE void operator()(const IterType& iter) const
+		{
+			check(iter.isVoxelValue());
+
+			const openvdb::Coord Coord = iter.getCoord();
+			const ValueType Values[8] = {
+				GridAcc.getValue(Coord),
+				GridAcc.getValue(Coord.offsetBy(0, 1, 0)),
+				GridAcc.getValue(Coord.offsetBy(1, 1, 0)),
+				GridAcc.getValue(Coord.offsetBy(1, 0, 0)),
+				GridAcc.getValue(Coord.offsetBy(0, 0, 1)),
+				GridAcc.getValue(Coord.offsetBy(0, 1, 1)),
+				GridAcc.getValue(Coord.offsetBy(1, 1, 1)),
+				GridAcc.getValue(Coord.offsetBy(1, 0, 1)),
+			};
+
+			//Flag a vertex as inside the surface if the data value is less than the surface data value
+			uint8 InsideBits = 0;
+			if (Values[0] < SurfaceValue) { InsideBits |= 1; }
+			if (Values[1] < SurfaceValue) { InsideBits |= 2; }
+			if (Values[2] < SurfaceValue) { InsideBits |= 4; }
+			if (Values[3] < SurfaceValue) { InsideBits |= 8; }
+			if (Values[4] < SurfaceValue) { InsideBits |= 16; }
+			if (Values[5] < SurfaceValue) { InsideBits |= 32; }
+			if (Values[6] < SurfaceValue) { InsideBits |= 64; }
+			if (Values[7] < SurfaceValue) { InsideBits |= 128; }
+
+			if (InsideBits == 0 || InsideBits == 255)
+			{
+				//Turn voxel off since it is outside the surface
+				iter.setValueOff();
+			}
+		}
+
+	private:
+		const ValueType &SurfaceValue;
+		AccessorType GridAcc;
+	};
+
+	template<typename GridType>
+	class TExtractSurfaceOp<typename GridType::ValueOffIter, GridType>
+	{
+	public:
+		typedef typename GridType::ValueOffIter IterType;
+		typedef typename GridType::Accessor AccessorType;
+		typedef typename GridType::TreeType::ValueType ValueType;
+
+		TExtractSurfaceOp(GridType &Grid)
+			: GridAcc(Grid.tree()), SurfaceValue(Grid.tree().background())
+		{}
+
+		VOXELMATEINLINE void operator()(const IterType& iter) const
+		{
+			check(iter.isVoxelValue());
+
+			const openvdb::Coord Coord = iter.getCoord();
+			const ValueType Values[8] = {
+				GridAcc.getValue(Coord),
+				GridAcc.getValue(Coord.offsetBy(0, 1, 0)),
+				GridAcc.getValue(Coord.offsetBy(1, 1, 0)),
+				GridAcc.getValue(Coord.offsetBy(1, 0, 0)),
+				GridAcc.getValue(Coord.offsetBy(0, 0, 1)),
+				GridAcc.getValue(Coord.offsetBy(0, 1, 1)),
+				GridAcc.getValue(Coord.offsetBy(1, 1, 1)),
+				GridAcc.getValue(Coord.offsetBy(1, 0, 1)),
+			};
+
+			//Flag a vertex as inside the surface if the data value is less than the surface data value
+			uint8 InsideBits = 0;
+			if (Values[0] < SurfaceValue) { InsideBits |= 1; }
+			if (Values[1] < SurfaceValue) { InsideBits |= 2; }
+			if (Values[2] < SurfaceValue) { InsideBits |= 4; }
+			if (Values[3] < SurfaceValue) { InsideBits |= 8; }
+			if (Values[4] < SurfaceValue) { InsideBits |= 16; }
+			if (Values[5] < SurfaceValue) { InsideBits |= 32; }
+			if (Values[6] < SurfaceValue) { InsideBits |= 64; }
+			if (Values[7] < SurfaceValue) { InsideBits |= 128; }
+
+			if (InsideBits > 0 && InsideBits < 255)
+			{
+				//Turn voxel on since it is on the surface
+				iter.setActiveState(true);
+			}
+		}
+
+	private:
+		const ValueType &SurfaceValue;
+		AccessorType GridAcc;
+	};
 }

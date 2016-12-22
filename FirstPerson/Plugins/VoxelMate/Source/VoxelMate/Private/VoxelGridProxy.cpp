@@ -235,6 +235,20 @@ void AVoxelGridProxy##TypeName::SetValuesOnly(EVoxelIterator VoxelIter, const TS
 			VoxelDatabase->SetVoxelValuesFromSource<FVoxel##TypeName, UVoxel##TypeName##Source, EVoxelIterator::AllVoxelsIter>(GridId, *ValueSource);\
 		}\
 	}\
+}\
+void AVoxelGridProxy##TypeName::ExtractSurface(EVoxelIterator VoxelIter)\
+{\
+	if(VoxelDatabase)\
+	{\
+		if (VoxelIter == EVoxelIterator::InactiveVoxelsIter)\
+		{\
+			VoxelDatabase->ExtractGridSurface<FVoxel##TypeName, EVoxelIterator::InactiveVoxelsIter>(GridId);\
+		}\
+		else if (VoxelIter == EVoxelIterator::ActiveVoxelsIter)\
+		{\
+			VoxelDatabase->ExtractGridSurface<FVoxel##TypeName, EVoxelIterator::ActiveVoxelsIter>(GridId);\
+		}\
+	}\
 }
 
 GRID_PROXY_INTERFACE_IMPLEMENTATION(bool, Bool)

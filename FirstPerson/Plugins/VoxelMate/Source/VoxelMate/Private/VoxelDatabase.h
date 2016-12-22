@@ -361,9 +361,28 @@ public:
         }
     }
 
-    void ExtractGridSurface()
+	template<typename VoxelType, EVoxelIterator VoxelIterType>
+    void ExtractGridSurface(const FGuid& GridId)
     {
+		const FGridFactory::ValueTypePtr* FindGrid = Grids.Find(GridId);
+		if (FindGrid != nullptr)
+		{
+			openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(*FindGrid);
+			if (TypedGridPtr)
+			{
+				typedef VoxelDatabaseUtil::VoxelIteratorAdaptor<VoxelIterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> IterAdaptor;
+				typedef IterAdaptor::Type IterType;
+				typedef VoxelDatabaseUtil::TExtractSurfaceOp<IterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> OpType;
 
+				OpType ExtractSurfaceOp(*TypedGridPtr);
+				openvdb::tools::foreach<IterType, OpType>(IterAdaptor::SelectIter(*TypedGridPtr), ExtractSurfaceOp);
+			}
+			else
+			{
+				//TODO log error (grid types mismatched)
+				check(false); //TODO handle error
+			}
+		}
     }
 
     template<typename MetadataType>
