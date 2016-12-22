@@ -1,6 +1,5 @@
 #pragma once
 #include "EngineMinimal.h"
-#include "UnrealNetwork.h"
 #include "VoxelDatabaseCommon.h"
 #include "NoiseGeneratorConfiguration.h"
 #include "GridCoordinateTransforms.h"
@@ -16,8 +15,8 @@ class VOXELMATE_API AVoxelGridProxy : public AActor
 {
     GENERATED_BODY()
 
-public:    
-    friend FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy)
+public:
+	friend FArchive& operator<<(FArchive& Ar, AVoxelGridProxy& GridProxy)
     {
         if (!GridProxy.IsDefaultSubobject())
         {
@@ -42,26 +41,6 @@ public:
     //    TArray<UVoxelMetadataProxy*> MetadataProxies; //TODO
     UPROPERTY(Category = VoxelGridProxy, BlueprintReadOnly)
         TArray<AVoxelProxy*> ActiveVoxels;
-
-	UFUNCTION(Category = VoxelGridProxy, BlueprintNativeEvent, BlueprintCallable)
-		AVoxelProxy* GetVoxel(const FIntVector& IndexCoord) const;
-	UFUNCTION(Category = VoxelGridProxy, BlueprintNativeEvent, BlueprintCallable)
-		void FillValuesAndActiveState(const AVoxelProxy* VoxelProxy, const FIntVector& FillDimensions, bool VoxelizeActiveTilesAfterFill);
-	UFUNCTION(Category = VoxelGridProxy, BlueprintNativeEvent, BlueprintCallable)
-		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<IVoxelValueSourceInterface>& ValueSourceInterface);
-
-	virtual AVoxelProxy* GetVoxel_Implementation(const FIntVector& IndexCoord)
-	{
-		return nullptr;
-	}
-
-	virtual void FillValuesAndActiveState_Implementation(const AVoxelProxy* VoxelProxy, const FIntVector& FillDimensions, bool VoxelizeActiveTilesAfterFill)
-	{
-	}
-
-	virtual void SetValuesOnly_Implementation(EVoxelIterator VoxelIter, const TScriptInterface<IVoxelValueSourceInterface>& ValueSourceInterface)
-	{
-	}
 
     UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
         void ResetCoordinateTransformToAffine(const FAffineCoordinateTransform& InCoordinateTransform);
@@ -115,9 +94,12 @@ class VOXELMATE_API AVoxelGridProxyBool : public AVoxelGridProxy
     GENERATED_BODY()
 
 public:
-	virtual AVoxelProxy* GetVoxel_Implementation(const FIntVector& IndexCoord) override;
-	virtual void FillValuesAndActiveState_Implementation(const AVoxelProxy* VoxelProxy, const FIntVector& FillDimensions, bool VoxelizeActiveTilesAfterFill) override;
-	virtual void SetValuesOnly_Implementation(EVoxelIterator VoxelIter, const TScriptInterface<IVoxelValueSourceInterface>& ValueSourceInterface) override;
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		AVoxelProxy* GetVoxel(const FIntVector& IndexCoord);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const bool& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelBoolSource>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -141,9 +123,12 @@ public:
 		Ar << *this;
 	}
 
-	virtual AVoxelProxy* GetVoxel_Implementation(const FIntVector& IndexCoord) override;
-	virtual void FillValuesAndActiveState_Implementation(const AVoxelProxy* VoxelProxy, const FIntVector& FillDimensions, bool VoxelizeActiveTilesAfterFill) override;
-	virtual void SetValuesOnly_Implementation(EVoxelIterator VoxelIter, const TScriptInterface<IVoxelValueSourceInterface>& ValueSourceInterface) override;
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		AVoxelProxy* GetVoxel(const FIntVector& IndexCoord);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const float& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelFloatSource>& ValueSourceInterface);
 
 	UPROPERTY(Category = VoxelGridProxy, BlueprintReadOnly)
 		bool IsFloatSavedAsHalf;
@@ -155,9 +140,12 @@ class VOXELMATE_API AVoxelGridProxyInt32 : public AVoxelGridProxy
     GENERATED_BODY()
 
 public:
-	virtual AVoxelProxy* GetVoxel_Implementation(const FIntVector& IndexCoord) override;
-	virtual void FillValuesAndActiveState_Implementation(const AVoxelProxy* VoxelProxy, const FIntVector& FillDimensions, bool VoxelizeActiveTilesAfterFill) override;
-	virtual void SetValuesOnly_Implementation(EVoxelIterator VoxelIter, const TScriptInterface<IVoxelValueSourceInterface>& ValueSourceInterface) override;
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		AVoxelProxy* GetVoxel(const FIntVector& IndexCoord);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const int32& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelInt32Source>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -166,9 +154,12 @@ class VOXELMATE_API AVoxelGridProxyUInt8 : public AVoxelGridProxy
     GENERATED_BODY()
 
 public:
-	virtual AVoxelProxy* GetVoxel_Implementation(const FIntVector& IndexCoord) override;
-	virtual void FillValuesAndActiveState_Implementation(const AVoxelProxy* VoxelProxy, const FIntVector& FillDimensions, bool VoxelizeActiveTilesAfterFill) override;
-	virtual void SetValuesOnly_Implementation(EVoxelIterator VoxelIter, const TScriptInterface<IVoxelValueSourceInterface>& ValueSourceInterface) override;
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		AVoxelProxy* GetVoxel(const FIntVector& IndexCoord);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const uint8& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelUInt8Source>& ValueSourceInterface);
 };
 
 UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType)
@@ -192,9 +183,12 @@ public:
 		Ar << *this;
 	}
 
-	virtual AVoxelProxy* GetVoxel_Implementation(const FIntVector& IndexCoord) override;
-	virtual void FillValuesAndActiveState_Implementation(const AVoxelProxy* VoxelProxy, const FIntVector& FillDimensions, bool VoxelizeActiveTilesAfterFill) override;
-	virtual void SetValuesOnly_Implementation(EVoxelIterator VoxelIter, const TScriptInterface<IVoxelValueSourceInterface>& ValueSourceInterface) override;
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		AVoxelProxy* GetVoxel(const FIntVector& IndexCoord);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FVector& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelVectorSource>& ValueSourceInterface);
 
 	UPROPERTY(Category = VoxelGridProxy, BlueprintReadOnly)
 		bool IsFloatSavedAsHalf;
@@ -206,7 +200,10 @@ class VOXELMATE_API AVoxelGridProxyIntVector : public AVoxelGridProxy
     GENERATED_BODY()
 
 public:
-	virtual AVoxelProxy* GetVoxel_Implementation(const FIntVector& IndexCoord) override;
-	virtual void FillValuesAndActiveState_Implementation(const AVoxelProxy* VoxelProxy, const FIntVector& FillDimensions, bool VoxelizeActiveTilesAfterFill) override;
-	virtual void SetValuesOnly_Implementation(EVoxelIterator VoxelIter, const TScriptInterface<IVoxelValueSourceInterface>& ValueSourceInterface) override;
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		AVoxelProxy* GetVoxel(const FIntVector& IndexCoord);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void FillValuesAndActiveState(const FIntVector& StartIndexCoord, const FIntVector& FillDimensions, const FIntVector& Value, bool AreValuesActive, bool VoxelizeActiveTilesAfterFill);
+	UFUNCTION(Category = VoxelGridProxy, BlueprintCallable)
+		void SetValuesOnly(EVoxelIterator VoxelIter, const TScriptInterface<UVoxelIntVectorSource>& ValueSourceInterface);
 };

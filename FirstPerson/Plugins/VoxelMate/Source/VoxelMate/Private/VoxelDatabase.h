@@ -10,6 +10,9 @@
 #include <openvdb/io/Archive.h>
 #include "VoxelDatabase.generated.h"
 
+class AVoxelDatabase;
+extern AVoxelDatabase* VoxelDatabase;
+
 //TODO: See UWorldProxy which has checks for access from non-game threads. Might need to do the same for AVoxelDatabase
 
 UCLASS(ClassGroup = VoxelMate, NotBlueprintable, NotPlaceable, CustomConstructor)
@@ -18,29 +21,16 @@ class AVoxelDatabase : public AActor
     GENERATED_BODY()
 
 public:
-	static AVoxelDatabase* VoxelMateVoxelDatabase;
-	static void InitVoxelMateDatabase()
-	{
-		if (!VoxelMateVoxelDatabase)
-		{
-			VoxelMateVoxelDatabase = NewObject<AVoxelDatabase>();
-			//VoxelMateVoxelDatabase->IsSafeForRootSet() TODO
-			VoxelMateVoxelDatabase->AddToRoot();
+	AVoxelDatabase();
 
-			if (VoxelMateVoxelDatabase->GetNetMode() != ENetMode::NM_Client)
-			{
-				VoxelMateVoxelDatabase->AuthDatabaseProxy = NewObject<AVoxelDatabaseProxy>(VoxelMateVoxelDatabase);
-				VoxelMateVoxelDatabase->DatabaseProxy = VoxelMateVoxelDatabase->AuthDatabaseProxy;
-			}
-		}
-	}
-
+	UPROPERTY()
+		FString DatabasePath;
     UPROPERTY()
         AVoxelDatabaseProxy* AuthDatabaseProxy;
     UPROPERTY(Transient)
         AVoxelDatabaseProxy* LocalDatabaseProxy;
     UPROPERTY(Transient, ReplicatedUsing = OnRep_SetDatabaseProxy)
-        AVoxelDatabaseProxy* DatabaseProxy;
+		AVoxelDatabaseProxy* DatabaseProxy;
     
     UFUNCTION(Server, Reliable, WithValidation)
         void SetDatabaseProxy();
@@ -71,7 +61,10 @@ public:
     virtual void Serialize(FArchive& Ar) override
     {
         Super::Serialize(Ar);
-		Ar << *this;
+		if (!IsDefaultSubobject())
+		{
+			Ar << *this;
+		}
     }
 
     virtual void BeginDestroy() override
@@ -594,9 +587,6 @@ public:
     }
 
 private:
-    friend class FVoxelMateModule;
-    AVoxelDatabase();
-
 	openvdb::MetaMap DatabaseMetadata;
 	openvdb::GridPtrVec AllocatedGrids;
 	TMap<FGuid, FGridFactory::ValueTypePtr> Grids;

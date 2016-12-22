@@ -1,5 +1,7 @@
 #include "VoxelMatePCH.h"
+#include "UnrealNetwork.h"
 #include "VoxelDatabase.h"
+#include "VoxelDatabaseProxy.h"
 #include "VoxelGridProxy.h"
 
 AVoxelDatabaseProxy::AVoxelDatabaseProxy()
@@ -10,6 +12,56 @@ AVoxelDatabaseProxy::AVoxelDatabaseProxy()
     bNetTemporary = 0;
     bAutoDestroyWhenFinished = 1;
     bCanBeDamaged = 0;
+}
+
+AVoxelDatabaseProxy* AVoxelDatabaseProxy::InitVoxelDatabase()
+{
+	if (!VoxelDatabase)
+	{
+		VoxelDatabase = NewObject<AVoxelDatabase>();
+		//Database->IsSafeForRootSet() TODO
+		VoxelDatabase->AddToRoot();
+	}
+
+	AVoxelDatabaseProxy* DatabaseProxy = nullptr;
+	if (VoxelDatabase->GetNetMode() != ENetMode::NM_Client)
+	{
+		if (!VoxelDatabase->AuthDatabaseProxy)
+		{
+			DatabaseProxy = NewObject<AVoxelDatabaseProxy>(VoxelDatabase);
+			VoxelDatabase->DatabaseProxy = DatabaseProxy;
+			VoxelDatabase->AuthDatabaseProxy = DatabaseProxy;
+		}
+		else
+		{
+			DatabaseProxy = VoxelDatabase->LocalDatabaseProxy;
+		}
+	}
+	return DatabaseProxy;
+}
+
+void AVoxelDatabaseProxy::LoadVoxelDatabase(const FString& DatabaseDirectory)
+{
+	if (VoxelDatabase)
+	{
+		FArchive* Reader = IFileManager::Get().CreateFileReader(*DatabaseDirectory);
+		if (Reader)
+		{
+			VoxelDatabase->Serialize(*Reader);
+		}
+	}
+}
+
+void AVoxelDatabaseProxy::SaveVoxelDatabase(const FString& DatabaseDirectory)
+{
+	if (VoxelDatabase)
+	{
+		FArchive* Writer = IFileManager::Get().CreateFileWriter(*DatabaseDirectory);
+		if (Writer)
+		{
+			VoxelDatabase->Serialize(*Writer);
+		}
+	}
 }
 
 bool AVoxelDatabaseProxy::IsReadyForFinishDestroy()
@@ -32,7 +84,7 @@ void AVoxelDatabaseProxy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 AVoxelGridProxy* AVoxelDatabaseProxy::AddScalarGrid(EVoxelScalarType VoxelType, const FText& GridDisplayText)
 {
-    if (!AVoxelDatabase::VoxelMateVoxelDatabase)
+    if (!VoxelDatabase)
     {
         return nullptr;
     }
@@ -40,17 +92,17 @@ AVoxelGridProxy* AVoxelDatabaseProxy::AddScalarGrid(EVoxelScalarType VoxelType, 
     FGuid GridId;
 	AVoxelGridProxy* GridProxy = nullptr;
 
-    if (VoxelType == EVoxelScalarType::Bool && AVoxelDatabase::VoxelMateVoxelDatabase->AddGrid<FVoxelBool>(GridDisplayText, false, GridId))
+    if (VoxelType == EVoxelScalarType::Bool && VoxelDatabase->AddGrid<FVoxelBool>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyBool>(this);
+        GridProxy = NewObject<AVoxelGridProxyBool>(VoxelDatabase);
     }
-    else if (VoxelType == EVoxelScalarType::UInt8 && AVoxelDatabase::VoxelMateVoxelDatabase->AddGrid<FVoxelUInt8>(GridDisplayText, false, GridId))
+    else if (VoxelType == EVoxelScalarType::UInt8 && VoxelDatabase->AddGrid<FVoxelUInt8>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyUInt8>(this);
+        GridProxy = NewObject<AVoxelGridProxyUInt8>(VoxelDatabase);
     }
-    else if (VoxelType == EVoxelScalarType::Int32 && AVoxelDatabase::VoxelMateVoxelDatabase->AddGrid<FVoxelInt32>(GridDisplayText, false, GridId))
+    else if (VoxelType == EVoxelScalarType::Int32 && VoxelDatabase->AddGrid<FVoxelInt32>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyInt32>(this);
+        GridProxy = NewObject<AVoxelGridProxyInt32>(VoxelDatabase);
     }
 
     if (GridProxy)
@@ -69,7 +121,7 @@ AVoxelGridProxy* AVoxelDatabaseProxy::AddScalarGrid(EVoxelScalarType VoxelType, 
 
 AVoxelGridProxy* AVoxelDatabaseProxy::AddFloatScalarGrid(EVoxelFloatScalarType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf)
 {
-    if (!AVoxelDatabase::VoxelMateVoxelDatabase)
+    if (!VoxelDatabase)
     {
         return nullptr;
     }
@@ -77,9 +129,9 @@ AVoxelGridProxy* AVoxelDatabaseProxy::AddFloatScalarGrid(EVoxelFloatScalarType V
     FGuid GridId;
 	AVoxelGridProxy* GridProxy = nullptr;
 
-    if (VoxelType == EVoxelFloatScalarType::Float && AVoxelDatabase::VoxelMateVoxelDatabase->AddGrid<FVoxelFloat>(GridDisplayText, SaveFloatAsHalf, GridId))
+    if (VoxelType == EVoxelFloatScalarType::Float && VoxelDatabase->AddGrid<FVoxelFloat>(GridDisplayText, SaveFloatAsHalf, GridId))
     {
-		AVoxelGridProxyFloat* GridProxyFloat = NewObject<AVoxelGridProxyFloat>(this);
+		AVoxelGridProxyFloat* GridProxyFloat = NewObject<AVoxelGridProxyFloat>(VoxelDatabase);
 		if (GridProxyFloat)
 		{
 			check(GridId.IsValid());
@@ -96,7 +148,7 @@ AVoxelGridProxy* AVoxelDatabaseProxy::AddFloatScalarGrid(EVoxelFloatScalarType V
 
 AVoxelGridProxy* AVoxelDatabaseProxy::AddVectorGrid(EVoxelVectorType VoxelType, const FText& GridDisplayText)
 {
-    if (!AVoxelDatabase::VoxelMateVoxelDatabase)
+    if (!VoxelDatabase)
     {
         return nullptr;
     }
@@ -104,9 +156,9 @@ AVoxelGridProxy* AVoxelDatabaseProxy::AddVectorGrid(EVoxelVectorType VoxelType, 
     FGuid GridId;
 	AVoxelGridProxy* GridProxy = nullptr;
 
-	if (VoxelType == EVoxelVectorType::IntVector && AVoxelDatabase::VoxelMateVoxelDatabase->AddGrid<FVoxelIntVector>(GridDisplayText, false, GridId))
+	if (VoxelType == EVoxelVectorType::IntVector && VoxelDatabase->AddGrid<FVoxelIntVector>(GridDisplayText, false, GridId))
     {
-        GridProxy = NewObject<AVoxelGridProxyIntVector>(this);
+        GridProxy = NewObject<AVoxelGridProxyIntVector>(VoxelDatabase);
     }
 
     if (GridProxy)
@@ -125,7 +177,7 @@ AVoxelGridProxy* AVoxelDatabaseProxy::AddVectorGrid(EVoxelVectorType VoxelType, 
 
 AVoxelGridProxy* AVoxelDatabaseProxy::AddFloatVectorGrid(EVoxelFloatVectorType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf)
 {
-    if (!AVoxelDatabase::VoxelMateVoxelDatabase)
+    if (!VoxelDatabase)
     {
         return nullptr;
     }
@@ -133,9 +185,9 @@ AVoxelGridProxy* AVoxelDatabaseProxy::AddFloatVectorGrid(EVoxelFloatVectorType V
     FGuid GridId;
 	AVoxelGridProxy* GridProxy = nullptr;
 
-    if (VoxelType == EVoxelFloatVectorType::Vector && AVoxelDatabase::VoxelMateVoxelDatabase->AddGrid<FVoxelVector>(GridDisplayText, SaveFloatAsHalf, GridId))
+    if (VoxelType == EVoxelFloatVectorType::Vector && VoxelDatabase->AddGrid<FVoxelVector>(GridDisplayText, SaveFloatAsHalf, GridId))
     {
-		AVoxelGridProxyVector* GridProxyVector = NewObject<AVoxelGridProxyVector>(this);
+		AVoxelGridProxyVector* GridProxyVector = NewObject<AVoxelGridProxyVector>(VoxelDatabase);
 		if (GridProxyVector)
 		{
 			check(GridId.IsValid());

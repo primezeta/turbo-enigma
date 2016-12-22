@@ -1,6 +1,5 @@
 #pragma once
 #include "EngineMinimal.h"
-#include "UnrealNetwork.h"
 #include "VoxelDatabaseVoxelProxy.generated.h"
 
 UCLASS(ClassGroup = VoxelMate, Abstract, NotPlaceable, Blueprintable)

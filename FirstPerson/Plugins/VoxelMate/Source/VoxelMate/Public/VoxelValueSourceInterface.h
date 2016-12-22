@@ -1,4 +1,5 @@
 #pragma once
+#include "EngineMinimal.h"
 #include "VoxelValueSourceInterface.generated.h"
 
 UINTERFACE(Blueprintable)

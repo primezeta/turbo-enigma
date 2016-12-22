@@ -1,4 +1,5 @@
 #pragma once
+#include "EngineMinimal.h"
 #include "VoxelGridProxyInterface.generated.h"
 
 //UINTERFACE(Blueprintable)

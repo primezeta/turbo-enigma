@@ -1,8 +1,9 @@
 #include "VoxelMatePCH.h"
+#include "UnrealNetwork.h"
 #include "VoxelDatabase.h"
 #include "ArchiveTransformMap.h"
 
-AVoxelDatabase* AVoxelDatabase::VoxelMateVoxelDatabase = nullptr;
+AVoxelDatabase* VoxelDatabase;
 
 AVoxelDatabase::AVoxelDatabase()
     : AuthDatabaseProxy(nullptr), LocalDatabaseProxy(nullptr)

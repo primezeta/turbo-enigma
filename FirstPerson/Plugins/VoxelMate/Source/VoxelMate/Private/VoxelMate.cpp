@@ -2,10 +2,10 @@
 
 #include "VoxelMatePCH.h"
 #include "Core.h"
+#include "UnrealNetwork.h"
 #include "ModuleManager.h"
 #include "IPluginManager.h"
 #include "VoxelDatabase.h"
-#include "VoxelDatabaseProxy.h"
 
 #define LOCTEXT_NAMESPACE "FVoxelMateModule"
 
@@ -34,7 +34,6 @@ void FVoxelMateModule::StartupModule()
 	//	}
 	//}
 
-	AVoxelDatabase::InitVoxelMateDatabase();
 	AVoxelDatabase::Startup();
 }
 
@@ -43,41 +42,6 @@ void FVoxelMateModule::ShutdownModule()
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 	AVoxelDatabase::Shutdown();
-}
-
-void FVoxelMateModule::LoadVoxelDatabase(const FString& DatabaseDirectory)
-{
-	//TODO .uplugin loading phase
-	if (AVoxelDatabase::VoxelMateVoxelDatabase)
-	{
-		FArchive* Reader = IFileManager::Get().CreateFileReader(*DatabaseDirectory);
-		if (Reader)
-		{
-			AVoxelDatabase::VoxelMateVoxelDatabase->Serialize(*Reader);
-		}
-	}
-}
-
-void FVoxelMateModule::SaveVoxelDatabase(const FString& DatabaseDirectory)
-{
-	if (AVoxelDatabase::VoxelMateVoxelDatabase)
-	{
-		FArchive* Writer = IFileManager::Get().CreateFileWriter(*DatabaseDirectory);
-		if (Writer)
-		{
-			AVoxelDatabase::VoxelMateVoxelDatabase->Serialize(*Writer);
-		}
-	}
-}
-
-AVoxelDatabaseProxy* FVoxelMateModule::OpenDatabaseProxy()
-{
-    AVoxelDatabaseProxy* VoxelDatabaseProxy = nullptr;
-    if (FVoxelMateModule::IsAvailable() && AVoxelDatabase::VoxelMateVoxelDatabase)
-    {
-        VoxelDatabaseProxy = AVoxelDatabase::VoxelMateVoxelDatabase->DatabaseProxy;
-    }
-    return VoxelDatabaseProxy;
 }
 
 const FString VoxelDatabaseStatics::GridStatics::HalfFloatTypenameSuffix = TEXT("_HalfFloat");

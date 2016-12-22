@@ -1,10 +1,9 @@
 #pragma once
-#include "EngineMinimal.h"
 #include "VoxelDatabaseCommon.h"
 #include "VoxelGridProxy.h"
 #include "VoxelDatabaseProxy.generated.h"
 
-UCLASS(ClassGroup = VoxelMate, NotBlueprintable, NotPlaceable, BlueprintType, CustomConstructor)
+UCLASS(ClassGroup = VoxelMate, NotPlaceable, BlueprintType, CustomConstructor)
 class VOXELMATE_API AVoxelDatabaseProxy : public AActor
 {
     GENERATED_BODY()
@@ -33,6 +32,12 @@ public:
     //UPROPERTY()
         //UVoxelMetadataProxy* DatabaseMetadataProxy; //TODO
 
+	UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
+		static AVoxelDatabaseProxy* InitVoxelDatabase();
+	UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
+		void LoadVoxelDatabase(const FString& DatabaseDirectory);
+	UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
+		void SaveVoxelDatabase(const FString& DatabaseDirectory);
     UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
         AVoxelGridProxy* AddScalarGrid(EVoxelScalarType VoxelType, const FText& GridDisplayText);
     UFUNCTION(Category = VoxelDatabaseProxy, BlueprintCallable)
@@ -43,7 +48,5 @@ public:
         AVoxelGridProxy* AddFloatVectorGrid(EVoxelFloatVectorType VoxelType, const FText& GridDisplayText, bool SaveFloatAsHalf);
 
 private:
-    //Must be created via FVoxelMateModule::OpenDatabaseProxy
-    friend class FVoxelMateModule;
     AVoxelDatabaseProxy();
 };
