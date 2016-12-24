@@ -48,14 +48,6 @@ void FVoxelDatabaseTypeFactory<openvdb::Metadata>::RegisterSupportedTypes()
 	FMetaValueFactory::Register<FMetadataDateTime>();
 	FMetaValueFactory::Register<FMetadataString>();
 	FMetaValueFactory::Register<FMetadataText>();
-	FMetaValueFactory::Register<FMetadataAffineCoordinateTransform>();
-	FMetaValueFactory::Register<FMetadataUnitaryCoordinateTransform>();
-	FMetaValueFactory::Register<FMetadataScaleCoordinateTransform>();
-	FMetaValueFactory::Register<FMetadataUniformScaleCoordinateTransform>();
-	FMetaValueFactory::Register<FMetadataTranslationCoordinateTransform>();
-	FMetaValueFactory::Register<FMetadataScaleTranslationCoordinateTransform>();
-	FMetaValueFactory::Register<FMetadataUniformScaleTranslationCoordinateTransform>();
-	FMetaValueFactory::Register<FMetadataNonlinearFrustumCoordinateTransform>();
     FVoxelDatabaseTypeFactory<openvdb::Metadata>::IsInitialized = true;
 }
 

@@ -21,11 +21,4 @@ const FMetadataBox FMetadataBox::ZeroValue(EForceInit::ForceInitToZero);
 const FMetadataDateTime FMetadataDateTime::ZeroValue(0);
 const FMetadataString FMetadataString::ZeroValue(TEXT(""));
 const FMetadataText FMetadataText::ZeroValue(TEXT(""));
-const FMetadataAffineCoordinateTransform FMetadataAffineCoordinateTransform::ZeroValue(FAffineCoordinateTransform(FVector(1.0f,0.0f,0.0f), FVector(0.0f,1.0f,0.0f), FVector(0.0f,0.0f,1.0f)));
-const FMetadataUnitaryCoordinateTransform FMetadataUnitaryCoordinateTransform::ZeroValue(FUnitaryCoordinateTransform(FVector(EForceInit::ForceInitToZero), 0.0f));
-const FMetadataScaleCoordinateTransform FMetadataScaleCoordinateTransform::ZeroValue(FScaleCoordinateTransform(FVector(1.0f)));
-const FMetadataUniformScaleCoordinateTransform FMetadataUniformScaleCoordinateTransform::ZeroValue(FUniformScaleCoordinateTransform(1.0f));
-const FMetadataTranslationCoordinateTransform FMetadataTranslationCoordinateTransform::ZeroValue(FVector(0.0f));
-const FMetadataScaleTranslationCoordinateTransform FMetadataScaleTranslationCoordinateTransform::ZeroValue(FScaleTranslationCoordinateTransform(FVector(1.0f), FVector(EForceInit::ForceInitToZero)));
-const FMetadataUniformScaleTranslationCoordinateTransform FMetadataUniformScaleTranslationCoordinateTransform::ZeroValue(FUniformScaleTranslationCoordinateTransform(1.0f, FVector(EForceInit::ForceInitToZero)));
-const FMetadataNonlinearFrustumCoordinateTransform FMetadataNonlinearFrustumCoordinateTransform::ZeroValue(FNonlinearFrustumCoordinateTransform(FVector(EForceInit::ForceInitToZero), FVector(EForceInit::ForceInitToZero), 0.0f, 0.0f));
+
