@@ -345,7 +345,6 @@ namespace VoxelDatabaseUtil
     struct TSetValuesOp
     {
         typedef typename VoxelT VoxelType;
-        typedef typename VoxelT::ValueType ValueType;
         typedef typename IterT IterType;
         typedef typename ValueSourceT ValueSourceType;
 
@@ -361,9 +360,9 @@ namespace VoxelDatabaseUtil
             check(iter.isVoxelValue());
             const openvdb::Coord &Coord = iter.getCoord();
             const openvdb::Vec3d &Xyz = CoordinateTransform.indexToWorld(Coord);
-            ValueType Value;
-            ValueSource.GetValue(Xyz.x(), Xyz.y(), Xyz.z(), Value);
-            iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(VoxelType(Value)));
+			VoxelType VoxelValue;
+            ValueSource.GetValue(Xyz.x(), Xyz.y(), Xyz.z(), VoxelValue);
+            iter.modifyValue<ModifyValueOp<VoxelType>>(ModifyValueOp<VoxelType>(VoxelValue));
         }
     };
 
@@ -378,7 +377,7 @@ namespace VoxelDatabaseUtil
 		typedef typename GridType::Accessor AccessorType;
 		typedef typename GridType::TreeType::ValueType ValueType;
 
-		TExtractSurfaceOp(GridType &Grid)
+		TExtractSurfaceOp(GridType& Grid)
 			: GridAcc(Grid.tree()), SurfaceValue(Grid.tree().background())
 		{}
 
@@ -387,7 +386,7 @@ namespace VoxelDatabaseUtil
 			check(iter.isVoxelValue());
 
 			const openvdb::Coord Coord = iter.getCoord();
-			const ValueType Values[8] = {
+			ValueType Values[8] = {
 				GridAcc.getValue(Coord),
 				GridAcc.getValue(Coord.offsetBy(0, 1, 0)),
 				GridAcc.getValue(Coord.offsetBy(1, 1, 0)),
@@ -409,6 +408,9 @@ namespace VoxelDatabaseUtil
 			if (Values[6] < SurfaceValue) { InsideBits |= 64; }
 			if (Values[7] < SurfaceValue) { InsideBits |= 128; }
 
+			Values[0].SurfaceIntersection = InsideBits;
+			iter.modifyValue<ModifyValueOp<ValueType>>(ModifyValueOp<ValueType>(ValueType(Values[0])));
+
 			if (InsideBits == 0 || InsideBits == 255)
 			{
 				//Turn voxel off since it is outside the surface
@@ -417,7 +419,7 @@ namespace VoxelDatabaseUtil
 		}
 
 	private:
-		const ValueType &SurfaceValue;
+		const ValueType& SurfaceValue;
 		AccessorType GridAcc;
 	};
 
@@ -429,7 +431,7 @@ namespace VoxelDatabaseUtil
 		typedef typename GridType::Accessor AccessorType;
 		typedef typename GridType::TreeType::ValueType ValueType;
 
-		TExtractSurfaceOp(GridType &Grid)
+		TExtractSurfaceOp(GridType& Grid)
 			: GridAcc(Grid.tree()), SurfaceValue(Grid.tree().background())
 		{}
 
@@ -438,7 +440,7 @@ namespace VoxelDatabaseUtil
 			check(iter.isVoxelValue());
 
 			const openvdb::Coord Coord = iter.getCoord();
-			const ValueType Values[8] = {
+			ValueType Values[8] = {
 				GridAcc.getValue(Coord),
 				GridAcc.getValue(Coord.offsetBy(0, 1, 0)),
 				GridAcc.getValue(Coord.offsetBy(1, 1, 0)),
@@ -460,6 +462,9 @@ namespace VoxelDatabaseUtil
 			if (Values[6] < SurfaceValue) { InsideBits |= 64; }
 			if (Values[7] < SurfaceValue) { InsideBits |= 128; }
 
+			Values[0].SurfaceIntersection = InsideBits;
+			iter.modifyValue<ModifyValueOp<ValueType>>(ModifyValueOp<ValueType>(ValueType(Values[0])));
+
 			if (InsideBits > 0 && InsideBits < 255)
 			{
 				//Turn voxel on since it is on the surface
@@ -468,7 +473,651 @@ namespace VoxelDatabaseUtil
 		}
 
 	private:
-		const ValueType &SurfaceValue;
+		const ValueType& SurfaceValue;
 		AccessorType GridAcc;
 	};
+
+	////Static helper function since FProcMeshVertex only has the default constructor
+	//static FORCEINLINE FProcMeshVertex ConstructProcMeshVertex(FVector vtx, FVector normal, FProcMeshTangent tangent, FColor color, FVector2D uv)
+	//{
+	//	FProcMeshVertex ProcMeshVertex;
+	//	ProcMeshVertex.Position = vtx;
+	//	ProcMeshVertex.Normal = normal;
+	//	ProcMeshVertex.Tangent = tangent;
+	//	ProcMeshVertex.Color = color;
+	//	ProcMeshVertex.UV0 = uv;
+	//	return ProcMeshVertex;
+	//}
+
+	////Operator to mesh the previously extracted isosurface via the Marching Cubes algorithm
+	//template <typename GridType>
+	//class MarchingCubesMeshOp
+	//{
+	//public:
+	//	typedef typename GridType::ValueOnIter IterType;
+	//	typedef typename GridType::Accessor AccessorType;
+	//	typedef typename GridType::TreeType::ValueType ValueType;
+
+	//	MarchingCubesMeshOp(GridType& Grid, TArray<FProcMeshSection>& Buffers)
+	//		: DataGrid(Grid), GridAcc(Grid.tree()), SectionBuffers(Buffers), SurfaceValue(Grid.tree().background())
+	//	{
+	//		VertexCriticalSections.AddDefaulted(SectionBuffers.Num());
+	//		TriCriticalSections.AddDefaulted(SectionBuffers.Num());
+	//	}
+
+	//	VOXELMATEINLINE void operator()(const IterType& iter)
+	//	{
+	//		check(iter.isVoxelValue());
+
+	//		const openvdb::Coord Coord = iter.getCoord();
+
+	//		const openvdb::math::Transform &Xform = DataGrid.transform();
+	//		const openvdb::Coord p[8] =
+	//		{
+	//			Coord,
+	//			Coord.offsetBy(0, 1, 0),
+	//			Coord.offsetBy(1, 1, 0),
+	//			Coord.offsetBy(1, 0, 0),
+	//			Coord.offsetBy(0, 0, 1),
+	//			Coord.offsetBy(0, 1, 1),
+	//			Coord.offsetBy(1, 1, 1),
+	//			Coord.offsetBy(1, 0, 1),
+	//		};
+	//		const ValueType val[8] =
+	//		{
+	//			GridAcc.getValue(p[0]),
+	//			GridAcc.getValue(p[1]),
+	//			GridAcc.getValue(p[2]),
+	//			GridAcc.getValue(p[3]),
+	//			GridAcc.getValue(p[4]),
+	//			GridAcc.getValue(p[5]),
+	//			GridAcc.getValue(p[6]),
+	//			GridAcc.getValue(p[7]),
+	//		};
+	//		const openvdb::Vec3d vec[8] =
+	//		{
+	//			Xform.indexToWorld(p[0]),
+	//			Xform.indexToWorld(p[1]),
+	//			Xform.indexToWorld(p[2]),
+	//			Xform.indexToWorld(p[3]),
+	//			Xform.indexToWorld(p[4]),
+	//			Xform.indexToWorld(p[5]),
+	//			Xform.indexToWorld(p[6]),
+	//			Xform.indexToWorld(p[7]),
+	//		};
+	//		//const openvdb::Vec3f grad[8] =
+	//		//{
+	//		//	GradAcc.getValue(p[0]),
+	//		//	GradAcc.getValue(p[1]),
+	//		//	GradAcc.getValue(p[2]),
+	//		//	GradAcc.getValue(p[3]),
+	//		//	GradAcc.getValue(p[4]),
+	//		//	GradAcc.getValue(p[5]),
+	//		//	GradAcc.getValue(p[6]),
+	//		//	GradAcc.getValue(p[7]),
+	//		//};
+	//		const openvdb::Vec3f grad[8] =
+	//		{
+	//			openvdb::Vec3f(0.0f),
+	//			openvdb::Vec3f(0.0f),
+	//			openvdb::Vec3f(0.0f),
+	//			openvdb::Vec3f(0.0f),
+	//			openvdb::Vec3f(0.0f),
+	//			openvdb::Vec3f(0.0f),
+	//			openvdb::Vec3f(0.0f),
+	//			openvdb::Vec3f(0.0f),
+	//		};
+
+	//		const uint8& InsideBits = val[0].SurfaceIntersection;
+	//		const uint8& VoxelType = val[0].VoxelType;
+
+	//		FProcMeshSection& MeshSection = SectionBuffers[VoxelType];
+	//		TArray<FProcMeshVertex>& vertices = MeshSection.ProcVertexBuffer;
+	//		TArray<int32>& polygons = MeshSection.ProcIndexBuffer;
+	//		FBox& sectionBounds = MeshSection.SectionLocalBox;
+	//		FCriticalSection& vtxCriticalSection = VertexCriticalSections[VoxelType];
+	//		FCriticalSection& triCriticalSection = TriCriticalSections[VoxelType];
+
+	//		//Find the vertices where the surface intersects the cube, always using the lower coord first
+	//		int32 vertlist[12];
+	//		if (MC_EdgeTable[InsideBits] & 1)
+	//		{
+	//			vertlist[0] = VertexInterp(vec[0], vec[1], data[0], data[1], p[0], p[1], grad[0], grad[1], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 2)
+	//		{
+	//			vertlist[1] = VertexInterp(vec[1], vec[2], data[1], data[2], p[1], p[2], grad[1], grad[2], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 4)
+	//		{
+	//			vertlist[2] = VertexInterp(vec[2], vec[3], data[2], data[3], p[2], p[3], grad[2], grad[3], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 8)
+	//		{
+	//			vertlist[3] = VertexInterp(vec[3], vec[0], data[3], data[0], p[3], p[0], grad[3], grad[0], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 16)
+	//		{
+	//			vertlist[4] = VertexInterp(vec[4], vec[5], data[4], data[5], p[4], p[5], grad[4], grad[5], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 32)
+	//		{
+	//			vertlist[5] = VertexInterp(vec[5], vec[6], data[5], data[6], p[5], p[6], grad[5], grad[6], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 64)
+	//		{
+	//			vertlist[6] = VertexInterp(vec[6], vec[7], data[6], data[7], p[6], p[7], grad[6], grad[7], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 128)
+	//		{
+	//			vertlist[7] = VertexInterp(vec[7], vec[4], data[7], data[4], p[7], p[4], grad[7], grad[4], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 256)
+	//		{
+	//			vertlist[8] = VertexInterp(vec[0], vec[4], data[0], data[4], p[0], p[4], grad[0], grad[4], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 512)
+	//		{
+	//			vertlist[9] = VertexInterp(vec[1], vec[5], data[1], data[5], p[1], p[5], grad[1], grad[5], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 1024)
+	//		{
+	//			vertlist[10] = VertexInterp(vec[2], vec[6], data[2], data[6], p[2], p[6], grad[2], grad[6], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+	//		if (MC_EdgeTable[InsideBits] & 2048)
+	//		{
+	//			vertlist[11] = VertexInterp(vec[3], vec[7], data[3], data[7], p[3], p[7], grad[3], grad[7], SurfaceValue, vtxCriticalSection, vertices, sectionBounds);
+	//		}
+
+	//		//Add the polygons and each of their backfaces
+	//		for (int32 i = 0; MC_TriTable[InsideBits][i].s != -1; i += 3)
+	//		{
+	//			check(i > -1 && i < 16);
+	//			check(MC_TriTable[InsideBits][i].s < 12);
+	//			check(MC_TriTable[InsideBits][i + 1].s > -1 && MC_TriTable[InsideBits][i + 1].s < 12);
+	//			check(MC_TriTable[InsideBits][i + 2].s > -1 && MC_TriTable[InsideBits][i + 2].s < 12);
+
+	//			const int32 idxsFrontFace[3] = {
+	//				vertlist[MC_TriTable[InsideBits][i].u],
+	//				vertlist[MC_TriTable[InsideBits][i + 1].u],
+	//				vertlist[MC_TriTable[InsideBits][i + 2].u]
+	//			};
+	//			const int32 idxsBackFace[3] = {
+	//				idxsFrontFace[2] + 1,
+	//				idxsFrontFace[1] + 1,
+	//				idxsFrontFace[0] + 1
+	//			};
+	//			check(idxsFrontFace[0] != idxsFrontFace[1] && idxsFrontFace[0] != idxsFrontFace[2] && idxsFrontFace[1] != idxsFrontFace[2]);
+
+	//			//Create the front face and back face polygons
+	//			const FVector surfaceNormal = FVector::CrossProduct(vertices[idxsFrontFace[1]].Position - vertices[idxsFrontFace[0]].Position, vertices[idxsFrontFace[2]].Position - vertices[idxsFrontFace[0]].Position);
+	//			{
+	//				FScopeLock lock(&vtxCriticalSection);
+	//				vertices[idxsFrontFace[0]].Normal += surfaceNormal;
+	//				vertices[idxsFrontFace[1]].Normal += surfaceNormal;
+	//				vertices[idxsFrontFace[2]].Normal += surfaceNormal;
+	//				vertices[idxsBackFace[0]].Normal -= surfaceNormal;
+	//				vertices[idxsBackFace[1]].Normal -= surfaceNormal;
+	//				vertices[idxsBackFace[2]].Normal -= surfaceNormal;
+	//			}
+	//			{
+	//				FScopeLock lock(&triCriticalSection);
+	//				polygons.Add(idxsFrontFace[0]);
+	//				polygons.Add(idxsFrontFace[1]);
+	//				polygons.Add(idxsFrontFace[2]);
+	//				polygons.Add(idxsBackFace[0]);
+	//				polygons.Add(idxsBackFace[1]);
+	//				polygons.Add(idxsBackFace[2]);
+	//			}
+	//		}
+	//	}
+
+	//	static int32 VertexInterp(const openvdb::Vec3d& vec1,
+	//		const openvdb::Vec3d& vec2,
+	//		const ValueType& valp1,
+	//		const ValueType& valp2,
+	//		const openvdb::Coord& c1,
+	//		const openvdb::Coord& c2,
+	//		const openvdb::Vec3f& g1,
+	//		const openvdb::Vec3f& g2,
+	//		const ValueType& surfaceValue,
+	//		FCriticalSection& criticalSection,
+	//		TArray<FProcMeshVertex>& vertices,
+	//		FBox& sectionBounds)
+	//	{
+	//		//TODO: Try Gram-Schmidt orthogonalization for tangents? (modifies the tangent to definitely be orthogonal to the normal):
+	//		//tangent -= normal * tangent.dot( normal );
+	//		//tangent.normalize();
+	//		int32 outVertex = -1;
+	//		if (openvdb::math::isApproxEqual(valp1.Value, surfaceValue.Value) || openvdb::math::isApproxEqual(valp1.Value, valp2.Value))
+	//		{
+	//			FScopeLock lock(&criticalSection);
+	//			outVertex = (int32)vertices.Add(ConstructProcMeshVertex(
+	//				FVector(vec1.x(), vec1.y(), vec1.z()),
+	//				FVector::ZeroVector, //initialize normal to 0
+	//				FProcMeshTangent(g1.x(), g1.y(), g1.z()),
+	//				FColor(), //TODO colors
+	//				FVector2D::ZeroVector //TODO uvs
+	//			));
+	//			vertices.Add(ConstructProcMeshVertex(
+	//				FVector(vec1.x(), vec1.y(), vec1.z()),
+	//				FVector::ZeroVector, //initialize normal to 0
+	//				FProcMeshTangent(-g1.x(), -g1.y(), -g1.z()),
+	//				FColor(), //TODO colors
+	//				FVector2D::ZeroVector //TODO uvs
+	//			));
+	//			sectionBounds += vertices[outVertex].Position;
+	//		}
+	//		else if (openvdb::math::isApproxEqual(valp2.Value, surfaceValue.Value))
+	//		{
+	//			FScopeLock lock(&criticalSection);
+	//			outVertex = (int32)vertices.Add(ConstructProcMeshVertex(
+	//				FVector(vec2.x(), vec2.y(), vec2.z()),
+	//				FVector::ZeroVector, //initialize normal to 0
+	//				FProcMeshTangent(g2.x(), g2.y(), g2.z()),
+	//				FColor(), //TODO colors
+	//				FVector2D::ZeroVector //TODO uvs
+	//			));
+	//			vertices.Add(ConstructProcMeshVertex(
+	//				FVector(vec2.x(), vec2.y(), vec2.z()),
+	//				FVector::ZeroVector, //initialize normal to 0
+	//				FProcMeshTangent(g2.x(), g2.y(), g2.z()),
+	//				FColor(), //TODO colors
+	//				FVector2D::ZeroVector //TODO uvs
+	//			));
+	//			sectionBounds += vertices[outVertex].Position;
+	//		}
+	//		else
+	//		{
+	//			FScopeLock lock(&criticalSection);
+	//			const float lerpScale = (surfaceValue.Value - valp1.Value) / (valp2.Value - valp1.Value);
+	//			const openvdb::Vec3d vtx = vec1 + (lerpScale*(vec2 - vec1));
+	//			const openvdb::Vec3d grad = g1; //TODO: Figure out tangents on lerp'd vertices
+	//			outVertex = (int32)vertices.Add(ConstructProcMeshVertex(
+	//				FVector(vtx.x(), vtx.y(), vtx.z()),
+	//				FVector::ZeroVector, //initialize normal to 0
+	//				FProcMeshTangent(grad.x(), grad.y(), grad.z()),
+	//				FColor(), //TODO colors
+	//				FVector2D::ZeroVector //TODO uvs
+	//			));
+	//			vertices.Add(ConstructProcMeshVertex(
+	//				FVector(vtx.x(), vtx.y(), vtx.z()),
+	//				FVector::ZeroVector, //initialize normal to 0
+	//				FProcMeshTangent(-grad.x(), -grad.y(), -grad.z()),
+	//				FColor(), //TODO colors
+	//				FVector2D::ZeroVector //TODO uvs
+	//			));
+	//			sectionBounds += vertices[outVertex].Position;
+	//		}
+	//		check(outVertex > -1);
+	//		return outVertex;
+	//	}
+
+	//	//openvdb::Grid<openvdb::Vec3fTree> Gradient;
+
+	//private:
+	//	GridType DataGrid;
+	//	AccessorType GridAcc;
+	//	const ValueType& SurfaceValue;
+	//	TArray<FProcMeshSection>& SectionBuffers;
+	//	TArray<FCriticalSection> VertexCriticalSections;
+	//	TArray<FCriticalSection> TriCriticalSections;
+	//};
+
+	////Operator to mesh a cube at each active voxel from a previously extracted isosurface
+	//template <typename TreeType, typename IterType>
+	//class CubesMeshOp
+	//{
+	//public:
+	//	typedef typename openvdb::Grid<TreeType> GridType;
+	//	typedef typename GridType::Ptr GridTypePtr;
+	//	typedef typename GridType::Accessor AccessorType;
+	//	typedef typename GridType::ConstAccessor CAccessorType;
+	//	typedef typename GridType::ValueType ValueType;
+	//	typedef typename IterType SourceIterType;
+
+	//	CubesMeshOp(GridType &grid, TArray<FProcMeshSection> &sectionBuffers)
+	//		: Grid(grid), SectionBuffers(sectionBuffers)
+	//	{
+	//	}
+
+	//	OPENVDB_INLINE void operator()(const SourceIterType& iter)
+	//	{
+	//		check(iter.isVoxelValue() && !iter.isTileValue());
+	//		openvdb::CoordBBox bbox;
+	//		const bool hasVoxelVolume = iter.getBoundingBox(bbox) && bbox.hasVolume() && bbox.volume() == 1;
+	//		check(hasVoxelVolume);
+
+	//		//Mesh the voxel as a simple cube with 6 equal sized quads
+	//		bbox.expand(bbox.min(), 2);
+	//		const openvdb::BBoxd worldBBox = Grid.transform().indexToWorld(bbox);
+	//		const openvdb::Vec3d vtxs[8] = {
+	//			worldBBox.min(),
+	//			openvdb::Vec3d(worldBBox.max().x(), worldBBox.min().y(), worldBBox.min().z()),
+	//			openvdb::Vec3d(worldBBox.min().x(), worldBBox.min().y(), worldBBox.max().z()),
+	//			openvdb::Vec3d(worldBBox.max().x(), worldBBox.min().y(), worldBBox.max().z()),
+	//			openvdb::Vec3d(worldBBox.min().x(), worldBBox.max().y(), worldBBox.min().z()),
+	//			openvdb::Vec3d(worldBBox.min().x(), worldBBox.max().y(), worldBBox.max().z()),
+	//			openvdb::Vec3d(worldBBox.max().x(), worldBBox.max().y(), worldBBox.min().z()),
+	//			worldBBox.max()
+	//		};
+
+	//		const ValueType value = iter.getValue();
+	//		const int32 idx = (int32)value.VoxelType;
+	//		check(value.VoxelType != EVoxelType::VOXEL_NONE && idx > -1 && idx < FVoxelData::VOXEL_TYPE_COUNT);
+	//		FProcMeshSection &meshSection = SectionBuffers[idx];
+	//		TArray<FProcMeshVertex> &vertices = meshSection.ProcVertexBuffer;
+	//		TArray<int32> &polygons = meshSection.ProcIndexBuffer;
+	//		FBox &sectionBounds = meshSection.SectionLocalBox;
+	//		FCriticalSection &criticalSection = CriticalSections[idx];
+	//		{
+	//			FScopeLock lock(&criticalSection);
+	//			//Add polygons each with unique vertices (vertex indices added clockwise order on each quad face)
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z()),
+	//				FVector(0.0f, -1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.5f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[2].x(), vtxs[2].y(), vtxs[2].z()),
+	//				FVector(0.0f, -1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.25f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[3].x(), vtxs[3].y(), vtxs[3].z()),
+	//				FVector(0.0f, -1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.25f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z());
+	//			sectionBounds += FVector(vtxs[2].x(), vtxs[2].y(), vtxs[2].z());
+	//			sectionBounds += FVector(vtxs[3].x(), vtxs[3].y(), vtxs[3].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[3].x(), vtxs[3].y(), vtxs[3].z()),
+	//				FVector(0.0f, -1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.25f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[1].x(), vtxs[1].y(), vtxs[1].z()),
+	//				FVector(0.0f, -1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.5f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z()),
+	//				FVector(0.0f, -1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.5f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[3].x(), vtxs[3].y(), vtxs[3].z());
+	//			sectionBounds += FVector(vtxs[1].x(), vtxs[1].y(), vtxs[1].z());
+	//			sectionBounds += FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[1].x(), vtxs[1].y(), vtxs[1].z()),
+	//				FVector(1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.5f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[3].x(), vtxs[3].y(), vtxs[3].z()),
+	//				FVector(1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f, 0.5f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z()),
+	//				FVector(1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f, 0.75f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[1].x(), vtxs[1].y(), vtxs[1].z());
+	//			sectionBounds += FVector(vtxs[3].x(), vtxs[3].y(), vtxs[3].z());
+	//			sectionBounds += FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z()),
+	//				FVector(1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f, 0.75f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[6].x(), vtxs[6].y(), vtxs[6].z()),
+	//				FVector(1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.75f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[1].x(), vtxs[1].y(), vtxs[1].z()),
+	//				FVector(1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.5f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z());
+	//			sectionBounds += FVector(vtxs[6].x(), vtxs[6].y(), vtxs[6].z());
+	//			sectionBounds += FVector(vtxs[1].x(), vtxs[1].y(), vtxs[1].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[4].x(), vtxs[4].y(), vtxs[4].z()),
+	//				FVector(0.0f, 1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.75f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[6].x(), vtxs[6].y(), vtxs[6].z()),
+	//				FVector(0.0f, 1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.75f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z()),
+	//				FVector(0.0f, 1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 1.0f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[4].x(), vtxs[4].y(), vtxs[4].z());
+	//			sectionBounds += FVector(vtxs[6].x(), vtxs[6].y(), vtxs[6].z());
+	//			sectionBounds += FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z()),
+	//				FVector(0.0f, 1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 1.0f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[5].x(), vtxs[5].y(), vtxs[5].z()),
+	//				FVector(0.0f, 1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 1.0f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[4].x(), vtxs[4].y(), vtxs[4].z()),
+	//				FVector(0.0f, 1.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.75f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z());
+	//			sectionBounds += FVector(vtxs[5].x(), vtxs[5].y(), vtxs[5].z());
+	//			sectionBounds += FVector(vtxs[4].x(), vtxs[4].y(), vtxs[4].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z()),
+	//				FVector(-1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.5f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[4].x(), vtxs[4].y(), vtxs[4].z()),
+	//				FVector(-1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.75f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[5].x(), vtxs[5].y(), vtxs[5].z()),
+	//				FVector(-1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(0.0f, 0.75f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z());
+	//			sectionBounds += FVector(vtxs[4].x(), vtxs[4].y(), vtxs[4].z());
+	//			sectionBounds += FVector(vtxs[5].x(), vtxs[5].y(), vtxs[5].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[5].x(), vtxs[5].y(), vtxs[5].z()),
+	//				FVector(-1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(0.0f, 0.75f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[2].x(), vtxs[2].y(), vtxs[2].z()),
+	//				FVector(-1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(0.0f, 0.5f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z()),
+	//				FVector(-1.0f, 0.0f, 0.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.5f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[5].x(), vtxs[5].y(), vtxs[5].z());
+	//			sectionBounds += FVector(vtxs[2].x(), vtxs[2].y(), vtxs[2].z());
+	//			sectionBounds += FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[2].x(), vtxs[2].y(), vtxs[2].z()),
+	//				FVector(0.0f, 0.0f, 1.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.25f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[5].x(), vtxs[5].y(), vtxs[5].z()),
+	//				FVector(0.0f, 0.0f, 1.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.0f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z()),
+	//				FVector(0.0f, 0.0f, 1.0f),
+	//				FProcMeshTangent(0.0f, 0.0f, 1.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.0f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[2].x(), vtxs[2].y(), vtxs[2].z());
+	//			sectionBounds += FVector(vtxs[5].x(), vtxs[5].y(), vtxs[5].z());
+	//			sectionBounds += FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z()),
+	//				FVector(0.0f, 0.0f, 1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.0f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[3].x(), vtxs[3].y(), vtxs[3].z()),
+	//				FVector(0.0f, 0.0f, 1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.25f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[2].x(), vtxs[2].y(), vtxs[2].z()),
+	//				FVector(0.0f, 0.0f, 1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.25f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[7].x(), vtxs[7].y(), vtxs[7].z());
+	//			sectionBounds += FVector(vtxs[3].x(), vtxs[3].y(), vtxs[3].z());
+	//			sectionBounds += FVector(vtxs[2].x(), vtxs[2].y(), vtxs[2].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z()),
+	//				FVector(0.0f, 0.0f, -1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.5f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[1].x(), vtxs[1].y(), vtxs[1].z()),
+	//				FVector(0.0f, 0.0f, -1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.5f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[6].x(), vtxs[6].y(), vtxs[6].z()),
+	//				FVector(0.0f, 0.0f, -1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.75f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z());
+	//			sectionBounds += FVector(vtxs[1].x(), vtxs[1].y(), vtxs[1].z());
+	//			sectionBounds += FVector(vtxs[6].x(), vtxs[6].y(), vtxs[6].z());
+
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[6].x(), vtxs[6].y(), vtxs[6].z()),
+	//				FVector(0.0f, 0.0f, -1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(2.0f / 3.0f, 0.75f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[4].x(), vtxs[4].y(), vtxs[4].z()),
+	//				FVector(0.0f, 0.0f, -1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.75f)
+	//			)));
+	//			polygons.Add(vertices.Add(constructFProcMeshVertex(
+	//				FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z()),
+	//				FVector(0.0f, 0.0f, -1.0f),
+	//				FProcMeshTangent(1.0f, 0.0f, 0.0f),
+	//				FColor(), //TODO colors
+	//				FVector2D(1.0f / 3.0f, 0.5f)
+	//			)));
+	//			sectionBounds += FVector(vtxs[6].x(), vtxs[6].y(), vtxs[6].z());
+	//			sectionBounds += FVector(vtxs[4].x(), vtxs[4].y(), vtxs[4].z());
+	//			sectionBounds += FVector(vtxs[0].x(), vtxs[0].y(), vtxs[0].z());
+	//		}
+	//	}
+
+	//protected:
+	//	GridType &Grid;
+	//	TArray<FProcMeshSection> &SectionBuffers;
+	//	FCriticalSection CriticalSections[FVoxelData::VOXEL_TYPE_COUNT];
+	//};
 }

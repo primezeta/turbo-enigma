@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineMinimal.h"
+#include "VoxelDatabaseCommon.generated.h"
 
 #ifdef UE_BUILD_DEBUG
     #define VOXELMATEINLINE
@@ -36,45 +37,6 @@ enum class EVectorTypeClass : uint8
 };
 
 UENUM(BlueprintType)
-enum class ENoiseType : uint8
-{
-    Value    UMETA(DisplayName = "Value Noise"),
-    Perlin   UMETA(DisplayName = "Perlin Noise"),
-    Simplex  UMETA(DisplayName = "Simplex Noise"),
-    White    UMETA(DisplayName = "White Noise"),
-    Cellular UMETA(DisplayName = "Cellular Noise")
-};
-
-UENUM(BlueprintType)
-enum class ENoiseFractalMode : uint8
-{
-    None                     UMETA(DisplayName = "None"),
-    FractionalBrownianMotion UMETA(DisplayName = "Fractional Brownian Motion Fractal"),
-    Billow                   UMETA(DisplayName = "Billow Fractal"),
-    RigidMulti               UMETA(DisplayName = "Rigid Multi Fractal")
-};
-
-UENUM(BlueprintType)
-enum class ENoiseCellularDistanceMode : uint8
-{
-    Euclidean UMETA(DisplayName = "Euclidean"),
-    Manhattan UMETA(DisplayName = "Manhattan"),
-    Natural   UMETA(DisplayName = "Natural")
-};
-
-UENUM(BlueprintType)
-enum class ENoiseCellularReturnType : uint8
-{
-    CellValue    UMETA(DisplayName = "Cell Value Return"),
-    Distance     UMETA(DisplayName = "Distance Return"),
-    Distance2    UMETA(DisplayName = "Distance2 Return"),
-    Distance2Add UMETA(DisplayName = "Distance2Add Return"),
-    Distance2Sub UMETA(DisplayName = "Distance2Sub Return"),
-    Distance2Mul UMETA(DisplayName = "Distance2Mul Return"),
-    Distance2Div UMETA(DisplayName = "Distance2Div Return")
-};
-
-UENUM(BlueprintType)
 enum class ETransformOp : uint8
 {
     PreOp,
@@ -90,36 +52,27 @@ enum class EVoxelIterator : uint8
 };
 
 UENUM(BlueprintType)
-enum class EExtractGridSurfaceOp : uint8
+enum class ECoordinateTransformType : uint8
 {
-    HeightMap UMETA(DisplayName = "Height Map Surface Extraction"),
-    Density   UMETA(DisplayName = "Density Grid Surface Extraction")
+	Affine                      UMETA(DisplayName = "Affine"),
+	Unitary                     UMETA(DisplayName = "Unitary"),
+	Scale                       UMETA(DisplayName = "Scale"),
+	UniformScale                UMETA(DisplayName = "Uniform Scale"),
+	Translation                 UMETA(DisplayName = "Translation"),
+	ScaleTranslation            UMETA(DisplayName = "Scale and Translation"),
+	UniformScaleTranslation     UMETA(DisplayName = "Uniform Scale and Translation"),
+	NonlinearFrustum            UMETA(DisplayName = "Nonlinear Frustum"),
 };
 
 UENUM(BlueprintType)
-enum class EVoxelScalarType : uint8
+enum class EVoxelType : uint8
 {
-    Bool                        UMETA(DisplayName = "bool"),
-    UInt8                       UMETA(DisplayName = "uint8"),
-    Int32                       UMETA(DisplayName = "int32"),
-};
-
-UENUM(BlueprintType)
-enum class EVoxelFloatScalarType : uint8
-{
-    Float                       UMETA(DisplayName = "float"),
-};
-
-UENUM(BlueprintType)
-enum class EVoxelVectorType : uint8
-{
-    IntVector                   UMETA(DisplayName = "FIntVector"),
-};
-
-UENUM(BlueprintType)
-enum class EVoxelFloatVectorType : uint8
-{
-    Vector                      UMETA(DisplayName = "FVector"),
+	Bool                        UMETA(DisplayName = "bool"),
+	UInt8                       UMETA(DisplayName = "uint8"),
+	Int32                       UMETA(DisplayName = "int32"),
+	Float                       UMETA(DisplayName = "float"),
+	IntVector                   UMETA(DisplayName = "FIntVector"),
+	Vector                      UMETA(DisplayName = "FVector"),
 };
 
 UENUM(BlueprintType)
@@ -138,12 +91,4 @@ enum class EVoxelDatabaseMetadataType : uint8
     Box                                         UMETA(DisplayName = "FBox"),
     DateTime                                    UMETA(DisplayName = "FDateTime"),
     String                                      UMETA(DisplayName = "FString"),
-    AffineCoordinateTransform                   UMETA(DisplayName = "FAffineCoordinateTransform"),
-    UnitaryCoordinateTransform                  UMETA(DisplayName = "FUnitaryCoordinateTransform"),
-    ScaleCoordinateTransform                    UMETA(DisplayName = "FScaleCoordinateTransform"),
-    UniformScaleCoordinateTransform             UMETA(DisplayName = "FUniformScaleCoordinateTransform"),
-    TranslationCoordinateTransform              UMETA(DisplayName = "FTranslationCoordinateTransform"),
-    ScaleTranslationCoordinateTransform         UMETA(DisplayName = "FScaleTranslationCoordinateTransform"),
-    UniformScaleTranslationCoordinateTransform  UMETA(DisplayName = "FUniformScaleTranslationCoordinateTransform"),
-    NonlinearFrustumCoordinateTransform         UMETA(DisplayName = "FNonlinearFrustumCoordinateTransform"),
 };

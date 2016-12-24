@@ -2,7 +2,9 @@
 
 #pragma once
 #include "ModuleManager.h"
-#include "VoxelDatabaseProxy.h"
+#include "VoxelValueSources.h"
+#include "GridCoordinateTransforms.h"
+#include "VoxelGridProxy.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogVoxelMate, Log, All)
 
@@ -14,6 +16,9 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+	UFUNCTION(Category = VoxelMate, BlueprintCallable)
+		bool AddVolume(UValueSource* ValueSource, const FText& GridDisplayText, FGuid& OutGridId);
 
     static inline bool IsAvailable()
     {

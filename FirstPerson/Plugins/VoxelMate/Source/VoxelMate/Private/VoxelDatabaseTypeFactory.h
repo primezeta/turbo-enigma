@@ -4,11 +4,6 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/concepts.hpp>
 
-class ArrayDevice;
-class ArchiveDevice;
-class FStreamWriter;
-class FStreamReader;
-
 template<typename VoxelDatabaseType>
 struct FVoxelDatabaseTypeFactory
 {
@@ -32,7 +27,8 @@ protected:
     static ValueTypePtr CreateType(const FString& TypeName);
 };
 
-class ArrayDevice : public boost::iostreams::device<boost::iostreams::seekable, ANSICHAR>
+template<typename CharType>
+class ArrayDevice : public boost::iostreams::device<boost::iostreams::seekable, CharType>
 {
 public:
 	ArrayDevice(TArray<char_type>& Arr)
@@ -120,7 +116,8 @@ protected:
 	TArray<char_type>& Array;
 };
 
-class ArchiveDevice : public boost::iostreams::device<boost::iostreams::seekable, ANSICHAR>
+template<typename CharType>
+class ArchiveDevice : public boost::iostreams::device<boost::iostreams::seekable, CharType>
 {
 public:
 	ArchiveDevice(FArchive& Archive)
@@ -132,7 +129,7 @@ public:
 		return Pos;
 	}
 
-	VOXELMATEINLINE static void SerializeCh(FArchive& Ar, ANSICHAR& ch)
+	VOXELMATEINLINE static void SerializeCh(FArchive& Ar, CharType& ch)
 	{
 		Ar << reinterpret_cast<uint8&>(ch);
 	}
@@ -145,7 +142,7 @@ public:
 
 		if (Ar.IsLoading())
 		{
-			ANSICHAR NextByte;
+			CharType NextByte;
 			for (int32 i = 0; i < (int32)Count; ++i)
 			{
 				SerializeCh(Ar, NextByte);
@@ -214,10 +211,11 @@ protected:
 	FArchive& Ar;
 };
 
+template<typename CharType>
 class FStreamWriter : public FArchive
 {
 public:
-	FStreamWriter(TArray<ANSICHAR>& DestBytes, bool bIsPersistent = false, const FName InArchiveName = NAME_None)
+	FStreamWriter(TArray<CharType>& DestBytes, bool bIsPersistent = false, const FName InArchiveName = NAME_None)
 		: FArchive()
 		, Bytes(DestBytes)
 		, ArchiveName(InArchiveName)
@@ -280,16 +278,17 @@ public:
 	}
 
 protected:
-	TArray<ANSICHAR>& Bytes;
+	TArray<CharType>& Bytes;
 	const FName ArchiveName;
-	ArchiveDevice Device;
-	boost::iostreams::stream<ArchiveDevice> Stream;
+	ArchiveDevice<CharType> Device;
+	boost::iostreams::stream<ArchiveDevice<CharType>> Stream;
 };
 
+template<typename CharType>
 class FStreamReader : public FArchive
 {
 public:
-	FStreamReader(const TArray<ANSICHAR>& SrcBytes, bool bIsPersistent = false, const FName InArchiveName = NAME_None)
+	FStreamReader(const TArray<CharType>& SrcBytes, bool bIsPersistent = false, const FName InArchiveName = NAME_None)
 		: FArchive()
 		, Bytes(SrcBytes)
 		, ArchiveName(InArchiveName)
@@ -352,8 +351,8 @@ public:
 	}
 
 protected:
-	const TArray<ANSICHAR>& Bytes;
+	const TArray<CharType>& Bytes;
 	const FName ArchiveName;
-	ArchiveDevice Device;
-	boost::iostreams::stream<ArchiveDevice> Stream;
+	ArchiveDevice<CharType> Device;
+	boost::iostreams::stream<ArchiveDevice<CharType>> Stream;
 };

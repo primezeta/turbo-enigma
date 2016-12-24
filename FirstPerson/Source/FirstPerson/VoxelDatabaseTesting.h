@@ -21,7 +21,8 @@ public:
 
     noise::module::Perlin PerlinNoise;
 
-    UVoxelPerlinNoiseSource()
+	UVoxelPerlinNoiseSource(const FObjectInitializer& Initializer)
+		: Super(Initializer)
     {
         Frequency = 4.0f;
         Lacunarity = 0.49f;
@@ -47,8 +48,8 @@ public:
             PerlinNoise.SetOctaveCount(OctaveCount);
         }
 
-    FORCEINLINE void GetValue_Implementation(float x, float y, float z, float& OutValue) const override
+    FORCEINLINE void GetValue_Implementation(float x, float y, float z, FVoxelFloat& OutValue) const override
     {
-        OutValue = (float)PerlinNoise.GetValue((double)x, (double)y, (double)z);
+        OutValue.Value = (float)PerlinNoise.GetValue((double)x, (double)y, (double)z);
     }
 };

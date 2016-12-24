@@ -7,6 +7,8 @@
 #include "IPluginManager.h"
 #include "VoxelDatabase.h"
 
+AVoxelDatabase* VoxelDatabase;
+
 #define LOCTEXT_NAMESPACE "FVoxelMateModule"
 
 void FVoxelMateModule::StartupModule()
@@ -35,6 +37,10 @@ void FVoxelMateModule::StartupModule()
 	//}
 
 	AVoxelDatabase::Startup();
+	if (!VoxelDatabase)
+	{
+		VoxelDatabase = NewObject<AVoxelDatabase>();
+	}
 }
 
 void FVoxelMateModule::ShutdownModule()
@@ -42,6 +48,12 @@ void FVoxelMateModule::ShutdownModule()
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 	AVoxelDatabase::Shutdown();
+}
+
+bool FVoxelMateModule::AddVolume(UValueSource* ValueSource, const FText& GridDisplayText, FGuid& OutGridId)
+{
+	VoxelDatabase->AddGrid(ValueSource, GridDisplayText, OutGridId);
+	return OutGridId.IsValid();
 }
 
 const FString VoxelDatabaseStatics::GridStatics::HalfFloatTypenameSuffix = TEXT("_HalfFloat");

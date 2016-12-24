@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineMinimal.h"
+#include "VoxelDatabaseCommon.h"
 #include "Math/Plane.h"
 #include "Math/Quat.h"
 #include "Math/Box.h"
@@ -10,134 +11,177 @@
 USTRUCT(BlueprintType)
 struct FAffineCoordinateTransform
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    FAffineCoordinateTransform()
-        : Matrix(FMatrix::Identity)
-    {}
-
-    //According to Matrix.h: "Matrix elements are accessed with M[RowIndex][ColumnIndex]"
-    //In OpenVDB, matrices are in row-order form and a valid affine map defined from a 4d-matrix requires column 3 = 0, 0, 0, 1
-    //Therefore the only valid FMatrix constructor is the following:
-    FAffineCoordinateTransform(const FVector& InX, const FVector& InY, const FVector& InZ)
-        : Matrix(InX, InY, InZ, FVector(0.0f, 0.0f, 1.0f))
+	FAffineCoordinateTransform()
 	{}
 
-    FMatrix Matrix;
+	//According to Matrix.h: "Matrix elements are accessed with M[RowIndex][ColumnIndex]"
+	//In OpenVDB, matrices are in row-order form and a valid affine map defined from a 4d-matrix requires column 3 = 0, 0, 0, 1
+	//Therefore the only valid FMatrix constructor is the following:
+	FAffineCoordinateTransform(const FVector& InX, const FVector& InY, const FVector& InZ)
+		: Matrix(InX, InY, InZ, FVector(0.0f, 0.0f, 1.0f))
+	{}
+
+	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	{
+		Matrix.Serialize(Ar);
+	}
+
+	FMatrix Matrix;
 };
 
 USTRUCT(BlueprintType)
 struct FUnitaryCoordinateTransform
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    FUnitaryCoordinateTransform()
-        : Quat(FQuat::Identity)
-    {}
+	FUnitaryCoordinateTransform()
+		: Quat(FQuat::Identity)
+	{}
 
-    FUnitaryCoordinateTransform(const FVector& Axis, float AngleRadians)
-        : Quat(Axis, AngleRadians)
-    {}
+	FUnitaryCoordinateTransform(const FVector& Axis, float AngleRadians)
+		: Quat(Axis, AngleRadians)
+	{}
 
-    FQuat Quat;
+	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	{
+		Quat.Serialize(Ar);
+	}
+
+	FQuat Quat;
 };
 
 USTRUCT(BlueprintType)
 struct FScaleCoordinateTransform
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    FScaleCoordinateTransform()
-        : ScaleVec(FVector(1.0f))
-    {}
+	FScaleCoordinateTransform()
+		: ScaleVec(FVector(1.0f))
+	{}
 
-    FScaleCoordinateTransform(const FVector& Scale)
-        : ScaleVec(Scale.GetAbs())
-    {}
+	FScaleCoordinateTransform(const FVector& Scale)
+		: ScaleVec(Scale.GetAbs())
+	{}
 
-    FVector ScaleVec;
+	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	{
+		ScaleVec.Serialize(Ar);
+	}
+
+	FVector ScaleVec;
 };
 
 USTRUCT(BlueprintType)
 struct FUniformScaleCoordinateTransform
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    FUniformScaleCoordinateTransform()
-        : ScaleValue(1.0f)
-    {}
+	FUniformScaleCoordinateTransform()
+		: ScaleValue(1.0f)
+	{}
 
-    FUniformScaleCoordinateTransform(float Scale)
-        : ScaleValue(FMath::Abs(Scale))
-    {}
+	FUniformScaleCoordinateTransform(float Scale)
+		: ScaleValue(FMath::Abs(Scale))
+	{}
 
-    float ScaleValue;
+	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	{
+		Ar << ScaleValue;
+	}
+
+	float ScaleValue;
 };
 
 USTRUCT(BlueprintType)
 struct FTranslationCoordinateTransform
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    FTranslationCoordinateTransform()
-        : TranslationVec(FVector::ZeroVector)
-    {}
+	FTranslationCoordinateTransform()
+		: TranslationVec(FVector::ZeroVector)
+	{}
 
-    FTranslationCoordinateTransform(const FVector& Translation)
-        : TranslationVec(Translation)
-    {}
+	FTranslationCoordinateTransform(const FVector& Translation)
+		: TranslationVec(Translation)
+	{}
 
-    FVector TranslationVec;
+	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	{
+		TranslationVec.Serialize(Ar);
+	}
+
+	FVector TranslationVec;
 };
 
 USTRUCT(BlueprintType)
 struct FScaleTranslationCoordinateTransform
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    FScaleTranslationCoordinateTransform()
-        : ScaleVec(FVector(1.0f)), TranslationVec(FVector::ZeroVector)
-    {}
+	FScaleTranslationCoordinateTransform()
+		: ScaleVec(FVector(1.0f)), TranslationVec(FVector::ZeroVector)
+	{}
 
-    FScaleTranslationCoordinateTransform(const FVector& Scale, const FVector& Translation)
-        : ScaleVec(Scale.GetAbs()), TranslationVec(Translation)
-    {}
+	FScaleTranslationCoordinateTransform(const FVector& Scale, const FVector& Translation)
+		: ScaleVec(Scale.GetAbs()), TranslationVec(Translation)
+	{}
 
-    FVector ScaleVec;
-    FVector TranslationVec;
+	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	{
+		ScaleVec.Serialize(Ar);
+		TranslationVec.Serialize(Ar);
+	}
+
+	FVector ScaleVec;
+	FVector TranslationVec;
 };
 
 USTRUCT(BlueprintType)
 struct FUniformScaleTranslationCoordinateTransform
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    FUniformScaleTranslationCoordinateTransform()
-        : ScaleValue(1.0f), TranslationVec(FVector::ZeroVector)
-    {}
+	FUniformScaleTranslationCoordinateTransform()
+		: ScaleValue(1.0f), TranslationVec(FVector::ZeroVector)
+	{}
 
-    FUniformScaleTranslationCoordinateTransform(float Scale, const FVector& Translation)
-        : ScaleValue(FMath::Abs(Scale)), TranslationVec(Translation)
-    {}
+	FUniformScaleTranslationCoordinateTransform(float Scale, const FVector& Translation)
+		: ScaleValue(FMath::Abs(Scale)), TranslationVec(Translation)
+	{}
 
-    float ScaleValue;
-    FVector TranslationVec;
+	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	{
+		Ar << ScaleValue;
+		TranslationVec.Serialize(Ar);
+	}
+
+	float ScaleValue;
+	FVector TranslationVec;
 };
 
 USTRUCT(BlueprintType)
 struct FNonlinearFrustumCoordinateTransform
 {
-    GENERATED_BODY()
+	GENERATED_BODY()
 
-    FNonlinearFrustumCoordinateTransform()
-        : Box(FVector::ZeroVector, FVector::ZeroVector), Taper(0.0f), Depth(0.0f)
-    {}
+	FNonlinearFrustumCoordinateTransform()
+		: Box(FVector::ZeroVector, FVector::ZeroVector), Taper(0.0f), Depth(0.0f)
+	{}
 
-    FNonlinearFrustumCoordinateTransform(const FVector& BoxMin, const FVector& BoxMax, float FrustumTaper, float FrustumDepth)
-        : Box(BoxMin, BoxMax), Taper(FMath::Abs(FrustumTaper)), Depth(FMath::Abs(FrustumDepth))
-    {}
+	FNonlinearFrustumCoordinateTransform(const FVector& BoxMin, const FVector& BoxMax, float FrustumTaper, float FrustumDepth)
+		: Box(BoxMin, BoxMax), Taper(FMath::Abs(FrustumTaper)), Depth(FMath::Abs(FrustumDepth))
+	{}
 
-    FBox Box;
-    float Taper;
-    float Depth;
+	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	{
+		Box.Serialize(Ar);
+		Ar << Taper;
+		Ar << Depth;
+	}
+
+	FBox Box;
+	float Taper;
+	float Depth;
 };

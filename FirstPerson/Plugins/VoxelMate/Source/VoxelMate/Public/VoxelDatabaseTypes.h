@@ -1,5 +1,6 @@
 #pragma once
 #include "EngineMinimal.h"
+#include "GridCoordinateTransforms.h"
 #include "VoxelDatabaseTypes.generated.h"
 
 struct FVoxelBool;
@@ -22,152 +23,169 @@ struct FMetadataBox;
 struct FMetadataDateTime;
 struct FMetadataString;
 struct FMetadataText;
-struct FMetadataAffineCoordinateTransform;
-struct FMetadataUnitaryCoordinateTransform;
-struct FMetadataScaleCoordinateTransform;
-struct FMetadataUniformScaleCoordinateTransform;
-struct FMetadataTranslationCoordinateTransform;
-struct FMetadataScaleTranslationCoordinateTransform;
-struct FMetadataUniformScaleTranslationCoordinateTransform;
-struct FMetadataNonlinearFrustumCoordinateTransform;
+
+USTRUCT()
+struct FVoxelBase
+{
+	GENERATED_BODY()
+
+	FVoxelBase()
+		: VoxelType((EVoxelType)0), SurfaceIntersection(0)
+	{}
+
+	FVoxelBase(EVoxelType Type)
+		: VoxelType(Type), SurfaceIntersection(0)
+	{}
+
+	UPROPERTY()
+		EVoxelType VoxelType;
+	UPROPERTY()
+		uint8 SurfaceIntersection;
+};
 
 USTRUCT(BlueprintType)
-struct FVoxelBool
+struct FVoxelBool : public FVoxelBase
 {
 	GENERATED_BODY()
 
 	explicit FVoxelBool()
-		: Value(ZeroValue.Value)
+		: FVoxelBase(EVoxelType::Bool), Value(ZeroValue.Value)
 	{}
 
 	explicit FVoxelBool(const bool& InValue)
-		: Value(InValue)
+		: FVoxelBase(EVoxelType::Bool), Value(InValue)
 	{}
 
 	FVoxelBool(const FVoxelBool& InValue)
-		: Value(InValue.Value)
+		: FVoxelBase(EVoxelType::Bool), Value(InValue.Value)
 	{}
 
 	typedef bool ValueType;
-	bool Value;
+	UPROPERTY()
+		bool Value;
 	const static FVoxelBool ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelUInt8
+struct FVoxelUInt8 : public FVoxelBase
 {
 	GENERATED_BODY()
 
 	explicit FVoxelUInt8()
-		: Value(ZeroValue.Value)
+		: FVoxelBase(EVoxelType::UInt8), Value(ZeroValue.Value)
 	{}
 
 	explicit FVoxelUInt8(const uint8& InValue)
-		: Value(InValue)
+		: FVoxelBase(EVoxelType::UInt8), Value(InValue)
 	{}
 
 	FVoxelUInt8(const FVoxelUInt8& InValue)
-		: Value(InValue.Value)
+		: FVoxelBase(EVoxelType::UInt8), Value(InValue.Value)
 	{}
 
 	typedef uint8 ValueType;
-	uint8 Value;
+	UPROPERTY()
+		uint8 Value;
 	const static FVoxelUInt8 ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelInt32
+struct FVoxelInt32 : public FVoxelBase
 {
 	GENERATED_BODY()
 
 	explicit FVoxelInt32()
-        : Value(ZeroValue.Value)
+        : FVoxelBase(EVoxelType::Int32), Value(ZeroValue.Value)
     {}
 
 	explicit FVoxelInt32(const int32& InValue)
-		: Value(InValue)
+		: FVoxelBase(EVoxelType::Int32), Value(InValue)
 	{}
 
 	FVoxelInt32(const FVoxelInt32& InValue)
-		: Value(InValue.Value)
+		: FVoxelBase(EVoxelType::Int32), Value(InValue.Value)
 	{}
 
 	typedef int32 ValueType;
-	int32 Value;
+	UPROPERTY()
+		int32 Value;
     const static FVoxelInt32 ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelFloat
+struct FVoxelFloat : public FVoxelBase
 {
 	GENERATED_BODY()
 
 	explicit FVoxelFloat()
-		: Value(ZeroValue.Value)
+		: FVoxelBase(EVoxelType::Float), Value(ZeroValue.Value)
 	{}
 
 	explicit FVoxelFloat(const float& InValue)
-		: Value(InValue)
+		: FVoxelBase(EVoxelType::Float), Value(InValue)
 	{}
 
 	FVoxelFloat(const FVoxelFloat& InValue)
-		: Value(InValue.Value)
+		: FVoxelBase(EVoxelType::Float), Value(InValue.Value)
 	{}
 
 	typedef float ValueType;
-	float Value;
+	UPROPERTY()
+		float Value;
 	const static FVoxelFloat ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelVector
+struct FVoxelVector : public FVoxelBase
 {
 	GENERATED_BODY()
 
 	explicit FVoxelVector()
-		: Value(ZeroValue.Value)
+		: FVoxelBase(EVoxelType::Vector), Value(ZeroValue.Value)
 	{}
 
 	explicit FVoxelVector(const FVector& InValue)
-		: Value(InValue)
+		: FVoxelBase(EVoxelType::Vector), Value(InValue)
 	{}
 
 	explicit FVoxelVector(EForceInit ForceInit)
-		: Value(ForceInit)
+		: FVoxelBase(EVoxelType::Vector), Value(ForceInit)
 	{}
 
 	FVoxelVector(const FVoxelVector& InValue)
-		: Value(InValue.Value)
+		: FVoxelBase(EVoxelType::Vector), Value(InValue.Value)
 	{}
 
 	typedef FVector ValueType;
-	FVector Value;
+	UPROPERTY()
+		FVector Value;
 	const static FVoxelVector ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelIntVector
+struct FVoxelIntVector : public FVoxelBase
 {
 	GENERATED_BODY()
 
 	explicit FVoxelIntVector()
-		: Value(ZeroValue.Value)
+		: FVoxelBase(EVoxelType::IntVector), Value(ZeroValue.Value)
 	{}
 
 	explicit FVoxelIntVector(const FIntVector& InValue)
-		: Value(InValue)
+		: FVoxelBase(EVoxelType::IntVector), Value(InValue)
 	{}
 
 	explicit FVoxelIntVector(EForceInit ForceInit)
-		: Value(ForceInit)
+		: FVoxelBase(EVoxelType::IntVector), Value(ForceInit)
 	{}
 
 	FVoxelIntVector(const FVoxelIntVector& InValue)
-		: Value(InValue.Value)
+		: FVoxelBase(EVoxelType::IntVector), Value(InValue.Value)
 	{}
 
 	typedef FIntVector ValueType;
-	FIntVector Value;
+	UPROPERTY()
+		FIntVector Value;
 	const static FVoxelIntVector ZeroValue;
 };
 
@@ -189,7 +207,8 @@ struct FMetadataBool
 	{}
 
 	typedef bool ValueType;
-	bool Value;
+	UPROPERTY()
+		bool Value;
 	const static FMetadataBool ZeroValue;
 };
 
@@ -211,7 +230,8 @@ struct FMetadataFloat
 	{}
 
 	typedef float ValueType;
-	float Value;
+	UPROPERTY()
+		float Value;
 	const static FMetadataFloat ZeroValue;
 };
 
@@ -233,7 +253,8 @@ struct FMetadataInt32
 	{}
 
 	typedef int32 ValueType;
-	int32 Value;
+	UPROPERTY()
+		int32 Value;
 	const static FMetadataInt32 ZeroValue;
 };
 
@@ -255,7 +276,8 @@ struct FMetadataUInt8
 	{}
 
 	typedef uint8 ValueType;
-	uint8 Value;
+	UPROPERTY()
+		uint8 Value;
 	const static FMetadataUInt8 ZeroValue;
 };
 
@@ -281,7 +303,8 @@ struct FMetadataVector
 	{}
 
 	typedef FVector ValueType;
-	FVector Value;
+	UPROPERTY()
+		FVector Value;
 	const static FMetadataVector ZeroValue;
 };
 
@@ -307,7 +330,8 @@ struct FMetadataColor
 	{}
 
 	typedef FColor ValueType;
-	FColor Value;
+	UPROPERTY()
+		FColor Value;
 	const static FMetadataColor ZeroValue;
 };
 
@@ -333,7 +357,8 @@ struct FMetadataLinearColor
 	{}
 
 	typedef FLinearColor ValueType;
-	FLinearColor Value;
+	UPROPERTY()
+		FLinearColor Value;
 	const static FMetadataLinearColor ZeroValue;
 };
 
@@ -359,7 +384,8 @@ struct FMetadataIntVector
 	{}
 
 	typedef FIntVector ValueType;
-	FIntVector Value;
+	UPROPERTY()
+		FIntVector Value;
 	const static FMetadataIntVector ZeroValue;
 };
 
@@ -385,7 +411,8 @@ struct FMetadataRotator
 	{}
 
 	typedef FRotator ValueType;
-	FRotator Value;
+	UPROPERTY()
+		FRotator Value;
 	const static FMetadataRotator ZeroValue;
 };
 
@@ -411,7 +438,8 @@ struct FMetadataQuat
 	{}
 
 	typedef FQuat ValueType;
-	FQuat Value;
+	UPROPERTY()
+		FQuat Value;
 	const static FMetadataQuat ZeroValue;
 };
 
@@ -437,7 +465,8 @@ struct FMetadataBox
 	{}
 
 	typedef FBox ValueType;
-	FBox Value;
+	UPROPERTY()
+		FBox Value;
 	const static FMetadataBox ZeroValue;
 };
 
@@ -459,7 +488,8 @@ struct FMetadataDateTime
 	{}
 
 	typedef FDateTime ValueType;
-	FDateTime Value;
+	UPROPERTY()
+		FDateTime Value;
 	const static FMetadataDateTime ZeroValue;
 };
 
@@ -481,7 +511,8 @@ struct FMetadataString
 	{}
 
 	typedef FString ValueType;
-	FString Value;
+	UPROPERTY()
+		FString Value;
 	const static FMetadataString ZeroValue;
 };
 
@@ -507,182 +538,7 @@ struct FMetadataText
 	{}
 
 	typedef FText ValueType;
-	FText Value;
+	UPROPERTY()
+		FText Value;
 	const static FMetadataText ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct FMetadataAffineCoordinateTransform
-{
-	GENERATED_BODY()
-
-	explicit FMetadataAffineCoordinateTransform()
-		: Value(ZeroValue.Value)
-	{}
-
-	explicit FMetadataAffineCoordinateTransform(const FAffineCoordinateTransform& InValue)
-		: Value(InValue)
-	{}
-
-	FMetadataAffineCoordinateTransform(const FMetadataAffineCoordinateTransform& InValue)
-		: Value(InValue.Value)
-	{}
-
-	typedef FAffineCoordinateTransform ValueType;
-	FAffineCoordinateTransform Value;
-	const static FMetadataAffineCoordinateTransform ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct FMetadataUnitaryCoordinateTransform
-{
-	GENERATED_BODY()
-
-	explicit FMetadataUnitaryCoordinateTransform()
-		: Value(ZeroValue.Value)
-	{}
-
-	explicit FMetadataUnitaryCoordinateTransform(const FUnitaryCoordinateTransform& InValue)
-		: Value(InValue)
-	{}
-
-	FMetadataUnitaryCoordinateTransform(const FMetadataUnitaryCoordinateTransform& InValue)
-		: Value(InValue.Value)
-	{}
-
-	typedef FUnitaryCoordinateTransform ValueType;
-	FUnitaryCoordinateTransform Value;
-	const static FMetadataUnitaryCoordinateTransform ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct FMetadataScaleCoordinateTransform
-{
-	GENERATED_BODY()
-
-	explicit FMetadataScaleCoordinateTransform()
-		: Value(ZeroValue.Value)
-	{}
-
-	explicit FMetadataScaleCoordinateTransform(const FScaleCoordinateTransform& InValue)
-		: Value(InValue)
-	{}
-
-	FMetadataScaleCoordinateTransform(const FMetadataScaleCoordinateTransform& InValue)
-		: Value(InValue.Value)
-	{}
-
-	typedef FScaleCoordinateTransform ValueType;
-	FScaleCoordinateTransform Value;
-	const static FMetadataScaleCoordinateTransform ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct FMetadataUniformScaleCoordinateTransform
-{
-	GENERATED_BODY()
-
-	explicit FMetadataUniformScaleCoordinateTransform()
-		: Value(ZeroValue.Value)
-	{}
-
-	explicit FMetadataUniformScaleCoordinateTransform(const FUniformScaleCoordinateTransform& InValue)
-		: Value(InValue)
-	{}
-
-	FMetadataUniformScaleCoordinateTransform(const FMetadataUniformScaleCoordinateTransform& InValue)
-		: Value(InValue.Value)
-	{}
-
-	typedef FUniformScaleCoordinateTransform ValueType;
-	FUniformScaleCoordinateTransform Value;
-	const static FMetadataUniformScaleCoordinateTransform ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct FMetadataTranslationCoordinateTransform
-{
-	GENERATED_BODY()
-
-	explicit FMetadataTranslationCoordinateTransform()
-		: Value(ZeroValue.Value)
-	{}
-
-	explicit FMetadataTranslationCoordinateTransform(const FTranslationCoordinateTransform& InValue)
-		: Value(InValue)
-	{}
-
-	FMetadataTranslationCoordinateTransform(const FMetadataTranslationCoordinateTransform& InValue)
-		: Value(InValue.Value)
-	{}
-
-	typedef FTranslationCoordinateTransform ValueType;
-	FTranslationCoordinateTransform Value;
-	const static FMetadataTranslationCoordinateTransform ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct FMetadataScaleTranslationCoordinateTransform
-{
-	GENERATED_BODY()
-
-	explicit FMetadataScaleTranslationCoordinateTransform()
-		: Value(ZeroValue.Value)
-	{}
-
-	explicit FMetadataScaleTranslationCoordinateTransform(const FScaleTranslationCoordinateTransform& InValue)
-		: Value(InValue)
-	{}
-
-	FMetadataScaleTranslationCoordinateTransform(const FMetadataScaleTranslationCoordinateTransform& InValue)
-		: Value(InValue.Value)
-	{}
-
-	typedef FScaleTranslationCoordinateTransform ValueType;
-	FScaleTranslationCoordinateTransform Value;
-	const static FMetadataScaleTranslationCoordinateTransform ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct FMetadataUniformScaleTranslationCoordinateTransform
-{
-	GENERATED_BODY()
-
-	explicit FMetadataUniformScaleTranslationCoordinateTransform()
-		: Value(ZeroValue.Value)
-	{}
-
-	explicit FMetadataUniformScaleTranslationCoordinateTransform(const FUniformScaleTranslationCoordinateTransform& InValue)
-		: Value(InValue)
-	{}
-
-	FMetadataUniformScaleTranslationCoordinateTransform(const FMetadataUniformScaleTranslationCoordinateTransform& InValue)
-		: Value(InValue.Value)
-	{}
-
-	typedef FUniformScaleTranslationCoordinateTransform ValueType;
-	FUniformScaleTranslationCoordinateTransform Value;
-	const static FMetadataUniformScaleTranslationCoordinateTransform ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct FMetadataNonlinearFrustumCoordinateTransform
-{
-	GENERATED_BODY()
-
-	explicit FMetadataNonlinearFrustumCoordinateTransform()
-		: Value(ZeroValue.Value)
-	{}
-
-	explicit FMetadataNonlinearFrustumCoordinateTransform(const FNonlinearFrustumCoordinateTransform& InValue)
-		: Value(InValue)
-	{}
-
-	FMetadataNonlinearFrustumCoordinateTransform(const FMetadataNonlinearFrustumCoordinateTransform& InValue)
-		: Value(InValue.Value)
-	{}
-
-	typedef FNonlinearFrustumCoordinateTransform ValueType;
-	FNonlinearFrustumCoordinateTransform Value;
-	const static FMetadataNonlinearFrustumCoordinateTransform ZeroValue;
 };

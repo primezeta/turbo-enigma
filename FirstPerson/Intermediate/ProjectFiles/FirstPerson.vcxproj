@@ -124,7 +124,7 @@
 		</ProjectConfiguration>
 	</ItemGroup>
 	<PropertyGroup Label="Globals">
-		<ProjectGuid>{66B5CEC8-1929-4D76-89B3-69A28B4E81AF}</ProjectGuid>
+		<ProjectGuid>{526A5B76-F42E-4359-B4C2-2A0E0EEB0249}</ProjectGuid>
 		<Keyword>MakeFileProj</Keyword>
 		<RootNamespace>FirstPerson</RootNamespace>
        <PlatformToolset>v140</PlatformToolset>
@@ -592,15 +592,12 @@
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelMate.cpp" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelMatePCH.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\GridCoordinateTransforms.h" />
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\NoiseGeneratorConfiguration.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabaseCommon.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabaseProxy.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabaseTypes.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabaseVoxelProxy.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxy.h" />
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelGridProxyInterface.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelMate.h" />
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelValueSourceInterface.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelValueSources.h" />
 		<None Include="..\..\Plugins\VoxelMate\VoxelMate.uplugin" />
 		<None Include="..\..\Plugins\VoxelMate\Resources\Icon128.png" />
