@@ -2,6 +2,7 @@
 #include "EngineMinimal.H"
 #include "module/perlin.h"
 #include "VoxelValueSources.h"
+#include "VoxelMate.h"
 #include "VoxelDatabaseTesting.generated.h"
 
 UCLASS(Category = VoxelMateTesting, BlueprintType, Blueprintable)
@@ -30,6 +31,12 @@ public:
         OctaveCount = 9;
         InitNoise();
     }
+
+	UFUNCTION(Category = VoxelMateTesting, BlueprintCallable)
+		bool AddPerlinNoiseVolume(UVoxelPerlinNoiseSource* PerlinNoiseSource, FGuid& OutGridId)
+		{
+			return PerlinNoiseSource && FVoxelMateModule::AddVolume(PerlinNoiseSource, FText::FromString(TEXT("PerlinNoise")), OutGridId);
+		}
 
     UFUNCTION(Category = VoxelMateTesting, BlueprintPure, BlueprintCallable)
         static UVoxelPerlinNoiseSource* CreatePerlinNoiseSource()

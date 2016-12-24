@@ -9,7 +9,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogVoxelMate, Log, All)
 
 //TODO investigate UBlueprintFunctionLibrary
-class FVoxelMateModule : public IModuleInterface
+class VOXELMATE_API FVoxelMateModule : public IModuleInterface
 {
 public:
 
@@ -17,8 +17,8 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	UFUNCTION(Category = VoxelMate, BlueprintCallable)
-		bool AddVolume(UValueSource* ValueSource, const FText& GridDisplayText, FGuid& OutGridId);
+	UFUNCTION(Category = VoxelMate, BlueprintPure, BlueprintCallable)
+		static bool AddVolume(UValueSource* ValueSource, const FText& GridDisplayText, FGuid& OutGridId);
 
     static inline bool IsAvailable()
     {
