@@ -17,8 +17,11 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	UFUNCTION(Category = VoxelMate, BlueprintPure, BlueprintCallable)
-		static bool AddVolume(UValueSource* ValueSource, const FText& GridDisplayText, FGuid& OutGridId);
+	UFUNCTION(Category = VoxelMate)
+		static void AddVolume(AValueSource* ValueSource, const FText& GridDisplayText);
+
+	UFUNCTION(Category = VoxelMate)
+		static void ChangeVoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive);
 
     static inline bool IsAvailable()
     {

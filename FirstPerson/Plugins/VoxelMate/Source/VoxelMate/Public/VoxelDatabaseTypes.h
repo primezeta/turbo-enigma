@@ -37,14 +37,14 @@ struct FVoxelBase
 		: VoxelType(Type), SurfaceIntersection(0)
 	{}
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 		EVoxelType VoxelType;
 	UPROPERTY()
 		uint8 SurfaceIntersection;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelBool : public FVoxelBase
+struct VOXELMATE_API FVoxelBool : public FVoxelBase
 {
 	GENERATED_BODY()
 
@@ -61,13 +61,13 @@ struct FVoxelBool : public FVoxelBase
 	{}
 
 	typedef bool ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		bool Value;
 	const static FVoxelBool ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelUInt8 : public FVoxelBase
+struct VOXELMATE_API FVoxelUInt8 : public FVoxelBase
 {
 	GENERATED_BODY()
 
@@ -84,13 +84,13 @@ struct FVoxelUInt8 : public FVoxelBase
 	{}
 
 	typedef uint8 ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		uint8 Value;
 	const static FVoxelUInt8 ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelInt32 : public FVoxelBase
+struct VOXELMATE_API FVoxelInt32 : public FVoxelBase
 {
 	GENERATED_BODY()
 
@@ -107,13 +107,13 @@ struct FVoxelInt32 : public FVoxelBase
 	{}
 
 	typedef int32 ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		int32 Value;
     const static FVoxelInt32 ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelFloat : public FVoxelBase
+struct VOXELMATE_API FVoxelFloat : public FVoxelBase
 {
 	GENERATED_BODY()
 
@@ -130,13 +130,13 @@ struct FVoxelFloat : public FVoxelBase
 	{}
 
 	typedef float ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		float Value;
 	const static FVoxelFloat ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelVector : public FVoxelBase
+struct VOXELMATE_API FVoxelVector : public FVoxelBase
 {
 	GENERATED_BODY()
 
@@ -157,13 +157,13 @@ struct FVoxelVector : public FVoxelBase
 	{}
 
 	typedef FVector ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FVector Value;
 	const static FVoxelVector ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FVoxelIntVector : public FVoxelBase
+struct VOXELMATE_API FVoxelIntVector : public FVoxelBase
 {
 	GENERATED_BODY()
 
@@ -184,13 +184,13 @@ struct FVoxelIntVector : public FVoxelBase
 	{}
 
 	typedef FIntVector ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FIntVector Value;
 	const static FVoxelIntVector ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataBool
+struct VOXELMATE_API FMetadataBool
 {
 	GENERATED_BODY()
 
@@ -207,13 +207,13 @@ struct FMetadataBool
 	{}
 
 	typedef bool ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		bool Value;
 	const static FMetadataBool ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataFloat
+struct VOXELMATE_API FMetadataFloat
 {
 	GENERATED_BODY()
 
@@ -230,13 +230,13 @@ struct FMetadataFloat
 	{}
 
 	typedef float ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		float Value;
 	const static FMetadataFloat ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataInt32
+struct VOXELMATE_API FMetadataInt32
 {
 	GENERATED_BODY()
 
@@ -253,13 +253,13 @@ struct FMetadataInt32
 	{}
 
 	typedef int32 ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		int32 Value;
 	const static FMetadataInt32 ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataUInt8
+struct VOXELMATE_API FMetadataUInt8
 {
 	GENERATED_BODY()
 
@@ -276,13 +276,13 @@ struct FMetadataUInt8
 	{}
 
 	typedef uint8 ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		uint8 Value;
 	const static FMetadataUInt8 ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataVector
+struct VOXELMATE_API FMetadataVector
 {
 	GENERATED_BODY()
 
@@ -303,13 +303,13 @@ struct FMetadataVector
 	{}
 
 	typedef FVector ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FVector Value;
 	const static FMetadataVector ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataColor
+struct VOXELMATE_API FMetadataColor
 {
 	GENERATED_BODY()
 
@@ -330,13 +330,13 @@ struct FMetadataColor
 	{}
 
 	typedef FColor ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FColor Value;
 	const static FMetadataColor ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataLinearColor
+struct VOXELMATE_API FMetadataLinearColor
 {
 	GENERATED_BODY()
 
@@ -357,13 +357,13 @@ struct FMetadataLinearColor
 	{}
 
 	typedef FLinearColor ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FLinearColor Value;
 	const static FMetadataLinearColor ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataIntVector
+struct VOXELMATE_API FMetadataIntVector
 {
 	GENERATED_BODY()
 
@@ -384,13 +384,13 @@ struct FMetadataIntVector
 	{}
 
 	typedef FIntVector ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FIntVector Value;
 	const static FMetadataIntVector ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataRotator
+struct VOXELMATE_API FMetadataRotator
 {
 	GENERATED_BODY()
 
@@ -411,13 +411,13 @@ struct FMetadataRotator
 	{}
 
 	typedef FRotator ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FRotator Value;
 	const static FMetadataRotator ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataQuat
+struct VOXELMATE_API FMetadataQuat
 {
 	GENERATED_BODY()
 
@@ -438,13 +438,13 @@ struct FMetadataQuat
 	{}
 
 	typedef FQuat ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FQuat Value;
 	const static FMetadataQuat ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataBox
+struct VOXELMATE_API FMetadataBox
 {
 	GENERATED_BODY()
 
@@ -465,13 +465,13 @@ struct FMetadataBox
 	{}
 
 	typedef FBox ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FBox Value;
 	const static FMetadataBox ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataDateTime
+struct VOXELMATE_API FMetadataDateTime
 {
 	GENERATED_BODY()
 
@@ -488,13 +488,13 @@ struct FMetadataDateTime
 	{}
 
 	typedef FDateTime ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FDateTime Value;
 	const static FMetadataDateTime ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataString
+struct VOXELMATE_API FMetadataString
 {
 	GENERATED_BODY()
 
@@ -511,13 +511,13 @@ struct FMetadataString
 	{}
 
 	typedef FString ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FString Value;
 	const static FMetadataString ZeroValue;
 };
 
 USTRUCT(BlueprintType)
-struct FMetadataText
+struct VOXELMATE_API FMetadataText
 {
 	GENERATED_BODY()
 
@@ -538,7 +538,7 @@ struct FMetadataText
 	{}
 
 	typedef FText ValueType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FText Value;
 	const static FMetadataText ZeroValue;
 };

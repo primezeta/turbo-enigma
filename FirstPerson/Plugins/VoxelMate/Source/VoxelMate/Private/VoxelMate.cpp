@@ -50,10 +50,14 @@ void FVoxelMateModule::ShutdownModule()
 	AVoxelDatabase::Shutdown();
 }
 
-bool FVoxelMateModule::AddVolume(UValueSource* ValueSource, const FText& GridDisplayText, FGuid& OutGridId)
+void FVoxelMateModule::AddVolume(AValueSource* ValueSource, const FText& GridDisplayText)
 {
-	VoxelDatabase->AddGrid(ValueSource, GridDisplayText, OutGridId);
-	return OutGridId.IsValid();
+	VoxelDatabase->AddGrid(ValueSource, GridDisplayText);
+}
+
+void FVoxelMateModule::ChangeVoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
+{
+	VoxelDatabase->RequestChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
 }
 
 const FString VoxelDatabaseStatics::GridStatics::HalfFloatTypenameSuffix = TEXT("_HalfFloat");
@@ -68,6 +72,12 @@ const FString VoxelDatabaseStatics::GridStatics::MetaNameFileBBoxMin     = UTF8_
 const FString VoxelDatabaseStatics::GridStatics::MetaNameFileBBoxMax     = UTF8_TO_TCHAR(openvdb::GridBase::META_FILE_BBOX_MAX);
 const FString VoxelDatabaseStatics::GridStatics::MetaNameFileCompression = UTF8_TO_TCHAR(openvdb::GridBase::META_FILE_COMPRESSION);
 const FString VoxelDatabaseStatics::GridStatics::MetaNameFileMemBytes    = UTF8_TO_TCHAR(openvdb::GridBase::META_FILE_MEM_BYTES);
+
+void AValueSource::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AValueSource, GridId);
+}
 
 void AVoxelProxy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

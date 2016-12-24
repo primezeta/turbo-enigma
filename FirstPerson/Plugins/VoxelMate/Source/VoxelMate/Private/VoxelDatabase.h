@@ -25,7 +25,7 @@ struct FGridBaseValuesGeneratorItem : public FFastArraySerializerItem
 	FGridBaseValuesGeneratorItem()
 	{}
 
-	FGridBaseValuesGeneratorItem(const FText& GridText, UValueSource* Source)
+	FGridBaseValuesGeneratorItem(const FText& GridText, AValueSource* Source)
 		: DisplayText(GridText), ValueSource(Source)
 	{
 		GridId = FGuid::NewGuid();
@@ -42,7 +42,7 @@ struct FGridBaseValuesGeneratorItem : public FFastArraySerializerItem
 	UPROPERTY()
 		FText DisplayText;
 	UPROPERTY()
-		UValueSource* ValueSource;
+		AValueSource* ValueSource;
 
 	void Serialize(FArchive& Ar)
 	{
@@ -125,21 +125,37 @@ public:
 	UPROPERTY()
 		FString DatabasePath;
 
-	UFUNCTION()
-		void AddGrid(UValueSource* ValueSource, const FText& GridText, FGuid& OutGridId)
-		{
-			const ENetMode NetMode = GetNetMode();
-			if (NetMode != ENetMode::NM_Client)
-			{
-				OutGridId = GridBaseValuesGenerators.AddItem(FGridBaseValuesGeneratorItem(GridText, ValueSource)).GridId;
-			}
-			else
-			{
-				OutGridId.Invalidate();
-			}
-		}
+	UFUNCTION(Category = VoxelDatabase, Server, Reliable, WithValidation)
+		void AddGrid(AValueSource* ValueSource, const FText& GridText);
 
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	bool AddGrid_Validate(AValueSource* ValueSource, const FText& GridText)
+	{
+		return true; //TODO
+	}
+
+	void AddGrid_Implementation(AValueSource* ValueSource, const FText& GridText)
+	{
+		const ENetMode NetMode = GetNetMode();
+		if (NetMode != ENetMode::NM_Client)
+		{
+			ValueSource->GridId = GridBaseValuesGenerators.AddItem(FGridBaseValuesGeneratorItem(GridText, ValueSource)).GridId;
+		}
+	}
+
+	UFUNCTION(Category = VoxelDatabase, Server, Reliable, WithValidation)
+		void RequestChangeVoxel(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive);
+
+	bool RequestChangeVoxel_Validate(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
+	{
+		return true; //TODO
+	}
+
+	void RequestChangeVoxel_Implementation(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
+	{
+		ChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
+	}
+
+	UFUNCTION(Category = VoxelDatabase, NetMulticast, Reliable, WithValidation)
 		void ChangeVoxel(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive);
 	
 	bool ChangeVoxel_Validate(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
@@ -223,27 +239,27 @@ public:
 					{
 					case EVoxelType::Bool:
 						CreateReplicatedGrid<FVoxelBool>(Item.GridId, Item.DisplayText, false, GridPtr);
-						CreateVoxelValuesFromSource<FVoxelBool, UVoxelBoolSource>(GridPtr, *Cast<UVoxelBoolSource>(Item.ValueSource));
+						CreateVoxelValuesFromSource<FVoxelBool, AVoxelBoolSource>(GridPtr, *Cast<AVoxelBoolSource>(Item.ValueSource));
 						break;
 					case EVoxelType::UInt8:
 						CreateReplicatedGrid<FVoxelUInt8>(Item.GridId, Item.DisplayText, false, GridPtr);
-						CreateVoxelValuesFromSource<FVoxelUInt8, UVoxelUInt8Source>(GridPtr, *Cast<UVoxelUInt8Source>(Item.ValueSource));
+						CreateVoxelValuesFromSource<FVoxelUInt8, AVoxelUInt8Source>(GridPtr, *Cast<AVoxelUInt8Source>(Item.ValueSource));
 						break;
 					case EVoxelType::Int32:
 						CreateReplicatedGrid<FVoxelInt32>(Item.GridId, Item.DisplayText, false, GridPtr);
-						CreateVoxelValuesFromSource<FVoxelInt32, UVoxelInt32Source>(GridPtr, *Cast<UVoxelInt32Source>(Item.ValueSource));
+						CreateVoxelValuesFromSource<FVoxelInt32, AVoxelInt32Source>(GridPtr, *Cast<AVoxelInt32Source>(Item.ValueSource));
 						break;
 					case EVoxelType::Float:
 						CreateReplicatedGrid<FVoxelFloat>(Item.GridId, Item.DisplayText, false, GridPtr);
-						CreateVoxelValuesFromSource<FVoxelFloat, UVoxelFloatSource>(GridPtr, *Cast<UVoxelFloatSource>(Item.ValueSource));
+						CreateVoxelValuesFromSource<FVoxelFloat, AVoxelFloatSource>(GridPtr, *Cast<AVoxelFloatSource>(Item.ValueSource));
 						break;
 					case EVoxelType::IntVector:
 						CreateReplicatedGrid<FVoxelIntVector>(Item.GridId, Item.DisplayText, false, GridPtr);
-						CreateVoxelValuesFromSource<FVoxelIntVector, UVoxelIntVectorSource>(GridPtr, *Cast<UVoxelIntVectorSource>(Item.ValueSource));
+						CreateVoxelValuesFromSource<FVoxelIntVector, AVoxelIntVectorSource>(GridPtr, *Cast<AVoxelIntVectorSource>(Item.ValueSource));
 						break;
 					case EVoxelType::Vector:
 						CreateReplicatedGrid<FVoxelVector>(Item.GridId, Item.DisplayText, false, GridPtr);
-						CreateVoxelValuesFromSource<FVoxelVector, UVoxelVectorSource>(GridPtr, *Cast<UVoxelVectorSource>(Item.ValueSource));
+						CreateVoxelValuesFromSource<FVoxelVector, AVoxelVectorSource>(GridPtr, *Cast<AVoxelVectorSource>(Item.ValueSource));
 						break;
 					default:
 						check(false);
@@ -340,7 +356,7 @@ public:
 	}
 
 	template<typename VoxelType, typename ValueSourceType>
-	void CreateVoxelValuesFromSource(const openvdb::GridBase::Ptr& GridPtr, UValueSource& ValueSource)
+	void CreateVoxelValuesFromSource(const openvdb::GridBase::Ptr& GridPtr, AValueSource& ValueSource)
 	{
 		check(GetNetMode() != ENetMode::NM_DedicatedServer);
 
@@ -816,6 +832,8 @@ private:
 		bNetTemporary = 0;
 		bAutoDestroyWhenFinished = 0;
 		bCanBeDamaged = 0;
+		bAlwaysRelevant = 1;
+		//bNetLoadOnClient = 1;
 	}
 
 	void SerializeDatabaseMetadata(FArchive& Ar)

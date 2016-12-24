@@ -1,16 +1,20 @@
 #pragma once
+#include "Delegate.h"
 #include "VoxelDatabaseTypes.h"
 #include "VoxelValueSources.generated.h"
 
-UCLASS(NotBlueprintable, NotPlaceable)
-class VOXELMATE_API UValueSource : public UObject
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGridIdChanged, const FGuid&, GridId);
+
+UCLASS(Abstract, NotBlueprintable, NotPlaceable)
+class VOXELMATE_API AValueSource : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	UValueSource(const FObjectInitializer& Initializer)
+	AValueSource(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
+		SetReplicates(true);
 		IsFloatSavedAsHalf = false;
 		VoxelType = EVoxelType::Bool;
 	}
@@ -47,26 +51,37 @@ public:
 		FStreamWriter<uint8> Writer(CoordTransformData);
 		InCoordTransform.Serialize(Writer);
 	}
-
+		
+	UPROPERTY(ReplicatedUsing=OnRep_GridId, BlueprintReadOnly)
+		FGuid GridId;
 	UPROPERTY()
 		bool IsFloatSavedAsHalf;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 		EVoxelType VoxelType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		ECoordinateTransformType CoordTransformType;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite)
 		FIntVector VolumeSize;
 	UPROPERTY()
 		TArray<uint8> CoordTransformData;
+
+	UPROPERTY(BlueprintAssignable)
+		FGridIdChanged OnGridIdUpdated;
+
+	UFUNCTION()
+		void OnRep_GridId()
+		{
+			OnGridIdUpdated.Broadcast(GridId);
+		}
 };
 
 UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API UVoxelBoolSource : public UValueSource
+class VOXELMATE_API AVoxelBoolSource : public AValueSource
 {
 	GENERATED_BODY()
 
 public:
-	UVoxelBoolSource(const FObjectInitializer& Initializer)
+	AVoxelBoolSource(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
 		VoxelType = EVoxelType::Bool;
@@ -81,12 +96,12 @@ public:
 };
 
 UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API UVoxelUInt8Source : public UValueSource
+class VOXELMATE_API AVoxelUInt8Source : public AValueSource
 {
 	GENERATED_BODY()
 
 public:
-	UVoxelUInt8Source(const FObjectInitializer& Initializer)
+	AVoxelUInt8Source(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
 		VoxelType = EVoxelType::UInt8;
@@ -101,12 +116,12 @@ public:
 };
 
 UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API UVoxelFloatSource : public UValueSource
+class VOXELMATE_API AVoxelFloatSource : public AValueSource
 {
 	GENERATED_BODY()
 
 public:
-	UVoxelFloatSource(const FObjectInitializer& Initializer)
+	AVoxelFloatSource(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
 		VoxelType = EVoxelType::Float;
@@ -121,12 +136,12 @@ public:
 };
 
 UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API UVoxelInt32Source : public UValueSource
+class VOXELMATE_API AVoxelInt32Source : public AValueSource
 {
 	GENERATED_BODY()
 
 public:
-	UVoxelInt32Source(const FObjectInitializer& Initializer)
+	AVoxelInt32Source(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
 		VoxelType = EVoxelType::Int32;
@@ -141,12 +156,12 @@ public:
 };
 
 UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API UVoxelVectorSource : public UValueSource
+class VOXELMATE_API AVoxelVectorSource : public AValueSource
 {
 	GENERATED_BODY()
 
 public:
-	UVoxelVectorSource(const FObjectInitializer& Initializer)
+	AVoxelVectorSource(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
 		VoxelType = EVoxelType::Vector;
@@ -161,12 +176,12 @@ public:
 };
 
 UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API UVoxelIntVectorSource : public UValueSource
+class VOXELMATE_API AVoxelIntVectorSource : public AValueSource
 {
 	GENERATED_BODY()
 
 public:
-	UVoxelIntVectorSource(const FObjectInitializer& Initializer)
+	AVoxelIntVectorSource(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
 		VoxelType = EVoxelType::IntVector;
