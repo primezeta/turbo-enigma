@@ -2,6 +2,81 @@
 #include "Runtime/Core/Public/Math/Axis.h"
 #include <openvdb/openvdb.h>
 
+#ifdef WITH_ENGINE
+#include "Engine.h"
+#define GUnreal GEngine
+#elif defined WITH_EDITOR
+#include "Editor.h"
+#define GUnreal GEditor
+#endif
+
+//From https://wiki.unrealengine.com/Log_Macro_with_Netmode_and_Colour
+#define NETMODE_WORLD (((GUnreal == nullptr) || (GetWorld() == nullptr)) ? TEXT("") \
+        : (GUnreal->GetNetMode(GetWorld()) == NM_Client) ? TEXT("[Client] ") \
+        : (GUnreal->GetNetMode(GetWorld()) == NM_ListenServer) ? TEXT("[ListenServer] ") \
+        : (GUnreal->GetNetMode(GetWorld()) == NM_DedicatedServer) ? TEXT("[DedicatedServer] ") \
+        : TEXT("[Standalone] "))
+
+#if _MSC_VER
+#define FUNC_NAME TEXT(__FUNCTION__)
+#else // FIXME - GCC?
+#define FUNC_NAME TEXT(__func__)
+#endif
+
+#define NET_SCREEN_DEBUG(Object, Format, ...) \
+{ \
+    const FString Msg = FString::Printf(TEXT(Format), ##__VA_ARGS__); \
+    if (Msg == "") \
+    { \
+        TCHAR StdMsg[MAX_SPRINTF] = TEXT(""); \
+        FCString::Sprintf(StdMsg, TEXT("%s%s() : %s"), NETMODE_WORLD, FUNC_NAME, *GetNameSafe(Object)); \
+        GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, StdMsg); \
+    } \
+    else \
+    { \
+        GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::White, Msg); \
+    } \
+}
+
+#define NET_LOG(Object, LogCategory, Format, ...) \
+{ \
+    SET_WARN_COLOR(COLOR_CYAN);\
+    const FString Msg = FString::Printf(TEXT(Format), ##__VA_ARGS__); \
+    if (Msg == "") \
+    { \
+        UE_LOG(LogCategory, Log, TEXT("%s%s() : %s"), NETMODE_WORLD, FUNC_NAME, *GetNameSafe(Object));\
+    } \
+    else \
+    { \
+        UE_LOG(LogCategory, Log, TEXT("%s%s() : %s"), NETMODE_WORLD, FUNC_NAME, *Msg);\
+    } \
+    CLEAR_WARN_COLOR();\
+}
+
+#define NET_LOG_STATIC(LogCategory, Format, ...) \
+{ \
+    SET_WARN_COLOR(COLOR_CYAN);\
+    const FString Msg = FString::Printf(TEXT(Format), ##__VA_ARGS__); \
+    UE_LOG(LogCategory, Log, TEXT("%s() : %s"), FUNC_NAME, *Msg);\
+    CLEAR_WARN_COLOR();\
+}
+
+#define NET_LOG_WARN_STATIC(LogCategory, Format, ...) \
+{ \
+    SET_WARN_COLOR( COLOR_YELLOW );\
+    const FString Msg = FString::Printf(TEXT(Format), ##__VA_ARGS__); \
+    UE_LOG(LogCategory, Log, TEXT("**WARNING** %s%s() : %s"), NETMODE_WORLD, FUNC_NAME, *Msg);\
+    CLEAR_WARN_COLOR();\
+}
+
+#define NET_LOG_ERROR_STATIC(LogCategory, Format, ...) \
+{ \
+    SET_WARN_COLOR( COLOR_RED );\
+    const FString Msg = FString::Printf(TEXT(Format), ##__VA_ARGS__); \
+    UE_LOG(LogCategory, Log, TEXT("**ERROR** %s%s() : %s"), NETMODE_WORLD, FUNC_NAME, *Msg);\
+    CLEAR_WARN_COLOR();\
+}
+
 namespace VoxelDatabaseStatics
 {
 	template<typename T>
