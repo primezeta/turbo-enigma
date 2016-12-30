@@ -23,12 +23,12 @@ public:
 
 	UFUNCTION(Category = VoxelMateTesting, BlueprintCallable)
 		void InitNoise()
-	{
-		PerlinNoise.SetFrequency((double)Frequency);
-		PerlinNoise.SetLacunarity((double)Lacunarity);
-		PerlinNoise.SetPersistence((double)Persistence);
-		PerlinNoise.SetOctaveCount(OctaveCount);
-	}
+		{
+			PerlinNoise.SetFrequency((double)Frequency);
+			PerlinNoise.SetLacunarity((double)Lacunarity);
+			PerlinNoise.SetPersistence((double)Persistence);
+			PerlinNoise.SetOctaveCount(OctaveCount);
+		}
 
 	VOXELMATEINLINE void GetValue_Implementation(float x, float y, float z, FVoxelFloat& OutValue) const override
 	{
@@ -57,35 +57,5 @@ public:
 	AVoxelMateTesting(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
-		SetReplicates(true);
-		PerlinNoiseSource = Initializer.CreateDefaultSubobject<AVoxelPerlinNoiseSource>(this, FName(NAME_Actor));
-		PerlinNoiseSource->OnGridIdUpdated.AddDynamic(this, &AVoxelMateTesting::GridIsUpdated);
 	}
-
-	UPROPERTY(BlueprintReadOnly)
-		AVoxelPerlinNoiseSource* PerlinNoiseSource;
-
-	UPROPERTY()
-		FGuid UpdatedGridId;
-
-	UFUNCTION()
-		void GridIsUpdated(const FGuid& GridId)
-		{
-			UpdatedGridId = GridId;
-		}
-
-	UFUNCTION(Category = VoxelMateTesting, BlueprintCallable)
-		void AddPerlinNoiseVolume()
-		{
-			if (PerlinNoiseSource)
-			{
-				FVoxelMateModule::AddVolume(PerlinNoiseSource, FText::FromString(TEXT("PerlinNoise")));
-			}
-		}
-
-	UFUNCTION(Category = VoxelMateTesting, BlueprintCallable)
-		void ChangeVoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelFloat& VoxelValue, bool IsActive)
-		{
-			FVoxelMateModule::ChangeVoxelValue(GridId, IndexCoord, VoxelValue, IsActive);
-		}
 };

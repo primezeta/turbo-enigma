@@ -3,7 +3,7 @@
 #include "VoxelDatabaseTypes.h"
 #include "VoxelValueSources.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGridIdChanged, const FGuid&, GridId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGridIdChanged);
 
 UCLASS(Abstract, NotBlueprintable, NotPlaceable)
 class VOXELMATE_API AValueSource : public AActor
@@ -54,24 +54,24 @@ public:
 		
 	UPROPERTY(ReplicatedUsing=OnRep_GridId, BlueprintReadOnly)
 		FGuid GridId;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 		bool IsFloatSavedAsHalf;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Replicated, BlueprintReadOnly)
 		EVoxelType VoxelType;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(Replicated, BlueprintReadWrite)
 		ECoordinateTransformType CoordTransformType;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(Replicated, BlueprintReadWrite)
 		FIntVector VolumeSize;
-	UPROPERTY()
+	UPROPERTY(Replicated)
 		TArray<uint8> CoordTransformData;
 
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintType, BlueprintReadWrite, BlueprintAssignable)
 		FGridIdChanged OnGridIdUpdated;
 
 	UFUNCTION()
 		void OnRep_GridId()
 		{
-			OnGridIdUpdated.Broadcast(GridId);
+			OnGridIdUpdated.Broadcast();
 		}
 };
 

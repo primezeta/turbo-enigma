@@ -11,6 +11,3 @@ class AFirstPersonGameMode : public AGameMode
 public:
 	AFirstPersonGameMode();
 };
-
-
-

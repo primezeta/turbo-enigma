@@ -4,6 +4,7 @@
 #include "FirstPersonGameMode.h"
 #include "FirstPersonHUD.h"
 #include "FirstPersonCharacter.h"
+#include "VoxelMate.h"
 
 AFirstPersonGameMode::AFirstPersonGameMode()
 	: Super()

@@ -2,6 +2,7 @@
 
 #include "FirstPerson.h"
 
+DEFINE_LOG_CATEGORY(LogFirstPerson);
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, FirstPerson, "FirstPerson" );
  

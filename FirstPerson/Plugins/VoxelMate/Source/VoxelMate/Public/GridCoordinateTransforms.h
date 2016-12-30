@@ -9,7 +9,7 @@
 #include "GridCoordinateTransforms.generated.h"
 
 USTRUCT(BlueprintType)
-struct FAffineCoordinateTransform
+struct VOXELMATE_API FAffineCoordinateTransform
 {
 	GENERATED_BODY()
 
@@ -32,7 +32,7 @@ struct FAffineCoordinateTransform
 };
 
 USTRUCT(BlueprintType)
-struct FUnitaryCoordinateTransform
+struct VOXELMATE_API FUnitaryCoordinateTransform
 {
 	GENERATED_BODY()
 
@@ -53,7 +53,7 @@ struct FUnitaryCoordinateTransform
 };
 
 USTRUCT(BlueprintType)
-struct FScaleCoordinateTransform
+struct VOXELMATE_API FScaleCoordinateTransform
 {
 	GENERATED_BODY()
 
@@ -74,7 +74,7 @@ struct FScaleCoordinateTransform
 };
 
 USTRUCT(BlueprintType)
-struct FUniformScaleCoordinateTransform
+struct VOXELMATE_API FUniformScaleCoordinateTransform
 {
 	GENERATED_BODY()
 
@@ -95,7 +95,7 @@ struct FUniformScaleCoordinateTransform
 };
 
 USTRUCT(BlueprintType)
-struct FTranslationCoordinateTransform
+struct VOXELMATE_API FTranslationCoordinateTransform
 {
 	GENERATED_BODY()
 
@@ -116,7 +116,7 @@ struct FTranslationCoordinateTransform
 };
 
 USTRUCT(BlueprintType)
-struct FScaleTranslationCoordinateTransform
+struct VOXELMATE_API FScaleTranslationCoordinateTransform
 {
 	GENERATED_BODY()
 
@@ -139,7 +139,7 @@ struct FScaleTranslationCoordinateTransform
 };
 
 USTRUCT(BlueprintType)
-struct FUniformScaleTranslationCoordinateTransform
+struct VOXELMATE_API FUniformScaleTranslationCoordinateTransform
 {
 	GENERATED_BODY()
 
@@ -162,7 +162,7 @@ struct FUniformScaleTranslationCoordinateTransform
 };
 
 USTRUCT(BlueprintType)
-struct FNonlinearFrustumCoordinateTransform
+struct VOXELMATE_API FNonlinearFrustumCoordinateTransform
 {
 	GENERATED_BODY()
 

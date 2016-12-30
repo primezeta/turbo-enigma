@@ -27,6 +27,7 @@ public class VoxelMate : ModuleRules
                 "Projects",
                 "CoreUObject",
                 "Engine",
+                "UnrealEd",
                 "UEOpenVdb",
                 "RenderCore", //For GVectorPackingConstants (FPackedNormal)
             }

@@ -7,9 +7,11 @@
 #include "IPluginManager.h"
 #include "VoxelDatabase.h"
 
-AVoxelDatabase* VoxelDatabase;
-
 #define LOCTEXT_NAMESPACE "FVoxelMateModule"
+
+DEFINE_LOG_CATEGORY(LogVoxelMate);
+
+AVoxelDatabase* AVoxelDatabase::VoxelDatabaseInstance = nullptr;
 
 void FVoxelMateModule::StartupModule()
 {
@@ -37,10 +39,6 @@ void FVoxelMateModule::StartupModule()
 	//}
 
 	AVoxelDatabase::Startup();
-	if (!VoxelDatabase)
-	{
-		VoxelDatabase = NewObject<AVoxelDatabase>();
-	}
 }
 
 void FVoxelMateModule::ShutdownModule()
@@ -50,14 +48,85 @@ void FVoxelMateModule::ShutdownModule()
 	AVoxelDatabase::Shutdown();
 }
 
-void FVoxelMateModule::AddVolume(AValueSource* ValueSource, const FText& GridDisplayText)
+void UVoxelMateLibrary::InitVoxelDatabase(AActor* ReplicationOwner)
 {
-	VoxelDatabase->AddGrid(ValueSource, GridDisplayText);
+	NET_LOG_STATIC(LogVoxelMate, "%s", *ReplicationOwner->GetName());
+	if (ReplicationOwner)
+	{
+		if (!AVoxelDatabase::VoxelDatabaseInstance)
+		{
+			NET_LOG_STATIC(LogVoxelMate, "%s", TEXT("Init"));
+			AVoxelDatabase::VoxelDatabaseInstance = NewObject<AVoxelDatabase>(ReplicationOwner);
+			AVoxelDatabase::VoxelDatabaseInstance->SetOwner(ReplicationOwner);
+		}
+		else
+		{
+			NET_LOG_STATIC(LogVoxelMate, "%s", TEXT("Already Init"));
+		}
+	}
 }
 
-void FVoxelMateModule::ChangeVoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
+void UVoxelMateLibrary::AddVolume(AValueSource* ValueSource, const FText& GridDisplayText)
 {
-	VoxelDatabase->RequestChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
+	if (AVoxelDatabase::VoxelDatabaseInstance)
+	{
+		NET_LOG_STATIC(LogVoxelMate, "%s", *ValueSource->GetName());
+		AVoxelDatabase::VoxelDatabaseInstance->AddGrid(ValueSource, GridDisplayText);
+	}
+}
+
+void UVoxelMateLibrary::ChangeBoolVoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBool& Voxel, bool IsActive)
+{
+	if (AVoxelDatabase::VoxelDatabaseInstance)
+	{
+		NET_LOG_STATIC(LogVoxelMate, "%s", *GridId.ToString());
+		AVoxelDatabase::VoxelDatabaseInstance->ChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
+	}
+}
+
+void UVoxelMateLibrary::ChangeUInt8VoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelUInt8& Voxel, bool IsActive)
+{
+	if (AVoxelDatabase::VoxelDatabaseInstance)
+	{
+		NET_LOG_STATIC(LogVoxelMate, "%s", *GridId.ToString());
+		AVoxelDatabase::VoxelDatabaseInstance->ChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
+	}
+}
+
+void UVoxelMateLibrary::ChangeInt32VoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelInt32& Voxel, bool IsActive)
+{
+	if (AVoxelDatabase::VoxelDatabaseInstance)
+	{
+		NET_LOG_STATIC(LogVoxelMate, "%s", *GridId.ToString());
+		AVoxelDatabase::VoxelDatabaseInstance->ChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
+	}
+}
+
+void UVoxelMateLibrary::ChangeFloatVoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelFloat& Voxel, bool IsActive)
+{
+	if (AVoxelDatabase::VoxelDatabaseInstance)
+	{
+		NET_LOG_STATIC(LogVoxelMate, "%s", *GridId.ToString());
+		AVoxelDatabase::VoxelDatabaseInstance->ChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
+	}
+}
+
+void UVoxelMateLibrary::ChangeVectorVoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelVector& Voxel, bool IsActive)
+{
+	if (AVoxelDatabase::VoxelDatabaseInstance)
+	{
+		NET_LOG_STATIC(LogVoxelMate, "%s", *GridId.ToString());
+		AVoxelDatabase::VoxelDatabaseInstance->ChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
+	}
+}
+
+void UVoxelMateLibrary::ChangeIntVectorVoxelValue(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelIntVector& Voxel, bool IsActive)
+{
+	if (AVoxelDatabase::VoxelDatabaseInstance)
+	{
+		NET_LOG_STATIC(LogVoxelMate, "%s", *GridId.ToString());
+		AVoxelDatabase::VoxelDatabaseInstance->ChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
+	}
 }
 
 const FString VoxelDatabaseStatics::GridStatics::HalfFloatTypenameSuffix = TEXT("_HalfFloat");

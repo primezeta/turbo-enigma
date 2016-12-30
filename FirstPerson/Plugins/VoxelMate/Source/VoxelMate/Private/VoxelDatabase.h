@@ -113,88 +113,108 @@ struct TStructOpsTypeTraits<FGridBaseValuesGeneratorArray> : public TStructOpsTy
 	};
 };
 
-UCLASS(ClassGroup = VoxelMate, NotBlueprintable, NotPlaceable, CustomConstructor)
+UCLASS(ClassGroup = VoxelMate, NotBlueprintable, NotPlaceable)
 class AVoxelDatabase : public AActor
 {
     GENERATED_BODY()
 
 public:
+	AVoxelDatabase(const FObjectInitializer& ObjectInitializer)
+		: Super(ObjectInitializer)
+	{
+		SetReplicates(true);
+		SetReplicateMovement(false);
+		SetActorEnableCollision(false);
+		bNetTemporary = 0;
+		bAutoDestroyWhenFinished = 0;
+		bCanBeDamaged = 0;
+		bAlwaysRelevant = 1;
+		bNetLoadOnClient = 1;
+	}
+
+	static AVoxelDatabase* VoxelDatabaseInstance;
+
 	UPROPERTY(ReplicatedUsing=OnRep_GridBaseValuesGeneratorArray)
 		FGridBaseValuesGeneratorArray GridBaseValuesGenerators;
 
 	UPROPERTY()
 		FString DatabasePath;
 
-	UFUNCTION(Category = VoxelDatabase, Server, Reliable, WithValidation)
-		void AddGrid(AValueSource* ValueSource, const FText& GridText);
-
-	bool AddGrid_Validate(AValueSource* ValueSource, const FText& GridText)
-	{
-		return true; //TODO
-	}
-
-	void AddGrid_Implementation(AValueSource* ValueSource, const FText& GridText)
-	{
-		const ENetMode NetMode = GetNetMode();
-		if (NetMode != ENetMode::NM_Client)
+	UFUNCTION(Category = VoxelDatabase)
+		void AddGrid(AValueSource* ValueSource, const FText& GridText)
 		{
-			ValueSource->GridId = GridBaseValuesGenerators.AddItem(FGridBaseValuesGeneratorItem(GridText, ValueSource)).GridId;
+			const ENetMode NetMode = GetNetMode();
+			if (NetMode == NM_Client)
+			{
+				return;
+			}
+
+			NET_LOG(this, LogVoxelMate, "%s", *GridText.ToString());
+			check(ValueSource);
+
+			if (GridChanges.Contains(ValueSource->GridId))
+			{
+				return;
+			}
+
+			openvdb::GridBase::Ptr GridPtr = nullptr;
+			switch (ValueSource->VoxelType)
+			{
+			case EVoxelType::Bool:
+				GridPtr = FGridFactory::Create<FVoxelBool>();
+				break;
+			case EVoxelType::UInt8:
+				GridPtr = FGridFactory::Create<FVoxelUInt8>();
+				break;
+			case EVoxelType::Int32:
+				GridPtr = FGridFactory::Create<FVoxelInt32>();
+				break;
+			case EVoxelType::Float:
+				GridPtr = FGridFactory::Create<FVoxelFloat>();
+				break;
+			case EVoxelType::IntVector:
+				GridPtr = FGridFactory::Create<FVoxelIntVector>();
+				break;
+			case EVoxelType::Vector:
+				GridPtr = FGridFactory::Create<FVoxelVector>();
+				break;
+			default:
+				check(false);
+			}
+
+			check(GridPtr != nullptr);
+			GridChanges.Add(ValueSource->GridId, GridPtr);
+			GridBaseValuesGenerators.AddItem(FGridBaseValuesGeneratorItem(GridText, ValueSource));
 		}
-	}
-
-	UFUNCTION(Category = VoxelDatabase, Server, Reliable, WithValidation)
-		void RequestChangeVoxel(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive);
-
-	bool RequestChangeVoxel_Validate(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
-	{
-		return true; //TODO
-	}
-
-	void RequestChangeVoxel_Implementation(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
-	{
-		ChangeVoxel(GridId, IndexCoord, Voxel, IsActive);
-	}
 
 	UFUNCTION(Category = VoxelDatabase, NetMulticast, Reliable, WithValidation)
 		void ChangeVoxel(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive);
 	
 	bool ChangeVoxel_Validate(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
 	{
+		NET_LOG(this, LogVoxelMate, "%s", *GridId.ToString());
 		return true; //TODO
 	}
 
 	void ChangeVoxel_Implementation(const FGuid& GridId, const FIntVector& IndexCoord, const FVoxelBase& Voxel, bool IsActive)
 	{
-		const openvdb::GridBase::Ptr* FindServerGrid = nullptr;
-		const openvdb::GridBase::Ptr* FindClientGrid = nullptr;
 		const ENetMode NetMode = GetNetMode();
-
-		if (NetMode == ENetMode::NM_DedicatedServer)
+		if (NetMode != NM_Client)
 		{
-			FindServerGrid = GridChanges.Find(GridId);
-		}
-		else if (NetMode == ENetMode::NM_Client)
-		{
-			FindClientGrid = Grids.Find(GridId);
-		}
-		else
-		{
-			FindServerGrid = GridChanges.Find(GridId);
-			FindClientGrid = Grids.Find(GridId);
-		}
-
-		if (FindServerGrid)
-		{
+			NET_LOG(this, LogVoxelMate, "%s (Auth)", *GridId.ToString());
+			const openvdb::GridBase::Ptr* FindServerGrid = GridChanges.Find(GridId);
 			ChangeVoxelValue(*FindServerGrid, IndexCoord, Voxel, IsActive);
 		}
 
-		if (FindClientGrid)
+		if (NetMode != ENetMode::NM_DedicatedServer)
 		{
+			NET_LOG(this, LogVoxelMate, "%s (Non-auth)", *GridId.ToString());
+			const openvdb::GridBase::Ptr* FindClientGrid = Grids.Find(GridId);
 			ChangeVoxelValue(*FindClientGrid, IndexCoord, Voxel, IsActive);
 		}
 	}
 
-	VOXELMATEINLINE void ChangeVoxelValue(const openvdb::GridBase::Ptr& GridPtr, const FIntVector& IndexCoord, const FVoxelBase& Voxel, const bool& IsActive)
+	void ChangeVoxelValue(const openvdb::GridBase::Ptr& GridPtr, const FIntVector& IndexCoord, const FVoxelBase& Voxel, const bool& IsActive)
 	{
 		check(GridPtr != nullptr);
 		switch (Voxel.VoxelType)
@@ -225,7 +245,12 @@ public:
 	UFUNCTION()
 		void OnRep_GridBaseValuesGeneratorArray()
 		{
-			check(GetNetMode() != ENetMode::NM_DedicatedServer);
+			if (GetNetMode() == ENetMode::NM_DedicatedServer)
+			{
+				return;
+			}
+
+			NET_LOG(this, LogVoxelMate, "");
 
 			for (auto i = GridBaseValuesGenerators.ItemMap.CreateIterator(); i; ++i)
 			{
@@ -332,11 +357,15 @@ public:
     //TODO bool AddGridInstance
 
 	template<typename VoxelType>
-	bool CreateReplicatedGrid(const FGuid& GridId, const FText& GridDisplayText, bool SaveFloatAsHalf, openvdb::GridBase::Ptr& OutGridPtr)
+	void CreateReplicatedGrid(const FGuid& GridId, const FText& GridDisplayText, bool SaveFloatAsHalf, openvdb::GridBase::Ptr& OutGridPtr)
 	{
-		check(GetNetMode() != ENetMode::NM_DedicatedServer);
+		if (GetNetMode() == ENetMode::NM_DedicatedServer)
+		{
+			return;
+		}
 
-		bool IsGridAdded = false;
+		NET_LOG(this, LogVoxelMate, "");
+
 		if (GridId.IsValid() && !Grids.Contains(GridId))
 		{
 			OutGridPtr = FGridFactory::Create<VoxelType>();
@@ -344,21 +373,16 @@ public:
 			OutGridPtr->setSaveFloatAsHalf(SaveFloatAsHalf);
 			FMetaMapFactory::InsertGridMeta<FMetadataText>(*OutGridPtr, VoxelDatabaseStatics::GridStatics::MetaNameGridDisplayText, FMetadataText(GridDisplayText));
 			Grids.Add(GridId, OutGridPtr);
-
-			GridChanges.Add(GridId, FGridFactory::ShallowCopyGrid<VoxelType>(OutGridPtr));
-			IsGridAdded = true;
 		}
-		else
-		{
-			//TODO log warning (new grid id not valid)
-		}
-		return IsGridAdded;
 	}
 
 	template<typename VoxelType, typename ValueSourceType>
 	void CreateVoxelValuesFromSource(const openvdb::GridBase::Ptr& GridPtr, AValueSource& ValueSource)
 	{
-		check(GetNetMode() != ENetMode::NM_DedicatedServer);
+		if (GetNetMode() == ENetMode::NM_DedicatedServer)
+		{
+			return;
+		}
 
 		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
 		if (TypedGridPtr)
@@ -558,7 +582,7 @@ public:
     }
 
 	template<typename VoxelType, EVoxelIterator VoxelIterType>
-    void ExtractGridSurface(const openvdb::GridBase::Ptr& GridPtr)
+	VOXELMATEINLINE void ExtractGridSurface(const openvdb::GridBase::Ptr& GridPtr)
     {
 		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
 		if (TypedGridPtr)
@@ -578,7 +602,7 @@ public:
     }
 
 	template<typename VoxelType, EVoxelIterator VoxelIterType>
-	void MeshGridSurface(const openvdb::GridBase::Ptr& GridPtr)
+	VOXELMATEINLINE void MeshGridSurface(const openvdb::GridBase::Ptr& GridPtr)
 	{
 		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
 		if (TypedGridPtr)
@@ -598,7 +622,7 @@ public:
 	}
 
     template<typename MetadataType>
-    bool AddMetadata(FGuid& OutMetadataId)
+	VOXELMATEINLINE bool AddMetadata(FGuid& OutMetadataId)
     {
         bool IsMetadataAdded = false;
         FMetaValueFactory::ValueTypePtr MetaPtr = FMetaValueFactory::Create<MetadataType>();
@@ -612,7 +636,7 @@ public:
         return IsMetadataAdded;
     }
 
-    void SetCoordinateTransform(const FGuid& GridId, const FAffineCoordinateTransform& InCoordinateTransform)
+	VOXELMATEINLINE void SetCoordinateTransform(const FGuid& GridId, const FAffineCoordinateTransform& InCoordinateTransform)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr && *FindGrid != nullptr)
@@ -621,7 +645,7 @@ public:
         }
     }
 
-    void SetCoordinateTransform(const FGuid& GridId, const FUnitaryCoordinateTransform& InCoordinateTransform)
+	VOXELMATEINLINE void SetCoordinateTransform(const FGuid& GridId, const FUnitaryCoordinateTransform& InCoordinateTransform)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr && *FindGrid != nullptr)
@@ -630,7 +654,7 @@ public:
         }
     }
 
-    void SetCoordinateTransform(const FGuid& GridId, const FScaleCoordinateTransform& InCoordinateTransform)
+	VOXELMATEINLINE void SetCoordinateTransform(const FGuid& GridId, const FScaleCoordinateTransform& InCoordinateTransform)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr && *FindGrid != nullptr)
@@ -639,7 +663,7 @@ public:
         }
     }
 
-    void SetCoordinateTransform(const FGuid& GridId, const FUniformScaleCoordinateTransform& InCoordinateTransform)
+	VOXELMATEINLINE void SetCoordinateTransform(const FGuid& GridId, const FUniformScaleCoordinateTransform& InCoordinateTransform)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr && *FindGrid != nullptr)
@@ -648,7 +672,7 @@ public:
         }
     }
 
-    void SetCoordinateTransform(const FGuid& GridId, const FTranslationCoordinateTransform& InCoordinateTransform)
+	VOXELMATEINLINE void SetCoordinateTransform(const FGuid& GridId, const FTranslationCoordinateTransform& InCoordinateTransform)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr && *FindGrid != nullptr)
@@ -657,7 +681,7 @@ public:
         }
     }
 
-    void SetCoordinateTransform(const FGuid& GridId, const FScaleTranslationCoordinateTransform& InCoordinateTransform)
+	VOXELMATEINLINE void SetCoordinateTransform(const FGuid& GridId, const FScaleTranslationCoordinateTransform& InCoordinateTransform)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr && *FindGrid != nullptr)
@@ -666,7 +690,7 @@ public:
         }
     }
 
-    void SetCoordinateTransform(const FGuid& GridId, const FUniformScaleTranslationCoordinateTransform& InCoordinateTransform)
+	VOXELMATEINLINE void SetCoordinateTransform(const FGuid& GridId, const FUniformScaleTranslationCoordinateTransform& InCoordinateTransform)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr && *FindGrid != nullptr)
@@ -675,7 +699,7 @@ public:
         }
     }
 
-    void SetCoordinateTransform(const FGuid& GridId, const FNonlinearFrustumCoordinateTransform& InCoordinateTransform)
+	VOXELMATEINLINE void SetCoordinateTransform(const FGuid& GridId, const FNonlinearFrustumCoordinateTransform& InCoordinateTransform)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr && *FindGrid != nullptr)
@@ -684,7 +708,7 @@ public:
         }
     }
 
-    void GridRotation(const FGuid& GridId, ETransformOp Op, float Radians, EAxis::Type Axis)
+	VOXELMATEINLINE void GridRotation(const FGuid& GridId, ETransformOp Op, float Radians, EAxis::Type Axis)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -701,7 +725,7 @@ public:
         }
     }
 
-    void GridTranslation(const FGuid& GridId, ETransformOp Op, const FVector &InTranslation)
+	VOXELMATEINLINE void GridTranslation(const FGuid& GridId, ETransformOp Op, const FVector &InTranslation)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -719,7 +743,7 @@ public:
         }
     }
 
-    void GridScale(const FGuid& GridId, ETransformOp Op, const FVector &InScale)
+	VOXELMATEINLINE void GridScale(const FGuid& GridId, ETransformOp Op, const FVector &InScale)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -737,7 +761,7 @@ public:
         }
     }
 
-    void GridUniformScale(const FGuid& GridId, ETransformOp Op, float Scale)
+	VOXELMATEINLINE void GridUniformScale(const FGuid& GridId, ETransformOp Op, float Scale)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -753,7 +777,7 @@ public:
         }
     }
 
-    void GridShear(const FGuid& GridId, ETransformOp Op, float Shear, EAxis::Type Axis0, EAxis::Type Axis1)
+	VOXELMATEINLINE void GridShear(const FGuid& GridId, ETransformOp Op, float Shear, EAxis::Type Axis0, EAxis::Type Axis1)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -772,7 +796,7 @@ public:
         }
     }
 
-    void GridMatrix4dMultiply(const FGuid& GridId, ETransformOp Op, const FPlane &InX, const FPlane &InY, const FPlane &InZ, const FPlane &InW)
+	VOXELMATEINLINE void GridMatrix4dMultiply(const FGuid& GridId, ETransformOp Op, const FPlane &InX, const FPlane &InY, const FPlane &InZ, const FPlane &InW)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -795,7 +819,7 @@ public:
         }
     }
 
-    void GridMatrix3dMultiply(const FGuid& GridId, ETransformOp Op, const FVector& InX, const FVector& InY, const FVector& InZ)
+	VOXELMATEINLINE void GridMatrix3dMultiply(const FGuid& GridId, ETransformOp Op, const FVector& InX, const FVector& InY, const FVector& InZ)
     {
         const openvdb::GridBase::Ptr* FindGrid = Grids.Find(GridId);
         if (FindGrid != nullptr)
@@ -821,20 +845,6 @@ private:
 	openvdb::MetaMap DatabaseMetadata;
 	TMap<FGuid, openvdb::GridBase::Ptr> Grids;
 	TMap<FGuid, openvdb::GridBase::Ptr> GridChanges;
-
-	friend class FVoxelMateModule;
-	AVoxelDatabase()
-	{
-		AddToRoot();
-		SetReplicates(true);
-		SetReplicateMovement(false);
-		SetActorEnableCollision(false);
-		bNetTemporary = 0;
-		bAutoDestroyWhenFinished = 0;
-		bCanBeDamaged = 0;
-		bAlwaysRelevant = 1;
-		//bNetLoadOnClient = 1;
-	}
 
 	void SerializeDatabaseMetadata(FArchive& Ar)
 	{

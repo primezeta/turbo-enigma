@@ -25,7 +25,7 @@ struct FMetadataString;
 struct FMetadataText;
 
 USTRUCT()
-struct FVoxelBase
+struct VOXELMATE_API FVoxelBase
 {
 	GENERATED_BODY()
 
