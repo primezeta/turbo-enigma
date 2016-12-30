@@ -30,7 +30,7 @@ public:
 			PerlinNoise.SetOctaveCount(OctaveCount);
 		}
 
-	VOXELMATEINLINE void GetValue_Implementation(float x, float y, float z, FVoxelFloat& OutValue) const override
+	FORCEINLINE_DEBUGGABLE void GetValue_Implementation(float x, float y, float z, FVoxelFloat& OutValue) const override
 	{
 		OutValue.Value = (float)PerlinNoise.GetValue((double)x, (double)y, (double)z);
 	}

@@ -582,7 +582,6 @@
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\GridRenderResource.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\MarchingCubesTables.h" />
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelDatabase.cpp" />
-		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelDatabase.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelDatabaseBulkData.h" />
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelDatabaseProxy.cpp" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelDatabaseStatics.h" />
@@ -592,6 +591,7 @@
 		<ClCompile Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelMate.cpp" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Private\VoxelMatePCH.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\GridCoordinateTransforms.h" />
+		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabase.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabaseCommon.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabaseProxy.h" />
 		<ClInclude Include="..\..\Plugins\VoxelMate\Source\VoxelMate\Public\VoxelDatabaseTypes.h" />

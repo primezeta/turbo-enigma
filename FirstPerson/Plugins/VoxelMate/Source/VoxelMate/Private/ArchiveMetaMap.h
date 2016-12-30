@@ -5,7 +5,7 @@
 struct FMetaMapFactory
 {
     template<typename MetaType>
-    VOXELMATEINLINE static void InsertMeta(openvdb::MetaMap& MetaMap, const openvdb::Name& MetaName, const MetaType& MetaValue)
+    FORCEINLINE_DEBUGGABLE static void InsertMeta(openvdb::MetaMap& MetaMap, const openvdb::Name& MetaName, const MetaType& MetaValue)
     {
         try
         {
@@ -24,20 +24,20 @@ struct FMetaMapFactory
     }
 
     template<typename MetaType>
-    VOXELMATEINLINE static void InsertMeta(openvdb::MetaMap& MetaMap, const FString& MetaName, const MetaType& MetaValue)
+    FORCEINLINE_DEBUGGABLE static void InsertMeta(openvdb::MetaMap& MetaMap, const FString& MetaName, const MetaType& MetaValue)
     {
         FMetaMapFactory::InsertMeta<MetaType>(MetaMap, openvdb::Name(TCHAR_TO_UTF8(*MetaName)), MetaValue);
     }
 
     template<typename MetaType>
-    VOXELMATEINLINE static void InsertGridMeta(openvdb::GridBase& Grid, const openvdb::Name& MetaName, const MetaType& MetaValue)
+    FORCEINLINE_DEBUGGABLE static void InsertGridMeta(openvdb::GridBase& Grid, const openvdb::Name& MetaName, const MetaType& MetaValue)
     {
         openvdb::MetaMap& GridMetaMap = Grid;
         FMetaMapFactory::InsertMeta<MetaType>(GridMetaMap, MetaName, MetaValue);
     }
 
     template<typename MetaType>
-    VOXELMATEINLINE static void InsertGridMeta(openvdb::GridBase& Grid, const FString& MetaName, const MetaType& MetaValue)
+    FORCEINLINE_DEBUGGABLE static void InsertGridMeta(openvdb::GridBase& Grid, const FString& MetaName, const MetaType& MetaValue)
     {
         openvdb::MetaMap& GridMetaMap = Grid;
         FMetaMapFactory::InsertMeta<MetaType>(GridMetaMap, MetaName, MetaValue);

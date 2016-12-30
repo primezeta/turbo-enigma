@@ -23,7 +23,7 @@ struct VOXELMATE_API FAffineCoordinateTransform
 		: Matrix(InX, InY, InZ, FVector(0.0f, 0.0f, 1.0f))
 	{}
 
-	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	FORCEINLINE_DEBUGGABLE void Serialize(FArchive& Ar)
 	{
 		Matrix.Serialize(Ar);
 	}
@@ -44,7 +44,7 @@ struct VOXELMATE_API FUnitaryCoordinateTransform
 		: Quat(Axis, AngleRadians)
 	{}
 
-	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	FORCEINLINE_DEBUGGABLE void Serialize(FArchive& Ar)
 	{
 		Quat.Serialize(Ar);
 	}
@@ -65,7 +65,7 @@ struct VOXELMATE_API FScaleCoordinateTransform
 		: ScaleVec(Scale.GetAbs())
 	{}
 
-	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	FORCEINLINE_DEBUGGABLE void Serialize(FArchive& Ar)
 	{
 		ScaleVec.Serialize(Ar);
 	}
@@ -86,7 +86,7 @@ struct VOXELMATE_API FUniformScaleCoordinateTransform
 		: ScaleValue(FMath::Abs(Scale))
 	{}
 
-	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	FORCEINLINE_DEBUGGABLE void Serialize(FArchive& Ar)
 	{
 		Ar << ScaleValue;
 	}
@@ -107,7 +107,7 @@ struct VOXELMATE_API FTranslationCoordinateTransform
 		: TranslationVec(Translation)
 	{}
 
-	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	FORCEINLINE_DEBUGGABLE void Serialize(FArchive& Ar)
 	{
 		TranslationVec.Serialize(Ar);
 	}
@@ -128,7 +128,7 @@ struct VOXELMATE_API FScaleTranslationCoordinateTransform
 		: ScaleVec(Scale.GetAbs()), TranslationVec(Translation)
 	{}
 
-	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	FORCEINLINE_DEBUGGABLE void Serialize(FArchive& Ar)
 	{
 		ScaleVec.Serialize(Ar);
 		TranslationVec.Serialize(Ar);
@@ -151,7 +151,7 @@ struct VOXELMATE_API FUniformScaleTranslationCoordinateTransform
 		: ScaleValue(FMath::Abs(Scale)), TranslationVec(Translation)
 	{}
 
-	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	FORCEINLINE_DEBUGGABLE void Serialize(FArchive& Ar)
 	{
 		Ar << ScaleValue;
 		TranslationVec.Serialize(Ar);
@@ -174,7 +174,7 @@ struct VOXELMATE_API FNonlinearFrustumCoordinateTransform
 		: Box(BoxMin, BoxMax), Taper(FMath::Abs(FrustumTaper)), Depth(FMath::Abs(FrustumDepth))
 	{}
 
-	VOXELMATEINLINE void Serialize(FArchive& Ar)
+	FORCEINLINE_DEBUGGABLE void Serialize(FArchive& Ar)
 	{
 		Box.Serialize(Ar);
 		Ar << Taper;

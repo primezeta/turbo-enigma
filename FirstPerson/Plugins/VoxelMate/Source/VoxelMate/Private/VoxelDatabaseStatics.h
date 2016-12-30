@@ -1,280 +1,777 @@
 #pragma once
 #include "Runtime/Core/Public/Math/Axis.h"
+#include "ArchiveGrid.h"
+#include "ArchiveMetaMap.h"
+#include "ArchiveMetaValue.h"
+#include "ArchiveTransformMap.h"
+#include "EngineGridTypes.h"
 #include <openvdb/openvdb.h>
+#include <openvdb/tools/ValueTransformer.h>
+#include <openvdb/io/Archive.h>
 
 namespace VoxelDatabaseStatics
 {
-	template<typename T>
-	FORCEINLINE CONSTEXPR void CheckSizeTypeRangeU(const SIZE_T& WideValue, const T& NarrowValue, const T& NarrowMax)
+	void StartupVoxelDatabase()
 	{
-		check(WideValue <= (SIZE_T)NarrowMax);
-		check(static_cast<T>(WideValue) < NarrowValue);
+		//TODO: Note that the following BLOSC related stuff is in openvdb::initialize
+		//#ifdef OPENVDB_USE_BLOSC
+		//    blosc_init();
+		//    if (blosc_set_compressor("lz4") < 0) {
+		//        OPENVDB_LOG_WARN("Blosc LZ4 compressor is unavailable");
+		//    }
+		//    /// @todo blosc_set_nthreads(int nthreads);
+		//#endif
+		FGridFactory::RegisterSupportedTypes();
+		FMetaValueFactory::RegisterSupportedTypes();
+		FTransformMapFactory::RegisterSupportedTypes();
 	}
 
-	template<typename T>
-	FORCEINLINE CONSTEXPR void CheckSizeTypeRangeU(const SIZE_T& WideValue, const T& NarrowMax)
+	void ShutdownVoxelDatabase()
 	{
-		check(WideValue <= (SIZE_T)NarrowMax);
+		FGridFactory::UnregisterSupportedTypes();
+		FMetaValueFactory::UnregisterSupportedTypes();
+		FTransformMapFactory::UnregisterSupportedTypes();
 	}
 
-	template<typename T>
-	FORCEINLINE CONSTEXPR void CheckSizeTypeRangeS(const SSIZE_T& WideValue, const T& NarrowValue, const T& NarrowMin, const T& NarrowMax)
+	template<typename CoordinateTransformType>
+	void SetGridCoordinateTransform(openvdb::GridBase &Grid, const CoordinateTransformType& CoordinateTransform)
 	{
-		check(WideValue >= (SSIZE_T)NarrowMin);
-		check(WideValue <= (SSIZE_T)NarrowMax);
-		check(static_cast<T>(WideValue) < NarrowValue);
+		static_assert(false, "SetGridCoordinateTransform not implemented");
 	}
 
-	template<typename T>
-	FORCEINLINE CONSTEXPR void CheckSizeTypeRangeS(const SSIZE_T& WideValue, const T& NarrowMin, const T& NarrowMax)
+	template<>
+	FORCEINLINE_DEBUGGABLE void SetGridCoordinateTransform<FAffineCoordinateTransform>(openvdb::GridBase &Grid, const FAffineCoordinateTransform& CoordinateTransform)
 	{
-		check(WideValue >= (SSIZE_T)NarrowMin);
-		check(WideValue <= (SSIZE_T)NarrowMax);
+		const FVector4 &Col0 = CoordinateTransform.Matrix.GetColumn(0);
+		const FVector4 &Col1 = CoordinateTransform.Matrix.GetColumn(1);
+		const FVector4 &Col2 = CoordinateTransform.Matrix.GetColumn(2);
+		const openvdb::math::Mat3d AffineMatrix(
+			Col0.X, Col1.X, Col2.X,
+			Col0.Y, Col1.Y, Col2.Y,
+			Col0.Z, Col1.Z, Col2.Z
+		);
+		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::AffineMap(AffineMatrix)))));
 	}
 
-    template<typename Type> CONSTEXPR int32 SizeOf()
+	template<>
+	FORCEINLINE_DEBUGGABLE void SetGridCoordinateTransform<FUnitaryCoordinateTransform>(openvdb::GridBase &Grid, const FUnitaryCoordinateTransform& CoordinateTransform)
+	{
+		FVector Axis = FVector::ZeroVector;
+		float Angle = 0.0f;
+		CoordinateTransform.Quat.ToAxisAndAngle(Axis, Angle);
+		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UnitaryMap(openvdb::Vec3d(Axis.X, Axis.Y, Axis.Z), Angle)))));
+	}
+
+	template<>
+	FORCEINLINE_DEBUGGABLE void SetGridCoordinateTransform<FScaleCoordinateTransform>(openvdb::GridBase &Grid, const FScaleCoordinateTransform& CoordinateTransform)
+	{
+		const openvdb::Vec3d Scale(CoordinateTransform.ScaleVec.X, CoordinateTransform.ScaleVec.Y, CoordinateTransform.ScaleVec.Z);
+		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::ScaleMap(Scale)))));
+	}
+
+	template<>
+	FORCEINLINE_DEBUGGABLE void SetGridCoordinateTransform<FUniformScaleCoordinateTransform>(openvdb::GridBase &Grid, const FUniformScaleCoordinateTransform& CoordinateTransform)
+	{
+		const float &Scale(CoordinateTransform.ScaleValue);
+		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UniformScaleMap(Scale)))));
+	}
+
+	template<>
+	FORCEINLINE_DEBUGGABLE void SetGridCoordinateTransform<FTranslationCoordinateTransform>(openvdb::GridBase &Grid, const FTranslationCoordinateTransform& CoordinateTransform)
+	{
+		const openvdb::Vec3d Translation(CoordinateTransform.TranslationVec.X, CoordinateTransform.TranslationVec.Y, CoordinateTransform.TranslationVec.Z);
+		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::TranslationMap(Translation)))));
+	}
+
+	template<>
+	FORCEINLINE_DEBUGGABLE void SetGridCoordinateTransform<FScaleTranslationCoordinateTransform>(openvdb::GridBase &Grid, const FScaleTranslationCoordinateTransform& CoordinateTransform)
+	{
+		const openvdb::Vec3d Scale(CoordinateTransform.ScaleVec.X, CoordinateTransform.ScaleVec.Y, CoordinateTransform.ScaleVec.Z);
+		const openvdb::Vec3d Translation(CoordinateTransform.TranslationVec.X, CoordinateTransform.TranslationVec.Y, CoordinateTransform.TranslationVec.Z);
+		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::ScaleTranslateMap(Scale, Translation)))));
+	}
+
+	template<>
+	FORCEINLINE_DEBUGGABLE void SetGridCoordinateTransform<FUniformScaleTranslationCoordinateTransform>(openvdb::GridBase &Grid, const FUniformScaleTranslationCoordinateTransform& CoordinateTransform)
+	{
+		const float &Scale = CoordinateTransform.ScaleValue;
+		const openvdb::Vec3d Translation(CoordinateTransform.TranslationVec.X, CoordinateTransform.TranslationVec.Y, CoordinateTransform.TranslationVec.Z);
+		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UniformScaleTranslateMap(Scale, Translation)))));
+	}
+
+	template<>
+	FORCEINLINE_DEBUGGABLE void SetGridCoordinateTransform<FNonlinearFrustumCoordinateTransform>(openvdb::GridBase &Grid, const FNonlinearFrustumCoordinateTransform& CoordinateTransform)
+	{
+		const openvdb::Vec3d Box0(CoordinateTransform.Box.Min.X, CoordinateTransform.Box.Min.Y, CoordinateTransform.Box.Min.Z);
+		const openvdb::Vec3d Box1(CoordinateTransform.Box.Max.X, CoordinateTransform.Box.Max.Y, CoordinateTransform.Box.Max.Z);
+		const openvdb::BBoxd BoundingBox(Box0 < Box1 ? Box0 : Box1, Box0 > Box1 ? Box0 : Box1);
+		const float &Taper = CoordinateTransform.Taper;
+		const float &Depth = CoordinateTransform.Depth;
+		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::NonlinearFrustumMap(BoundingBox, Taper, Depth)))));
+	}
+
+	template<typename VoxelType>
+	FORCEINLINE_DEBUGGABLE void CreateGridData(const FGuid& GridId, const FText& GridDisplayText, bool SaveFloatAsHalf, openvdb::GridBase::Ptr& OutGridPtr)
+	{
+		if (GridId.IsValid())
+		{
+			OutGridPtr = FGridFactory::Create<VoxelType>();
+			OutGridPtr->setName(TCHAR_TO_UTF8(*GridId.ToString()));
+			OutGridPtr->setSaveFloatAsHalf(SaveFloatAsHalf);
+			FMetaMapFactory::InsertGridMeta<FMetadataText>(*OutGridPtr, GridStatics::MetaNameGridDisplayText, FMetadataText(GridDisplayText));
+		}
+	}
+
+	template<typename VoxelType, typename ValueSourceType>
+	FORCEINLINE_DEBUGGABLE void CreateVoxelValuesFromSource(const openvdb::GridBase::Ptr& GridPtr, AValueSource& ValueSource)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			const openvdb::Coord FillStart(0, 0, 0);
+			const openvdb::Coord FillEnd(ValueSource.VolumeSize.X - 1, ValueSource.VolumeSize.Y - 1, ValueSource.VolumeSize.Z - 1);
+			const openvdb::CoordBBox FillBBox(FillStart, FillEnd);
+			openvdb::TypedMetadata<VoxelType>::Ptr BackgroundValueMetadata = boost::static_pointer_cast<openvdb::TypedMetadata<VoxelType>>(TypedGridPtr->tree().getBackgroundValue());
+			TypedGridPtr->fill(FillBBox, BackgroundValueMetadata->value(), true);
+			TypedGridPtr->tree().voxelizeActiveTiles();
+
+			if (ValueSource.CoordTransformType == ECoordinateTransformType::Affine)
+			{
+				FAffineCoordinateTransform CoordTransform;
+				ValueSource.ReadCoordTransform<FAffineCoordinateTransform>(CoordTransform);
+				SetGridCoordinateTransform<FAffineCoordinateTransform>(*GridPtr, CoordTransform);
+			}
+			else if (ValueSource.CoordTransformType == ECoordinateTransformType::Unitary)
+			{
+				FUnitaryCoordinateTransform CoordTransform;
+				ValueSource.ReadCoordTransform<FUnitaryCoordinateTransform>(CoordTransform);
+				SetGridCoordinateTransform<FUnitaryCoordinateTransform>(*GridPtr, CoordTransform);
+			}
+			else if (ValueSource.CoordTransformType == ECoordinateTransformType::Scale)
+			{
+				FScaleCoordinateTransform CoordTransform;
+				ValueSource.ReadCoordTransform<FScaleCoordinateTransform>(CoordTransform);
+				SetGridCoordinateTransform<FScaleCoordinateTransform>(*GridPtr, CoordTransform);
+			}
+			else if (ValueSource.CoordTransformType == ECoordinateTransformType::UniformScale)
+			{
+				FUniformScaleCoordinateTransform CoordTransform;
+				ValueSource.ReadCoordTransform<FUniformScaleCoordinateTransform>(CoordTransform);
+				SetGridCoordinateTransform<FUniformScaleCoordinateTransform>(*GridPtr, CoordTransform);
+			}
+			else if (ValueSource.CoordTransformType == ECoordinateTransformType::Translation)
+			{
+				FTranslationCoordinateTransform CoordTransform;
+				ValueSource.ReadCoordTransform<FTranslationCoordinateTransform>(CoordTransform);
+				SetGridCoordinateTransform<FTranslationCoordinateTransform>(*GridPtr, CoordTransform);
+			}
+			else if (ValueSource.CoordTransformType == ECoordinateTransformType::ScaleTranslation)
+			{
+				FScaleTranslationCoordinateTransform CoordTransform;
+				ValueSource.ReadCoordTransform<FScaleTranslationCoordinateTransform>(CoordTransform);
+				SetGridCoordinateTransform<FScaleTranslationCoordinateTransform>(*GridPtr, CoordTransform);
+			}
+			else if (ValueSource.CoordTransformType == ECoordinateTransformType::UniformScaleTranslation)
+			{
+				FUniformScaleCoordinateTransform CoordTransform;
+				ValueSource.ReadCoordTransform<FUniformScaleCoordinateTransform>(CoordTransform);
+				SetGridCoordinateTransform<FUniformScaleCoordinateTransform>(*GridPtr, CoordTransform);
+			}
+			else if (ValueSource.CoordTransformType == ECoordinateTransformType::NonlinearFrustum)
+			{
+				FTranslationCoordinateTransform CoordTransform;
+				ValueSource.ReadCoordTransform<FTranslationCoordinateTransform>(CoordTransform);
+				SetGridCoordinateTransform<FTranslationCoordinateTransform>(*GridPtr, CoordTransform);
+			}
+			else
+			{
+				check(false);
+			}
+
+			typedef VoxelDatabaseUtil::VoxelIteratorAdaptor<EVoxelIterator::ActiveVoxelsIter, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> IterAdaptor;
+			typedef IterAdaptor::Type IterType;
+			typedef VoxelDatabaseUtil::TSetValuesOp<IterType, VoxelType, ValueSourceType> OpType;
+
+			OpType SetValuesOp(static_cast<const ValueSourceType&>(ValueSource), TypedGridPtr->transform());
+			openvdb::tools::foreach<IterType, OpType>(IterAdaptor::SelectIter(*TypedGridPtr), SetValuesOp);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+	}
+
+	template<typename VoxelType>
+	FORCEINLINE_DEBUGGABLE void SetVoxelValue(const openvdb::GridBase::Ptr& GridPtr, const FIntVector& VoxelIndexCoord, const VoxelType& InVoxelValue)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Accessor Accessor = TypedGridPtr->getAccessor();
+			const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
+			Accessor.setValueOnly(Coord, InVoxelValue);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+	}
+
+	template<typename VoxelType>
+	FORCEINLINE_DEBUGGABLE void SetVoxelValue(const openvdb::GridBase::Ptr& GridPtr, const FIntVector& VoxelIndexCoord, const VoxelType& InVoxelValue, const bool& InIsActive)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Accessor Accessor = TypedGridPtr->getAccessor();
+			const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
+
+			if (InIsActive)
+			{
+				Accessor.setValueOn(Coord, InVoxelValue);
+			}
+			else
+			{
+				Accessor.setValueOff(Coord, InVoxelValue);
+			}
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+	}
+
+	template<typename VoxelType>
+	FORCEINLINE_DEBUGGABLE void SetVoxelValue(const openvdb::GridBase::Ptr& GridPtr, const FIntVector& VoxelIndexCoord, const bool& InIsActive)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Accessor Accessor = TypedGridPtr->getAccessor();
+			const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
+			Accessor.setActiveState(Coord, InIsActive);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+	}
+
+	void ChangeVoxelValue(const openvdb::GridBase::Ptr& GridPtr, const FIntVector& IndexCoord, const FVoxelBase& Voxel, const bool& IsActive)
+	{
+		check(GridPtr != nullptr);
+		switch (Voxel.VoxelType)
+		{
+		case(EVoxelType::Bool):
+			SetVoxelValue<FVoxelBool>(GridPtr, IndexCoord, static_cast<const FVoxelBool&>(Voxel), IsActive);
+			break;
+		case(EVoxelType::UInt8):
+			SetVoxelValue<FVoxelUInt8>(GridPtr, IndexCoord, static_cast<const FVoxelUInt8&>(Voxel), IsActive);
+			break;
+		case(EVoxelType::Int32):
+			SetVoxelValue<FVoxelInt32>(GridPtr, IndexCoord, static_cast<const FVoxelInt32&>(Voxel), IsActive);
+			break;
+		case(EVoxelType::Float):
+			SetVoxelValue<FVoxelFloat>(GridPtr, IndexCoord, static_cast<const FVoxelFloat&>(Voxel), IsActive);
+			break;
+		case(EVoxelType::IntVector):
+			SetVoxelValue<FVoxelIntVector>(GridPtr, IndexCoord, static_cast<const FVoxelIntVector&>(Voxel), IsActive);
+			break;
+		case(EVoxelType::Vector):
+			SetVoxelValue<FVoxelVector>(GridPtr, IndexCoord, static_cast<const FVoxelVector&>(Voxel), IsActive);
+			break;
+		default:
+			check(false);
+		}
+	}
+
+	template<typename VoxelType>
+	FORCEINLINE_DEBUGGABLE const VoxelType& GetVoxelValue(const openvdb::GridBase::ConstPtr& GridPtr, const FIntVector& VoxelIndexCoord)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::ConstPtr TypedGridPtr = openvdb::gridConstPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::ConstAccessor Accessor = TypedGridPtr->getConstAccessor();
+			const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
+			return Accessor.getValue(Coord);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+
+		const static VoxelType Zero = VoxelType::ZeroValue;
+		return Zero;
+	}
+
+	template<typename VoxelType>
+	FORCEINLINE_DEBUGGABLE const VoxelType& GetVoxelValue(const openvdb::GridBase::ConstPtr& GridPtr, const FIntVector& VoxelIndexCoord, bool& OutIsVoxelActive)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::ConstPtr TypedGridPtr = openvdb::gridConstPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::ConstAccessor Accessor = TypedGridPtr->getConstAccessor();
+			const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
+			OutIsVoxelActive = Accessor.isValueOn(Coord);
+			return Accessor.getValue(Coord);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+
+		OutIsVoxelActive = false;
+		const static VoxelType Zero = VoxelType::ZeroValue;
+		return Zero;
+	}
+
+	template<typename VoxelType>
+	FORCEINLINE_DEBUGGABLE void GetVoxelIsActive(const openvdb::GridBase::ConstPtr& GridPtr, const FIntVector& VoxelIndexCoord, bool& OutIsActive)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::ConstPtr TypedGridPtr = openvdb::gridConstPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::ConstAccessor Accessor = TypedGridPtr->getConstAccessor();
+			const openvdb::Coord Coord(VoxelIndexCoord.X, VoxelIndexCoord.Y, VoxelIndexCoord.Z);
+			OutIsActive = Accessor.isValueOn(Coord);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+
+		OutIsActive = false;
+	}
+
+	template<typename VoxelType, EVoxelIterator VoxelIterType>
+	FORCEINLINE_DEBUGGABLE void ExtractGridSurface(const openvdb::GridBase::Ptr& GridPtr)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			typedef VoxelDatabaseUtil::VoxelIteratorAdaptor<VoxelIterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> IterAdaptor;
+			typedef IterAdaptor::Type IterType;
+			typedef VoxelDatabaseUtil::TExtractSurfaceOp<IterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> OpType;
+
+			OpType ExtractSurfaceOp(*TypedGridPtr);
+			openvdb::tools::foreach<IterType, OpType>(IterAdaptor::SelectIter(*TypedGridPtr), ExtractSurfaceOp);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+	}
+
+	template<typename VoxelType, EVoxelIterator VoxelIterType>
+	FORCEINLINE_DEBUGGABLE void MeshGridSurface(const openvdb::GridBase::Ptr& GridPtr)
+	{
+		const openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>::Ptr TypedGridPtr = openvdb::gridPtrCast<openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>>(GridPtr);
+		if (TypedGridPtr)
+		{
+			typedef VoxelDatabaseUtil::VoxelIteratorAdaptor<VoxelIterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> IterAdaptor;
+			typedef IterAdaptor::Type IterType;
+			typedef VoxelDatabaseUtil::TExtractSurfaceOp<IterType, openvdb::Grid<openvdb::tree::Tree4<VoxelType>::Type>> OpType;
+
+			OpType ExtractSurfaceOp(*TypedGridPtr);
+			openvdb::tools::foreach<IterType, OpType>(IterAdaptor::SelectIter(*TypedGridPtr), ExtractSurfaceOp);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE openvdb::math::Axis GetAxisType(const EAxis::Type& Axis)
+	{
+		const openvdb::math::Axis AxisType =
+			Axis == EAxis::X ? openvdb::math::Axis::X_AXIS :
+			Axis == EAxis::Y ? openvdb::math::Axis::Y_AXIS :
+			openvdb::math::Axis::Z_AXIS;
+		return AxisType;
+	}
+
+	FORCEINLINE_DEBUGGABLE void AddGridRotation(openvdb::GridBase &Grid, ETransformOp Op, float Radians, EAxis::Type Axis)
+	{
+		const openvdb::math::Axis RotationAxis = GetAxisType(Axis);
+		if (Op == ETransformOp::PreOp)
+		{
+			Grid.transform().preRotate(Radians, RotationAxis);
+		}
+		else
+		{
+			Grid.transform().postRotate(Radians, RotationAxis);
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void AddGridTranslation(openvdb::GridBase &Grid, ETransformOp Op, const FVector &InTranslation)
+	{
+		const openvdb::Vec3d Translation(InTranslation.X, InTranslation.Y, InTranslation.Z);
+
+		if (Op == ETransformOp::PreOp)
+		{
+			Grid.transform().preTranslate(Translation);
+		}
+		else
+		{
+			Grid.transform().postTranslate(Translation);
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void AddGridScale(openvdb::GridBase &Grid, ETransformOp Op, const FVector &InScale)
+	{
+		const openvdb::Vec3d Scale(InScale.X, InScale.Y, InScale.Z);
+
+		if (Op == ETransformOp::PreOp)
+		{
+			Grid.transform().preScale(Scale);
+		}
+		else
+		{
+			Grid.transform().postScale(Scale);
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void AddGridUniformScale(openvdb::GridBase &Grid, ETransformOp Op, float Scale)
+	{
+		if (Op == ETransformOp::PreOp)
+		{
+			Grid.transform().preScale(Scale);
+		}
+		else
+		{
+			Grid.transform().postScale(Scale);
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void AddGridShear(openvdb::GridBase &Grid, ETransformOp Op, float Shear, EAxis::Type Axis0, EAxis::Type Axis1)
+	{
+		const openvdb::math::Axis ShearAxis0 = GetAxisType(Axis0);
+		const openvdb::math::Axis ShearAxis1 = GetAxisType(Axis1);
+
+		if (Op == ETransformOp::PreOp)
+		{
+			Grid.transform().preShear(Shear, ShearAxis0, ShearAxis1);
+		}
+		else
+		{
+			Grid.transform().postShear(Shear, ShearAxis0, ShearAxis1);
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void AddGridMatrix4dMultiply(openvdb::GridBase &Grid, ETransformOp Op, const FPlane &InX, const FPlane &InY, const FPlane &InZ, const FPlane &InW)
+	{
+		const openvdb::math::Mat4d Matrix(
+			InX.X, InX.Y, InX.Z, InX.W,
+			InY.X, InY.Y, InY.Z, InY.W,
+			InZ.X, InZ.Y, InZ.Z, InZ.W,
+			InW.X, InW.Y, InW.Z, InW.W
+		);
+
+		if (Op == ETransformOp::PreOp)
+		{
+			Grid.transform().preMult(Matrix);
+		}
+		else
+		{
+			Grid.transform().postMult(Matrix);
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void AddGridMatrix3dMultiply(openvdb::GridBase &Grid, ETransformOp Op, const FVector& InX, const FVector& InY, const FVector& InZ)
+	{
+		const openvdb::math::Mat3d Matrix(
+			InX.X, InX.Y, InX.Z,
+			InY.X, InY.Y, InY.Z,
+			InZ.X, InZ.Y, InZ.Z
+		);
+
+		if (Op == ETransformOp::PreOp)
+		{
+			Grid.transform().preMult(Matrix);
+		}
+		else
+		{
+			Grid.transform().postMult(Matrix);
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void ReadGrid(FArchive& Ar, TMap<FGuid, openvdb::GridBase::Ptr>& Grids)
+	{
+		check(Ar.IsLoading());
+
+		FString GridName;
+		Ar << GridName;
+
+		FString GridTypeName;
+		Ar << GridTypeName;
+
+		openvdb::GridBase::Ptr GridPtr = FGridFactory::CreateType(GridTypeName);
+		if (GridPtr != nullptr)
+		{
+			TArray<ANSICHAR> GridBytes;
+			Ar << GridBytes;
+
+			FStreamReader<ANSICHAR> GridReader(GridBytes, Ar.IsPersistent());
+			GridPtr->readMeta(GridReader.GetStream());
+			GridPtr->readTopology(GridReader.GetStream());
+			GridPtr->readTransform(GridReader.GetStream());
+			GridPtr->readBuffers(GridReader.GetStream());
+
+			FGuid GridId;
+			FGuid::Parse(UTF8_TO_TCHAR(GridPtr->getName().c_str()), GridId);
+			Grids.Add(GridId, GridPtr);
+		}
+		else
+		{
+			//Skip past the array portion
+			int32 GridByteCount = 0;
+			Ar << GridByteCount;
+
+			const int64 CurrentPos = Ar.Tell();
+			Ar.Seek(CurrentPos + (int64)GridByteCount);
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void WriteGrid(FArchive& Ar, const openvdb::GridBase::Ptr& GridPtr)
+	{
+		check(Ar.IsSaving());
+
+		if (GridPtr != nullptr)
+		{
+			FString GridName = UTF8_TO_TCHAR(GridPtr->getName().c_str());
+			Ar << GridName;
+
+			FString GridTypeName = UTF8_TO_TCHAR(GridPtr->type().c_str());
+			Ar << GridTypeName;
+
+			TArray<ANSICHAR> GridBytes;
+			FStreamWriter<ANSICHAR> GridWriter(GridBytes, Ar.IsPersistent());
+			GridPtr->writeMeta(GridWriter.GetStream());
+			GridPtr->writeTopology(GridWriter.GetStream());
+			GridPtr->writeTransform(GridWriter.GetStream());
+			GridPtr->writeBuffers(GridWriter.GetStream());
+			Ar << GridBytes;
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void SerializeGridData(FArchive& Ar, TMap<FGuid, openvdb::GridBase::Ptr>& GridData)
+	{
+		int32 GridCount = -1;
+		if (Ar.IsLoading())
+		{
+			Ar << GridCount;
+			for (int32 i = 0; i < GridCount; ++i)
+			{
+				ReadGrid(Ar, GridData);
+			}
+		}
+		else
+		{
+			//First get the non-null grid count
+			for (auto i = GridData.CreateConstIterator(); i; ++i)
+			{
+				if (i.Value() != nullptr)
+				{
+					GridCount++;
+				}
+			}
+
+			Ar << GridCount;
+			for (auto i = GridData.CreateConstIterator(); i; ++i)
+			{
+				WriteGrid(Ar, i.Value());
+			}
+		}
+	}
+
+	FORCEINLINE_DEBUGGABLE void ReadMetadata(FArchive& Ar, openvdb::MetaMap& MetaMap)
+	{
+		check(Ar.IsLoading());
+
+		TArray<ANSICHAR> MetaMapBytes;
+		Ar << MetaMapBytes;
+
+		FStreamReader<ANSICHAR> MetaMapFileStream(MetaMapBytes, Ar.IsPersistent());
+		MetaMap.readMeta(MetaMapFileStream.GetStream());
+	}
+
+	FORCEINLINE_DEBUGGABLE void WriteMetadata(FArchive& Ar, const openvdb::MetaMap& MetaMap)
+	{
+		check(Ar.IsSaving());
+
+		TArray<ANSICHAR> MetaMapBytes;
+		FStreamWriter<ANSICHAR> MetaMapFileStream(MetaMapBytes, Ar.IsPersistent());
+		MetaMap.writeMeta(MetaMapFileStream.GetStream());
+
+		Ar << MetaMapBytes;
+	}
+
+	template<typename Type> CONSTEXPR int32 SizeOf()
 	{
 		static_assert(false, "SizeOf not implemented");
 	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::Vec3d>()
-    {
-        //Size of the primitive type (double) * 3
-        return sizeof(openvdb::Vec3d::ValueType)*openvdb::Vec3d::size;
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::Vec3d>()
+	{
+		//Size of the primitive type (double) * 3
+		return sizeof(openvdb::Vec3d::ValueType)*openvdb::Vec3d::size;
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::Mat4d>()
-    {
-        //Size of the primitive type (double) * 4 * 4
-        return sizeof(openvdb::math::Mat4d::ValueType)*openvdb::math::Mat4d::size*openvdb::math::Mat4d::size;
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::Mat4d>()
+	{
+		//Size of the primitive type (double) * 4 * 4
+		return sizeof(openvdb::math::Mat4d::ValueType)*openvdb::math::Mat4d::size*openvdb::math::Mat4d::size;
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::Coord>()
-    {
-        //Size of the private union mVec
-        //typedef union { struct { Int32 mX, mY, mZ; }; Int32 mVec[3]; } CoordData;
-        return sizeof(openvdb::Coord::mVec);
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::Coord>()
+	{
+		//Size of the private union mVec
+		//typedef union { struct { Int32 mX, mY, mZ; }; Int32 mVec[3]; } CoordData;
+		return sizeof(openvdb::Coord::mVec);
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::CoordBBox>()
-    {
-        //Size of the min and max components (each are openvdb::Coord)
-        return 2 * SizeOf<openvdb::Coord>();
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::CoordBBox>()
+	{
+		//Size of the min and max components (each are openvdb::Coord)
+		return 2 * SizeOf<openvdb::Coord>();
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::ScaleMap>()
-    {
-        //Size of the scale, voxel scale, inverse scale, inverse scale squared, and the inverse 2x-scale (each are openvdb::Vec3d)
-        return 5 * SizeOf<openvdb::Vec3d>();
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::ScaleMap>()
+	{
+		//Size of the scale, voxel scale, inverse scale, inverse scale squared, and the inverse 2x-scale (each are openvdb::Vec3d)
+		return 5 * SizeOf<openvdb::Vec3d>();
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::TranslationMap>()
-    {
-        //Size of the translation (is an openvdb::Vec3d)
-        return SizeOf<openvdb::Vec3d>();
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::TranslationMap>()
+	{
+		//Size of the translation (is an openvdb::Vec3d)
+		return SizeOf<openvdb::Vec3d>();
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::ScaleTranslateMap>()
-    {
-        //Size of the translation, scale, voxel scale, inverse scale, inverse scale squared, and inverse 2x-scale (each are openvdb::Vec3d)
-        return 6 * SizeOf<openvdb::Vec3d>();
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::ScaleTranslateMap>()
+	{
+		//Size of the translation, scale, voxel scale, inverse scale, inverse scale squared, and inverse 2x-scale (each are openvdb::Vec3d)
+		return 6 * SizeOf<openvdb::Vec3d>();
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::UniformScaleMap>()
-    {
-        //Size of the scale, voxel scale, inverse scale, inverse scale squared, and the inverse 2x-scale (each are openvdb::Vec3d)
-        return 5 * SizeOf<openvdb::Vec3d>();
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::UniformScaleMap>()
+	{
+		//Size of the scale, voxel scale, inverse scale, inverse scale squared, and the inverse 2x-scale (each are openvdb::Vec3d)
+		return 5 * SizeOf<openvdb::Vec3d>();
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::UniformScaleTranslateMap>()
-    {
-        //Size of the translation, scale, voxel scale, inverse scale, inverse scale squared, and inverse 2x-scale (each are openvdb::Vec3d)
-        return 6 * SizeOf<openvdb::Vec3d>();
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::UniformScaleTranslateMap>()
+	{
+		//Size of the translation, scale, voxel scale, inverse scale, inverse scale squared, and inverse 2x-scale (each are openvdb::Vec3d)
+		return 6 * SizeOf<openvdb::Vec3d>();
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::AffineMap>()
-    {
-        //Size of the 4d-matrix (is an openvdb::Mat4d)
-        return SizeOf<openvdb::math::Mat4d>();
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::AffineMap>()
+	{
+		//Size of the 4d-matrix (is an openvdb::Mat4d)
+		return SizeOf<openvdb::math::Mat4d>();
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::UnitaryMap>()
-    {
-        //Size of the affine map (is an openvdb::math::AffineMap)
-        return SizeOf<openvdb::math::AffineMap>();
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::UnitaryMap>()
+	{
+		//Size of the affine map (is an openvdb::math::AffineMap)
+		return SizeOf<openvdb::math::AffineMap>();
+	}
 
-    template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::NonlinearFrustumMap>()
-    {
-        //Size of the bounding box (is an openvdb::CoordBBox), taper and depth values (both are double), and size of the "second map" (openvdb::math::AffineMap), and size of the AffineMap type string minus null terminator
-        return SizeOf<openvdb::CoordBBox>() +
-            sizeof(double) * 2 +
-            sizeof(double) +
-            SizeOf<openvdb::math::AffineMap>() +
-            sizeof(openvdb::math::AffineMap::mapType()) - 1;
-    }
+	template<> FORCEINLINE CONSTEXPR int32 SizeOf<openvdb::math::NonlinearFrustumMap>()
+	{
+		//Size of the bounding box (is an openvdb::CoordBBox), taper and depth values (both are double), and size of the "second map" (openvdb::math::AffineMap), and size of the AffineMap type string minus null terminator
+		return SizeOf<openvdb::CoordBBox>() +
+			sizeof(double) * 2 +
+			sizeof(double) +
+			SizeOf<openvdb::math::AffineMap>() +
+			sizeof(openvdb::math::AffineMap::mapType()) - 1;
+	}
 
-    namespace GridStatics
-    {
-        const extern FString HalfFloatTypenameSuffix;
-        //const static FString HalfFloatTypenameSuffix = UTF8_TO_TCHAR(HALF_FLOAT_TYPENAME_SUFFIX);
-        //extern const ANSICHAR* HALF_FLOAT_TYPENAME_SUFFIX; FFFFUUUUU can't get this to link from the anonymous namespace
-        const extern FString MetaNameGridDisplayText; //TODO maybe make openvdb::Name copies of these
-        const extern FString MetaNameGridClass;
-        const extern FString MetaNameGridCreator;
-        const extern FString MetaNameGridName;
-        const extern FString MetaNameSaveHalfFloat;
-        const extern FString MetaNameIsLocalSpace;
-        const extern FString MetaNameVectorType;
-        const extern FString MetaNameFileBBoxMin;
-        const extern FString MetaNameFileBBoxMax;
-        const extern FString MetaNameFileCompression;
-        const extern FString MetaNameFileMemBytes;
-    }
+	namespace GridStatics
+	{
+		const extern FString HalfFloatTypenameSuffix;
+		//const static FString HalfFloatTypenameSuffix = UTF8_TO_TCHAR(HALF_FLOAT_TYPENAME_SUFFIX);
+		//extern const ANSICHAR* HALF_FLOAT_TYPENAME_SUFFIX; FFFFUUUUU can't get this to link from the anonymous namespace
+		const extern FString MetaNameGridDisplayText; //TODO maybe make openvdb::Name copies of these
+		const extern FString MetaNameGridClass;
+		const extern FString MetaNameGridCreator;
+		const extern FString MetaNameGridName;
+		const extern FString MetaNameSaveHalfFloat;
+		const extern FString MetaNameIsLocalSpace;
+		const extern FString MetaNameVectorType;
+		const extern FString MetaNameFileBBoxMin;
+		const extern FString MetaNameFileBBoxMax;
+		const extern FString MetaNameFileCompression;
+		const extern FString MetaNameFileMemBytes;
+	}
 
-    namespace TransformMapStatics
-    {
-        FORCEINLINE int32 SizeOfMap(const openvdb::Name& TypeName)
-        {
-            int32 MapSize = 0;
-            if (TypeName == openvdb::math::ScaleMap::mapType())
-            {
-                MapSize = SizeOf<openvdb::math::ScaleMap>();
-            }
-            else if (TypeName == openvdb::math::TranslationMap::mapType())
-            {
-                MapSize = SizeOf<openvdb::math::TranslationMap>();
-            }
-            else if (TypeName == openvdb::math::ScaleTranslateMap::mapType())
-            {
-                MapSize = SizeOf<openvdb::math::ScaleTranslateMap>();
-            }
-            else if (TypeName == openvdb::math::UniformScaleMap::mapType())
-            {
-                MapSize = SizeOf<openvdb::math::UniformScaleMap>();
-            }
-            else if (TypeName == openvdb::math::UniformScaleTranslateMap::mapType())
-            {
-                MapSize = SizeOf<openvdb::math::UniformScaleTranslateMap>();
-            }
-            else if (TypeName == openvdb::math::AffineMap::mapType())
-            {
-                MapSize = SizeOf<openvdb::math::AffineMap>();
-            }
-            else if (TypeName == openvdb::math::UnitaryMap::mapType())
-            {
-                MapSize = SizeOf<openvdb::math::UnitaryMap>();
-            }
-            else if (TypeName == openvdb::math::NonlinearFrustumMap::mapType())
-            {
-                MapSize = SizeOf<openvdb::math::NonlinearFrustumMap>();
-            }
-            return MapSize;
-        }
-    }
+	namespace TransformMapStatics
+	{
+		FORCEINLINE int32 SizeOfMap(const openvdb::Name& TypeName)
+		{
+			int32 MapSize = 0;
+			if (TypeName == openvdb::math::ScaleMap::mapType())
+			{
+				MapSize = SizeOf<openvdb::math::ScaleMap>();
+			}
+			else if (TypeName == openvdb::math::TranslationMap::mapType())
+			{
+				MapSize = SizeOf<openvdb::math::TranslationMap>();
+			}
+			else if (TypeName == openvdb::math::ScaleTranslateMap::mapType())
+			{
+				MapSize = SizeOf<openvdb::math::ScaleTranslateMap>();
+			}
+			else if (TypeName == openvdb::math::UniformScaleMap::mapType())
+			{
+				MapSize = SizeOf<openvdb::math::UniformScaleMap>();
+			}
+			else if (TypeName == openvdb::math::UniformScaleTranslateMap::mapType())
+			{
+				MapSize = SizeOf<openvdb::math::UniformScaleTranslateMap>();
+			}
+			else if (TypeName == openvdb::math::AffineMap::mapType())
+			{
+				MapSize = SizeOf<openvdb::math::AffineMap>();
+			}
+			else if (TypeName == openvdb::math::UnitaryMap::mapType())
+			{
+				MapSize = SizeOf<openvdb::math::UnitaryMap>();
+			}
+			else if (TypeName == openvdb::math::NonlinearFrustumMap::mapType())
+			{
+				MapSize = SizeOf<openvdb::math::NonlinearFrustumMap>();
+			}
+			return MapSize;
+		}
+	}
 
-    enum
-    {
-        FileVersionRootNodeMap = openvdb::OPENVDB_FILE_VERSION_ROOTNODE_MAP,
-        FileVersionInternalNodeCompression = openvdb::OPENVDB_FILE_VERSION_INTERNALNODE_COMPRESSION,
-        FileVersionSimplifiedGridTypename = openvdb::OPENVDB_FILE_VERSION_SIMPLIFIED_GRID_TYPENAME,
-        FileVersionGridInstancing = openvdb::OPENVDB_FILE_VERSION_GRID_INSTANCING,
-        FileVersionBoolLeafOptimization = openvdb::OPENVDB_FILE_VERSION_BOOL_LEAF_OPTIMIZATION,
-        FileVersionBoostUuid = openvdb::OPENVDB_FILE_VERSION_BOOST_UUID,
-        FileVersionNoGridMap = openvdb::OPENVDB_FILE_VERSION_NO_GRIDMAP,
-        FileVersionNewTransform = openvdb::OPENVDB_FILE_VERSION_NEW_TRANSFORM,
-        FileVersionSelectiveCompression = openvdb::OPENVDB_FILE_VERSION_SELECTIVE_COMPRESSION,
-        FileVersionFloatFrustumBbox = openvdb::OPENVDB_FILE_VERSION_FLOAT_FRUSTUM_BBOX,
-        FileVersionNodeMaskCompression = openvdb::OPENVDB_FILE_VERSION_NODE_MASK_COMPRESSION,
-        FileVersionBloscCompression = openvdb::OPENVDB_FILE_VERSION_BLOSC_COMPRESSION,
-        FileVersionPointIndexGrid = openvdb::OPENVDB_FILE_VERSION_POINT_INDEX_GRID,
-    };
-
-    template<typename CoordinateTransformType>
-	void SetGridCoordinateTransform(openvdb::GridBase &Grid, const CoordinateTransformType& CoordinateTransform)
-    {
-        static_assert(false, "SetGridCoordinateTransform not implemented");
-    }
-
-    template<>
-    FORCEINLINE void SetGridCoordinateTransform<FAffineCoordinateTransform>(openvdb::GridBase &Grid, const FAffineCoordinateTransform& CoordinateTransform)
-    {
-        const FVector4 &Col0 = CoordinateTransform.Matrix.GetColumn(0);
-        const FVector4 &Col1 = CoordinateTransform.Matrix.GetColumn(1);
-        const FVector4 &Col2 = CoordinateTransform.Matrix.GetColumn(2);
-        const openvdb::math::Mat3d AffineMatrix(
-            Col0.X, Col1.X, Col2.X,
-            Col0.Y, Col1.Y, Col2.Y,
-            Col0.Z, Col1.Z, Col2.Z
-        );
-        Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::AffineMap(AffineMatrix)))));
-    }
-
-    template<>
-    FORCEINLINE void SetGridCoordinateTransform<FUnitaryCoordinateTransform>(openvdb::GridBase &Grid, const FUnitaryCoordinateTransform& CoordinateTransform)
-    {
-        FVector Axis = FVector::ZeroVector;
-        float Angle = 0.0f;
-        CoordinateTransform.Quat.ToAxisAndAngle(Axis, Angle);
-        Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UnitaryMap(openvdb::Vec3d(Axis.X, Axis.Y, Axis.Z), Angle)))));
-    }
-
-    template<>
-    FORCEINLINE void SetGridCoordinateTransform<FScaleCoordinateTransform>(openvdb::GridBase &Grid, const FScaleCoordinateTransform& CoordinateTransform)
-    {
-        const openvdb::Vec3d Scale(CoordinateTransform.ScaleVec.X, CoordinateTransform.ScaleVec.Y, CoordinateTransform.ScaleVec.Z);
-        Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::ScaleMap(Scale)))));
-    }
-
-    template<>
-    FORCEINLINE void SetGridCoordinateTransform<FUniformScaleCoordinateTransform>(openvdb::GridBase &Grid, const FUniformScaleCoordinateTransform& CoordinateTransform)
-    {
-        const float &Scale(CoordinateTransform.ScaleValue);
-        Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UniformScaleMap(Scale)))));
-    }
-
-    template<>
-    FORCEINLINE void SetGridCoordinateTransform<FTranslationCoordinateTransform>(openvdb::GridBase &Grid, const FTranslationCoordinateTransform& CoordinateTransform)
-    {
-        const openvdb::Vec3d Translation(CoordinateTransform.TranslationVec.X, CoordinateTransform.TranslationVec.Y, CoordinateTransform.TranslationVec.Z);
-        Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::TranslationMap(Translation)))));
-    }
-
-    template<>
-    FORCEINLINE void SetGridCoordinateTransform<FScaleTranslationCoordinateTransform>(openvdb::GridBase &Grid, const FScaleTranslationCoordinateTransform& CoordinateTransform)
-    {
-        const openvdb::Vec3d Scale(CoordinateTransform.ScaleVec.X, CoordinateTransform.ScaleVec.Y, CoordinateTransform.ScaleVec.Z);
-        const openvdb::Vec3d Translation(CoordinateTransform.TranslationVec.X, CoordinateTransform.TranslationVec.Y, CoordinateTransform.TranslationVec.Z);
-        Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::ScaleTranslateMap(Scale, Translation)))));
-    }
-
-    template<>
-    FORCEINLINE void SetGridCoordinateTransform<FUniformScaleTranslationCoordinateTransform>(openvdb::GridBase &Grid, const FUniformScaleTranslationCoordinateTransform& CoordinateTransform)
-    {
-        const float &Scale = CoordinateTransform.ScaleValue;
-        const openvdb::Vec3d Translation(CoordinateTransform.TranslationVec.X, CoordinateTransform.TranslationVec.Y, CoordinateTransform.TranslationVec.Z);
-        Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::UniformScaleTranslateMap(Scale, Translation)))));
-    }
-
-    template<>
-    FORCEINLINE void SetGridCoordinateTransform<FNonlinearFrustumCoordinateTransform>(openvdb::GridBase &Grid, const FNonlinearFrustumCoordinateTransform& CoordinateTransform)
-    {
-        const openvdb::Vec3d Box0(CoordinateTransform.Box.Min.X, CoordinateTransform.Box.Min.Y, CoordinateTransform.Box.Min.Z);
-        const openvdb::Vec3d Box1(CoordinateTransform.Box.Max.X, CoordinateTransform.Box.Max.Y, CoordinateTransform.Box.Max.Z);
-        const openvdb::BBoxd BoundingBox(Box0 < Box1 ? Box0 : Box1, Box0 > Box1 ? Box0 : Box1);
-        const float &Taper = CoordinateTransform.Taper;
-        const float &Depth = CoordinateTransform.Depth;
-        Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::NonlinearFrustumMap(BoundingBox, Taper, Depth)))));
-    }
-
-    FORCEINLINE openvdb::math::Axis GetAxisType(const EAxis::Type& Axis)
-    {
-        const openvdb::math::Axis AxisType =
-            Axis == EAxis::X ? openvdb::math::Axis::X_AXIS :
-            Axis == EAxis::Y ? openvdb::math::Axis::Y_AXIS :
-            openvdb::math::Axis::Z_AXIS;
-        return AxisType;
-    }
+	enum
+	{
+		FileVersionRootNodeMap = openvdb::OPENVDB_FILE_VERSION_ROOTNODE_MAP,
+		FileVersionInternalNodeCompression = openvdb::OPENVDB_FILE_VERSION_INTERNALNODE_COMPRESSION,
+		FileVersionSimplifiedGridTypename = openvdb::OPENVDB_FILE_VERSION_SIMPLIFIED_GRID_TYPENAME,
+		FileVersionGridInstancing = openvdb::OPENVDB_FILE_VERSION_GRID_INSTANCING,
+		FileVersionBoolLeafOptimization = openvdb::OPENVDB_FILE_VERSION_BOOL_LEAF_OPTIMIZATION,
+		FileVersionBoostUuid = openvdb::OPENVDB_FILE_VERSION_BOOST_UUID,
+		FileVersionNoGridMap = openvdb::OPENVDB_FILE_VERSION_NO_GRIDMAP,
+		FileVersionNewTransform = openvdb::OPENVDB_FILE_VERSION_NEW_TRANSFORM,
+		FileVersionSelectiveCompression = openvdb::OPENVDB_FILE_VERSION_SELECTIVE_COMPRESSION,
+		FileVersionFloatFrustumBbox = openvdb::OPENVDB_FILE_VERSION_FLOAT_FRUSTUM_BBOX,
+		FileVersionNodeMaskCompression = openvdb::OPENVDB_FILE_VERSION_NODE_MASK_COMPRESSION,
+		FileVersionBloscCompression = openvdb::OPENVDB_FILE_VERSION_BLOSC_COMPRESSION,
+		FileVersionPointIndexGrid = openvdb::OPENVDB_FILE_VERSION_POINT_INDEX_GRID,
+	};
 }
 
 namespace VoxelDatabaseUtil
@@ -288,7 +785,7 @@ namespace VoxelDatabaseUtil
             : InValue(Value)
         {}
 
-        VOXELMATEINLINE void operator()(ValueType& OutValue) const
+        FORCEINLINE_DEBUGGABLE void operator()(ValueType& OutValue) const
         {
             OutValue = InValue;
         }
@@ -302,7 +799,7 @@ namespace VoxelDatabaseUtil
             : InActiveState(ActiveState)
         {}
 
-        VOXELMATEINLINE void operator()(bool& OutActiveState) const
+        FORCEINLINE_DEBUGGABLE void operator()(bool& OutActiveState) const
         {
             OutActiveState = InActiveState;
         }
@@ -315,7 +812,7 @@ namespace VoxelDatabaseUtil
     struct VoxelIteratorAdaptor<EVoxelIterator::InactiveVoxelsIter, GridType>
     {
         typedef typename GridType::ValueOffIter Type;
-        VOXELMATEINLINE static Type SelectIter(GridType& Grid)
+        FORCEINLINE_DEBUGGABLE static Type SelectIter(GridType& Grid)
         {
             return Grid.beginValueOff();
         }
@@ -325,7 +822,7 @@ namespace VoxelDatabaseUtil
     struct VoxelIteratorAdaptor<EVoxelIterator::ActiveVoxelsIter, GridType>
     {
         typedef typename GridType::ValueOnIter Type;
-        VOXELMATEINLINE static Type SelectIter(GridType& Grid)
+        FORCEINLINE_DEBUGGABLE static Type SelectIter(GridType& Grid)
         {
             return Grid.beginValueOn();
         }
@@ -335,7 +832,7 @@ namespace VoxelDatabaseUtil
     struct VoxelIteratorAdaptor<EVoxelIterator::AllVoxelsIter, GridType>
     {
         typedef typename GridType::ValueAllIter Type;
-        VOXELMATEINLINE static Type SelectIter(GridType& Grid)
+        FORCEINLINE_DEBUGGABLE static Type SelectIter(GridType& Grid)
         {
             return Grid.beginValueAll();
         }
@@ -355,7 +852,7 @@ namespace VoxelDatabaseUtil
             : ValueSource(InValueSource), CoordinateTransform(Transform)
         {}
 
-        VOXELMATEINLINE void operator()(const IterType& iter) const
+        FORCEINLINE_DEBUGGABLE void operator()(const IterType& iter) const
         {
             check(iter.isVoxelValue());
             const openvdb::Coord &Coord = iter.getCoord();
@@ -381,7 +878,7 @@ namespace VoxelDatabaseUtil
 			: GridAcc(Grid.tree()), SurfaceValue(Grid.tree().background())
 		{}
 
-		VOXELMATEINLINE void operator()(const IterType& iter) const
+		FORCEINLINE_DEBUGGABLE void operator()(const IterType& iter) const
 		{
 			check(iter.isVoxelValue());
 
@@ -435,7 +932,7 @@ namespace VoxelDatabaseUtil
 			: GridAcc(Grid.tree()), SurfaceValue(Grid.tree().background())
 		{}
 
-		VOXELMATEINLINE void operator()(const IterType& iter) const
+		FORCEINLINE_DEBUGGABLE void operator()(const IterType& iter) const
 		{
 			check(iter.isVoxelValue());
 
@@ -505,7 +1002,7 @@ namespace VoxelDatabaseUtil
 	//		TriCriticalSections.AddDefaulted(SectionBuffers.Num());
 	//	}
 
-	//	VOXELMATEINLINE void operator()(const IterType& iter)
+	//	FORCEINLINE_DEBUGGABLE void operator()(const IterType& iter)
 	//	{
 	//		check(iter.isVoxelValue());
 

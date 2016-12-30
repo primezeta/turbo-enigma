@@ -1,8 +1,36 @@
 #pragma once
-#include "VoxelDatabaseStatics.h"
+#include "EngineMinimal.h"
 #include <boost/shared_ptr.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/concepts.hpp>
+
+template<typename T>
+FORCEINLINE CONSTEXPR void CheckSizeTypeRangeU(const SIZE_T& WideValue, const T& NarrowValue, const T& NarrowMax)
+{
+	check(WideValue <= (SIZE_T)NarrowMax);
+	check(static_cast<T>(WideValue) < NarrowValue);
+}
+
+template<typename T>
+FORCEINLINE CONSTEXPR void CheckSizeTypeRangeU(const SIZE_T& WideValue, const T& NarrowMax)
+{
+	check(WideValue <= (SIZE_T)NarrowMax);
+}
+
+template<typename T>
+FORCEINLINE CONSTEXPR void CheckSizeTypeRangeS(const SSIZE_T& WideValue, const T& NarrowValue, const T& NarrowMin, const T& NarrowMax)
+{
+	check(WideValue >= (SSIZE_T)NarrowMin);
+	check(WideValue <= (SSIZE_T)NarrowMax);
+	check(static_cast<T>(WideValue) < NarrowValue);
+}
+
+template<typename T>
+FORCEINLINE CONSTEXPR void CheckSizeTypeRangeS(const SSIZE_T& WideValue, const T& NarrowMin, const T& NarrowMax)
+{
+	check(WideValue >= (SSIZE_T)NarrowMin);
+	check(WideValue <= (SSIZE_T)NarrowMax);
+}
 
 template<typename VoxelDatabaseType>
 struct FVoxelDatabaseTypeFactory
@@ -44,7 +72,7 @@ public:
 	{
 		check(Count > 0);
 		const int32& Num = Array.Num();
-		VoxelDatabaseStatics::CheckSizeTypeRangeS<int32>(Pos, Num, 0, MAX_int32);
+		CheckSizeTypeRangeS<int32>(Pos, Num, 0, MAX_int32);
 
 		const SSIZE_T Amount = FMath::Min((SSIZE_T)Count, (SSIZE_T)Num - Pos);
 		if (Amount > 0)
@@ -61,7 +89,7 @@ public:
 	{
 		check(Count > 0);
 		const int32& Num = Array.Num();
-		VoxelDatabaseStatics::CheckSizeTypeRangeS<int32>((SSIZE_T)Num + (SSIZE_T)Count, 0, MAX_int32);
+		CheckSizeTypeRangeS<int32>((SSIZE_T)Num + (SSIZE_T)Count, 0, MAX_int32);
 
 		int32 Start = -1;
 		if (Pos == Num)
@@ -74,8 +102,8 @@ public:
 			Array.InsertUninitialized(Start, (int32)Count);
 		}
 
-		VoxelDatabaseStatics::CheckSizeTypeRangeS<int32>(Pos + (SSIZE_T)Count, 0, MAX_int32);
-		VoxelDatabaseStatics::CheckSizeTypeRangeU<int32>((SIZE_T)Count, 0, MAX_int32);
+		CheckSizeTypeRangeS<int32>(Pos + (SSIZE_T)Count, 0, MAX_int32);
+		CheckSizeTypeRangeU<int32>((SIZE_T)Count, 0, MAX_int32);
 		Pos += (SSIZE_T)Count;
 
 		char_type* Dest = Array.GetData() + Start;
@@ -105,7 +133,7 @@ public:
 		{
 			check(false);
 		}
-		VoxelDatabaseStatics::CheckSizeTypeRangeS<int32>((SSIZE_T)Next, 0, Num);
+		CheckSizeTypeRangeS<int32>((SSIZE_T)Next, 0, Num);
 
 		Pos = (SSIZE_T)Next;
 		return Pos;
@@ -129,7 +157,7 @@ public:
 		return Pos;
 	}
 
-	VOXELMATEINLINE static void SerializeCh(FArchive& Ar, CharType& ch)
+	FORCEINLINE_DEBUGGABLE static void SerializeCh(FArchive& Ar, CharType& ch)
 	{
 		Ar << reinterpret_cast<uint8&>(ch);
 	}
@@ -137,7 +165,7 @@ public:
 	std::streamsize read(char_type* Dest, std::streamsize Count)
 	{
 		check(Count > 0);
-		VoxelDatabaseStatics::CheckSizeTypeRangeS<int32>((SSIZE_T)Count, 0, MAX_int32);
+		CheckSizeTypeRangeS<int32>((SSIZE_T)Count, 0, MAX_int32);
 		check(Ar.IsLoading());
 
 		if (Ar.IsLoading())
@@ -159,7 +187,7 @@ public:
 	{
 		check(Count > 0);
 		const int64& ArPos = Ar.Tell();
-		VoxelDatabaseStatics::CheckSizeTypeRangeS<int32>((SSIZE_T)ArPos + (SSIZE_T)Count, 0, MAX_int32);
+		CheckSizeTypeRangeS<int32>((SSIZE_T)ArPos + (SSIZE_T)Count, 0, MAX_int32);
 		check(Ar.IsSaving());
 
 		if (Ar.IsSaving())
@@ -199,7 +227,7 @@ public:
 		{
 			check(false);
 		}
-		VoxelDatabaseStatics::CheckSizeTypeRangeS<int64>((SSIZE_T)Next, 0, Size);
+		CheckSizeTypeRangeS<int64>((SSIZE_T)Next, 0, Size);
 
 		Pos = (SSIZE_T)Next;
 		Ar.Seek(Pos);
