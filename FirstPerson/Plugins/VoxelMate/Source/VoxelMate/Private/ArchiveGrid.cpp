@@ -24,12 +24,7 @@ void FVoxelDatabaseTypeFactory<openvdb::GridBase>::RegisterSupportedTypes()
     }
     openvdb::GridBase::clearRegistry();
     FVoxelDatabaseTypeFactory<openvdb::GridBase>::RegisteredTypeNames.Empty();
-    FGridFactory::Register<FVoxelBool>();
-    FGridFactory::Register<FVoxelUInt8>();
-    FGridFactory::Register<FVoxelInt32>();
-    FGridFactory::Register<FVoxelFloat>();
-    FGridFactory::Register<FVoxelVector>();
-    FGridFactory::Register<FVoxelIntVector>();
+    FGridFactory::Register<FVoxel>();
     FVoxelDatabaseTypeFactory<openvdb::GridBase>::IsInitialized = true;
 }
 

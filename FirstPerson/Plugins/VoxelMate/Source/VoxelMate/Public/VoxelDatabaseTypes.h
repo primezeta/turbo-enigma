@@ -3,12 +3,7 @@
 #include "GridCoordinateTransforms.h"
 #include "VoxelDatabaseTypes.generated.h"
 
-struct FVoxelBool;
-struct FVoxelUInt8;
-struct FVoxelInt32;
-struct FVoxelFloat;
-struct FVoxelVector;
-struct FVoxelIntVector;
+struct FVoxel;
 struct FMetadataBool;
 struct FMetadataFloat;
 struct FMetadataInt32;
@@ -24,169 +19,29 @@ struct FMetadataDateTime;
 struct FMetadataString;
 struct FMetadataText;
 
-USTRUCT()
-struct VOXELMATE_API FVoxelBase
+USTRUCT(BlueprintType)
+struct VOXELMATE_API FVoxel
 {
 	GENERATED_BODY()
 
-	FVoxelBase()
-		: VoxelType((EVoxelType)0), SurfaceIntersection(0)
+	explicit FVoxel()
+		: SurfaceIntersection(0), ActiveStateChange(0), Value(0.0f)
 	{}
 
-	FVoxelBase(EVoxelType Type)
-		: VoxelType(Type), SurfaceIntersection(0)
+	explicit FVoxel(const float& InValue)
+		: Value(InValue)
 	{}
 
-	UPROPERTY(BlueprintReadOnly)
-		EVoxelType VoxelType;
+	FVoxel(const FVoxel& InValue)
+		: SurfaceIntersection(InValue.SurfaceIntersection), ActiveStateChange(InValue.ActiveStateChange), Value(InValue.Value)
+	{}
+
 	UPROPERTY()
 		uint8 SurfaceIntersection;
-};
-
-USTRUCT(BlueprintType)
-struct VOXELMATE_API FVoxelBool : public FVoxelBase
-{
-	GENERATED_BODY()
-
-	explicit FVoxelBool()
-		: FVoxelBase(EVoxelType::Bool), Value(ZeroValue.Value)
-	{}
-
-	explicit FVoxelBool(const bool& InValue)
-		: FVoxelBase(EVoxelType::Bool), Value(InValue)
-	{}
-
-	FVoxelBool(const FVoxelBool& InValue)
-		: FVoxelBase(EVoxelType::Bool), Value(InValue.Value)
-	{}
-
-	typedef bool ValueType;
-	UPROPERTY(BlueprintReadWrite)
-		bool Value;
-	const static FVoxelBool ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct VOXELMATE_API FVoxelUInt8 : public FVoxelBase
-{
-	GENERATED_BODY()
-
-	explicit FVoxelUInt8()
-		: FVoxelBase(EVoxelType::UInt8), Value(ZeroValue.Value)
-	{}
-
-	explicit FVoxelUInt8(const uint8& InValue)
-		: FVoxelBase(EVoxelType::UInt8), Value(InValue)
-	{}
-
-	FVoxelUInt8(const FVoxelUInt8& InValue)
-		: FVoxelBase(EVoxelType::UInt8), Value(InValue.Value)
-	{}
-
-	typedef uint8 ValueType;
-	UPROPERTY(BlueprintReadWrite)
-		uint8 Value;
-	const static FVoxelUInt8 ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct VOXELMATE_API FVoxelInt32 : public FVoxelBase
-{
-	GENERATED_BODY()
-
-	explicit FVoxelInt32()
-        : FVoxelBase(EVoxelType::Int32), Value(ZeroValue.Value)
-    {}
-
-	explicit FVoxelInt32(const int32& InValue)
-		: FVoxelBase(EVoxelType::Int32), Value(InValue)
-	{}
-
-	FVoxelInt32(const FVoxelInt32& InValue)
-		: FVoxelBase(EVoxelType::Int32), Value(InValue.Value)
-	{}
-
-	typedef int32 ValueType;
-	UPROPERTY(BlueprintReadWrite)
-		int32 Value;
-    const static FVoxelInt32 ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct VOXELMATE_API FVoxelFloat : public FVoxelBase
-{
-	GENERATED_BODY()
-
-	explicit FVoxelFloat()
-		: FVoxelBase(EVoxelType::Float), Value(ZeroValue.Value)
-	{}
-
-	explicit FVoxelFloat(const float& InValue)
-		: FVoxelBase(EVoxelType::Float), Value(InValue)
-	{}
-
-	FVoxelFloat(const FVoxelFloat& InValue)
-		: FVoxelBase(EVoxelType::Float), Value(InValue.Value)
-	{}
-
-	typedef float ValueType;
+	UPROPERTY()
+		int8 ActiveStateChange;
 	UPROPERTY(BlueprintReadWrite)
 		float Value;
-	const static FVoxelFloat ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct VOXELMATE_API FVoxelVector : public FVoxelBase
-{
-	GENERATED_BODY()
-
-	explicit FVoxelVector()
-		: FVoxelBase(EVoxelType::Vector), Value(ZeroValue.Value)
-	{}
-
-	explicit FVoxelVector(const FVector& InValue)
-		: FVoxelBase(EVoxelType::Vector), Value(InValue)
-	{}
-
-	explicit FVoxelVector(EForceInit ForceInit)
-		: FVoxelBase(EVoxelType::Vector), Value(ForceInit)
-	{}
-
-	FVoxelVector(const FVoxelVector& InValue)
-		: FVoxelBase(EVoxelType::Vector), Value(InValue.Value)
-	{}
-
-	typedef FVector ValueType;
-	UPROPERTY(BlueprintReadWrite)
-		FVector Value;
-	const static FVoxelVector ZeroValue;
-};
-
-USTRUCT(BlueprintType)
-struct VOXELMATE_API FVoxelIntVector : public FVoxelBase
-{
-	GENERATED_BODY()
-
-	explicit FVoxelIntVector()
-		: FVoxelBase(EVoxelType::IntVector), Value(ZeroValue.Value)
-	{}
-
-	explicit FVoxelIntVector(const FIntVector& InValue)
-		: FVoxelBase(EVoxelType::IntVector), Value(InValue)
-	{}
-
-	explicit FVoxelIntVector(EForceInit ForceInit)
-		: FVoxelBase(EVoxelType::IntVector), Value(ForceInit)
-	{}
-
-	FVoxelIntVector(const FVoxelIntVector& InValue)
-		: FVoxelBase(EVoxelType::IntVector), Value(InValue.Value)
-	{}
-
-	typedef FIntVector ValueType;
-	UPROPERTY(BlueprintReadWrite)
-		FIntVector Value;
-	const static FVoxelIntVector ZeroValue;
 };
 
 USTRUCT(BlueprintType)

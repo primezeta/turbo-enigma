@@ -19,12 +19,7 @@ extern VoxelType operator+(const VoxelType& InLhs, const float &InRhs);\
 extern VoxelType Abs(const VoxelType& InValue);\
 extern VoxelType operator-(const VoxelType& InValue);
 
-VOXEL_TYPE_EXTERN(FVoxelBool)
-VOXEL_TYPE_EXTERN(FVoxelUInt8)
-VOXEL_TYPE_EXTERN(FVoxelInt32)
-VOXEL_TYPE_EXTERN(FVoxelFloat)
-VOXEL_TYPE_EXTERN(FVoxelVector)
-VOXEL_TYPE_EXTERN(FVoxelIntVector)
+VOXEL_TYPE_EXTERN(FVoxel)
 
 #define META_TYPE_EXTERN(MetaType)\
 extern std::ostream& operator<<(std::ostream& os, const MetaType& InValue);\

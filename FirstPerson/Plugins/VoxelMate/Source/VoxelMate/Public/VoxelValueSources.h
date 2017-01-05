@@ -3,194 +3,73 @@
 #include "VoxelDatabaseTypes.h"
 #include "VoxelValueSources.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGridIdChanged);
-
-UCLASS(Abstract, NotBlueprintable, NotPlaceable)
-class VOXELMATE_API AValueSource : public AActor
+UCLASS(Abstract, NotPlaceable, Blueprintable)
+class VOXELMATE_API AGridSource : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	AValueSource(const FObjectInitializer& Initializer)
+	AGridSource(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
 		SetReplicates(true);
 		IsFloatSavedAsHalf = false;
-		VoxelType = EVoxelType::Bool;
 	}
+
+	UFUNCTION(Category = VoxelGridSource, BlueprintCallable)
+		FString ToString()
+		{
+			return FString::Printf(TEXT("%s%s"), *GridSectionDimensions.ToString(), IsFloatSavedAsHalf ? TEXT(";half") : TEXT(""));
+		}
 
 	virtual void Serialize(FArchive& Ar) override
 	{
+		Ar << GridSectionDimensions;
 		Ar << IsFloatSavedAsHalf;
-
-		uint8 VoxelTypeValue = (uint8)VoxelType;
-		Ar << VoxelTypeValue;
-		uint8 CoordTransformTypeValue = (uint8)CoordTransformType;
-		Ar << CoordTransformTypeValue;
-
-		if (Ar.IsLoading())
-		{
-			VoxelType = (EVoxelType)VoxelTypeValue;
-			CoordTransformType = (ECoordinateTransformType)CoordTransformTypeValue;
-		}
-
-		Ar << VolumeSize;
-		Ar << CoordTransformData;
 	}
-
-	template<typename CoordTransform>
-	void ReadCoordTransform(CoordTransform& OutCoordTransform)
-	{
-		FStreamReader<uint8> Reader(CoordTransformData);
-		OutCoordTransform.Serialize(Reader);
-	}
-
-	template<typename CoordTransform>
-	void WriteCoordTransform(const CoordTransform& InCoordTransform)
-	{
-		FStreamWriter<uint8> Writer(CoordTransformData);
-		InCoordTransform.Serialize(Writer);
-	}
-		
-	UPROPERTY(ReplicatedUsing=OnRep_GridId, BlueprintReadOnly)
-		FGuid GridId;
-	UPROPERTY(Replicated)
-		bool IsFloatSavedAsHalf;
+	
 	UPROPERTY(Replicated, BlueprintReadOnly)
-		EVoxelType VoxelType;
-	UPROPERTY(Replicated, BlueprintReadWrite)
-		ECoordinateTransformType CoordTransformType;
-	UPROPERTY(Replicated, BlueprintReadWrite)
-		FIntVector VolumeSize;
-	UPROPERTY(Replicated)
-		TArray<uint8> CoordTransformData;
+		FIntVector GridSectionDimensions;
+	UPROPERTY(Replicated, BlueprintReadOnly)
+		bool IsFloatSavedAsHalf;
 
-	UPROPERTY(BlueprintType, BlueprintReadWrite, BlueprintAssignable)
-		FGridIdChanged OnGridIdUpdated;
-
-	UFUNCTION()
-		void OnRep_GridId()
-		{
-			OnGridIdUpdated.Broadcast();
-		}
-};
-
-UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API AVoxelBoolSource : public AValueSource
-{
-	GENERATED_BODY()
-
-public:
-	AVoxelBoolSource(const FObjectInitializer& Initializer)
-		: Super(Initializer)
-	{
-		VoxelType = EVoxelType::Bool;
-	}
-
-	UFUNCTION(Category = VoxelValueSource, BlueprintNativeEvent, BlueprintCallable)
-		void GetValue(float x, float y, float z, FVoxelBool& OutValue) const;
-	virtual void GetValue_Implementation(float x, float y, float z, FVoxelBool& OutValue) const
+	UFUNCTION(Category = VoxelGridSource, BlueprintNativeEvent, BlueprintCallable)
+		void GetValue(float x, float y, float z, FVoxel& OutValue) const;
+	virtual void GetValue_Implementation(float x, float y, float z, FVoxel& OutValue) const
 	{
 		check(false);
 	}
 };
 
-UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API AVoxelUInt8Source : public AValueSource
-{
-	GENERATED_BODY()
-
-public:
-	AVoxelUInt8Source(const FObjectInitializer& Initializer)
-		: Super(Initializer)
-	{
-		VoxelType = EVoxelType::UInt8;
-	}
-
-	UFUNCTION(Category = VoxelValueSource, BlueprintNativeEvent, BlueprintCallable)
-		void GetValue(float x, float y, float z, FVoxelUInt8& OutValue) const;
-	virtual void GetValue_Implementation(float x, float y, float z, FVoxelUInt8& OutValue) const
-	{
-		check(false);
-	}
-};
-
-UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API AVoxelFloatSource : public AValueSource
-{
-	GENERATED_BODY()
-
-public:
-	AVoxelFloatSource(const FObjectInitializer& Initializer)
-		: Super(Initializer)
-	{
-		VoxelType = EVoxelType::Float;
-	}
-
-	UFUNCTION(Category = VoxelValueSource, BlueprintNativeEvent, BlueprintCallable)
-		void GetValue(float x, float y, float z, FVoxelFloat& OutValue) const;
-	virtual void GetValue_Implementation(float x, float y, float z, FVoxelFloat& OutValue) const
-	{
-		check(false);
-	}
-};
-
-UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API AVoxelInt32Source : public AValueSource
-{
-	GENERATED_BODY()
-
-public:
-	AVoxelInt32Source(const FObjectInitializer& Initializer)
-		: Super(Initializer)
-	{
-		VoxelType = EVoxelType::Int32;
-	}
-
-	UFUNCTION(Category = VoxelValueSource, BlueprintNativeEvent, BlueprintCallable)
-		void GetValue(float x, float y, float z, FVoxelInt32& OutValue) const;
-	virtual void GetValue_Implementation(float x, float y, float z, FVoxelInt32& OutValue) const
-	{
-		check(false);
-	}
-};
-
-UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API AVoxelVectorSource : public AValueSource
-{
-	GENERATED_BODY()
-
-public:
-	AVoxelVectorSource(const FObjectInitializer& Initializer)
-		: Super(Initializer)
-	{
-		VoxelType = EVoxelType::Vector;
-	}
-
-	UFUNCTION(Category = VoxelValueSource, BlueprintNativeEvent, BlueprintCallable)
-		void GetValue(float x, float y, float z, FVoxelVector& OutValue) const;
-	virtual void GetValue_Implementation(float x, float y, float z, FVoxelVector& OutValue) const
-	{
-		check(false);
-	}
-};
-
-UCLASS(Abstract, Blueprintable, NotPlaceable)
-class VOXELMATE_API AVoxelIntVectorSource : public AValueSource
-{
-	GENERATED_BODY()
-
-public:
-	AVoxelIntVectorSource(const FObjectInitializer& Initializer)
-		: Super(Initializer)
-	{
-		VoxelType = EVoxelType::IntVector;
-	}
-
-	UFUNCTION(Category = VoxelValueSource, BlueprintNativeEvent, BlueprintCallable)
-		void GetValue(float x, float y, float z, FVoxelIntVector& OutValue) const;
-	virtual void GetValue_Implementation(float x, float y, float z, FVoxelIntVector& OutValue) const
-	{
-		check(false);
-	}
-};
+//template <typename ValueType>
+//struct TGridSourceKeyFuncs :
+//	BaseKeyFuncs<
+//	TPair<AGridSource, ValueType>,
+//	FGuid
+//	>
+//{
+//private:
+//	typedef BaseKeyFuncs<
+//		TPair<AGridSource, ValueType>,
+//		FGuid
+//	> Super;
+//
+//public:
+//	typedef typename Super::ElementInitType ElementInitType;
+//	typedef typename Super::KeyInitType     KeyInitType;
+//
+//	static KeyInitType GetSetKey(ElementInitType Element)
+//	{
+//		return Element.Key.UniqueID;
+//	}
+//
+//	static bool Matches(KeyInitType A, KeyInitType B)
+//	{
+//		return A == B;
+//	}
+//
+//	static uint32 GetKeyHash(KeyInitType Key)
+//	{
+//		return FGuid::GetTypeHash(Key);
+//	}
+//};

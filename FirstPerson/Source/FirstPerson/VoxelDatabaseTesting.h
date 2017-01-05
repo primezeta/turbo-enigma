@@ -6,7 +6,7 @@
 #include "VoxelDatabaseTesting.generated.h"
 
 UCLASS(Category = VoxelMateTesting, BlueprintType, Blueprintable)
-class AVoxelPerlinNoiseSource : public AVoxelFloatSource
+class AVoxelPerlinNoiseSource : public AGridSource
 {
 	GENERATED_BODY()
 
@@ -30,18 +30,18 @@ public:
 			PerlinNoise.SetOctaveCount(OctaveCount);
 		}
 
-	FORCEINLINE_DEBUGGABLE void GetValue_Implementation(float x, float y, float z, FVoxelFloat& OutValue) const override
+	FORCEINLINE_DEBUGGABLE void GetValue_Implementation(float x, float y, float z, FVoxel& OutValue) const override
 	{
 		OutValue.Value = (float)PerlinNoise.GetValue((double)x, (double)y, (double)z);
 	}
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(Replicated, BlueprintReadWrite)
 		float Frequency;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(Replicated, BlueprintReadWrite)
 		float Lacunarity;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(Replicated, BlueprintReadWrite)
 		float Persistence;
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(Replicated, BlueprintReadWrite)
 		int32 OctaveCount;
 
 private:

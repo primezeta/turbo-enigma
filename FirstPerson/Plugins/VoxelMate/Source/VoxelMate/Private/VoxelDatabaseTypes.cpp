@@ -1,300 +1,50 @@
 #include "VoxelMatePCH.h"
 #include "VoxelDatabaseTypes.h"
 
-FORCEINLINE_DEBUGGABLE std::ostream& operator<<(std::ostream& os, const FVoxelBool& InValue)
+FORCEINLINE_DEBUGGABLE std::ostream& operator<<(std::ostream& os, const FVoxel& InValue)
 {
 	os.write(reinterpret_cast<const char*>(&InValue.Value), sizeof(InValue.Value));
 	return os;
 }
 
-FORCEINLINE_DEBUGGABLE bool operator==(const FVoxelBool& InLhs, const FVoxelBool& InRhs)
-{
-	return InLhs.Value == InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator<(const FVoxelBool& InLhs, const FVoxelBool& InRhs)
-{
-	return !InLhs.Value && InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator>(const FVoxelBool& InLhs, const FVoxelBool& InRhs)
-{
-	return InLhs.Value && !InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelBool operator+(const FVoxelBool& InLhs, const FVoxelBool& InRhs)
-{
-	(void)InRhs;
-	return InLhs;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelBool operator-(const FVoxelBool& InLhs, const FVoxelBool& InRhs)
-{
-	(void)InRhs;
-	return InLhs;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelBool operator+(const FVoxelBool& InLhs, const float &InRhs)
-{
-	(void)InRhs;
-	return InLhs;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelBool Abs(const FVoxelBool& InValue)
-{
-	return InValue;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelBool operator-(const FVoxelBool& InValue)
-{
-	return InValue;
-}
-
-FORCEINLINE_DEBUGGABLE std::ostream& operator<<(std::ostream& os, const FVoxelUInt8& InValue)
-{
-	os.write(reinterpret_cast<const char*>(&InValue.Value), sizeof(InValue.Value));
-	return os;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator==(const FVoxelUInt8& InLhs, const FVoxelUInt8& InRhs)
-{
-	return InLhs.Value == InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator<(const FVoxelUInt8& InLhs, const FVoxelUInt8& InRhs)
-{
-	return InLhs.Value < InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator>(const FVoxelUInt8& InLhs, const FVoxelUInt8& InRhs)
-{
-	return InLhs.Value > InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelUInt8 operator+(const FVoxelUInt8& InLhs, const FVoxelUInt8& InRhs)
-{
-	return FVoxelUInt8(InLhs.Value + InRhs.Value);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelUInt8 operator-(const FVoxelUInt8& InLhs, const FVoxelUInt8& InRhs)
-{
-	return FVoxelUInt8(InLhs.Value - InRhs.Value);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelUInt8 operator+(const FVoxelUInt8& InLhs, const float &InRhs)
-{
-	(void)InRhs;
-	return InLhs;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelUInt8 Abs(const FVoxelUInt8& InValue)
-{
-	return InValue;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelUInt8 operator-(const FVoxelUInt8& InValue)
-{
-	return InValue;
-}
-
-FORCEINLINE_DEBUGGABLE std::ostream& operator<<(std::ostream& os, const FVoxelInt32& InValue)
-{
-	os.write(reinterpret_cast<const char*>(&InValue.Value), sizeof(InValue.Value));
-	return os;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator==(const FVoxelInt32& InLhs, const FVoxelInt32& InRhs)
-{
-	return InLhs.Value == InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator<(const FVoxelInt32& InLhs, const FVoxelInt32& InRhs)
-{
-	return InLhs.Value < InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator>(const FVoxelInt32& InLhs, const FVoxelInt32& InRhs)
-{
-	return InLhs.Value > InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelInt32 operator+(const FVoxelInt32& InLhs, const FVoxelInt32& InRhs)
-{
-	return FVoxelInt32(InLhs.Value + InRhs.Value);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelInt32 operator-(const FVoxelInt32& InLhs, const FVoxelInt32& InRhs)
-{
-	return FVoxelInt32(InLhs.Value - InRhs.Value);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelInt32 operator+(const FVoxelInt32& InLhs, const float &InRhs)
-{
-	(void)InRhs;
-	return InLhs;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelInt32 Abs(const FVoxelInt32& InValue)
-{
-	return FVoxelInt32(FMath::Abs(InValue.Value));
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelInt32 operator-(const FVoxelInt32& InValue)
-{
-	return FVoxelInt32(-InValue.Value);
-}
-
-FORCEINLINE_DEBUGGABLE std::ostream& operator<<(std::ostream& os, const FVoxelFloat& InValue)
-{
-	os.write(reinterpret_cast<const char*>(&InValue.Value), sizeof(InValue.Value));
-	return os;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator==(const FVoxelFloat& InLhs, const FVoxelFloat& InRhs)
+FORCEINLINE_DEBUGGABLE bool operator==(const FVoxel& InLhs, const FVoxel& InRhs)
 {
 	return FMath::IsNearlyEqual(InLhs.Value, InRhs.Value);
 }
 
-FORCEINLINE_DEBUGGABLE bool operator<(const FVoxelFloat& InLhs, const FVoxelFloat& InRhs)
+FORCEINLINE_DEBUGGABLE bool operator<(const FVoxel& InLhs, const FVoxel& InRhs)
 {
 	return InLhs.Value < InRhs.Value;
 }
 
-FORCEINLINE_DEBUGGABLE bool operator>(const FVoxelFloat& InLhs, const FVoxelFloat& InRhs)
+FORCEINLINE_DEBUGGABLE bool operator>(const FVoxel& InLhs, const FVoxel& InRhs)
 {
 	return InLhs.Value > InRhs.Value;
 }
 
-FORCEINLINE_DEBUGGABLE FVoxelFloat operator+(const FVoxelFloat& InLhs, const FVoxelFloat& InRhs)
+FORCEINLINE_DEBUGGABLE FVoxel operator+(const FVoxel& InLhs, const FVoxel& InRhs)
 {
-	return FVoxelFloat(InLhs.Value + InRhs.Value);
+	return FVoxel(InLhs.Value + InRhs.Value);
 }
 
-FORCEINLINE_DEBUGGABLE FVoxelFloat operator-(const FVoxelFloat& InLhs, const FVoxelFloat& InRhs)
+FORCEINLINE_DEBUGGABLE FVoxel operator-(const FVoxel& InLhs, const FVoxel& InRhs)
 {
-	return FVoxelFloat(InLhs.Value - InRhs.Value);
+	return FVoxel(InLhs.Value - InRhs.Value);
 }
 
-FORCEINLINE_DEBUGGABLE FVoxelFloat operator+(const FVoxelFloat& InLhs, const float &InRhs)
+FORCEINLINE_DEBUGGABLE FVoxel operator+(const FVoxel& InLhs, const float &InRhs)
 {
-	return FVoxelFloat(InLhs.Value + InRhs);
+	return FVoxel(InLhs.Value + InRhs);
 }
 
-FORCEINLINE_DEBUGGABLE FVoxelFloat Abs(const FVoxelFloat& InValue)
+FORCEINLINE_DEBUGGABLE FVoxel Abs(const FVoxel& InValue)
 {
-	return FVoxelFloat(FMath::Abs(InValue.Value));
+	return FVoxel(FMath::Abs(InValue.Value));
 }
 
-FORCEINLINE_DEBUGGABLE FVoxelFloat operator-(const FVoxelFloat& InValue)
+FORCEINLINE_DEBUGGABLE FVoxel operator-(const FVoxel& InValue)
 {
-	return FVoxelFloat(-InValue.Value);
-}
-
-FORCEINLINE_DEBUGGABLE std::ostream& operator<<(std::ostream& os, const FVoxelVector& InValue)
-{
-	os.write(reinterpret_cast<const char*>(&InValue.Value.X), sizeof(InValue.Value.X));
-	os.write(reinterpret_cast<const char*>(&InValue.Value.Y), sizeof(InValue.Value.Y));
-	os.write(reinterpret_cast<const char*>(&InValue.Value.Z), sizeof(InValue.Value.Z));
-	return os;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator==(const FVoxelVector& InLhs, const FVoxelVector& InRhs)
-{
-	return FMath::IsNearlyEqual(InLhs.Value.X, InRhs.Value.X) &&
-		   FMath::IsNearlyEqual(InLhs.Value.Y, InRhs.Value.Y) &&
-		   FMath::IsNearlyEqual(InLhs.Value.Z, InRhs.Value.Z);
-}
-
-FORCEINLINE_DEBUGGABLE bool operator<(const FVoxelVector& InLhs, const FVoxelVector& InRhs)
-{
-	return (!FMath::IsNearlyEqual(InLhs.Value.X, InRhs.Value.X) && InLhs.Value.X < InRhs.Value.X) ||
-		   (!FMath::IsNearlyEqual(InLhs.Value.Y, InRhs.Value.Y) && InLhs.Value.Y < InRhs.Value.Y) ||
-		   (!FMath::IsNearlyEqual(InLhs.Value.Z, InRhs.Value.Z) && InLhs.Value.Z < InRhs.Value.Z);
-}
-
-FORCEINLINE_DEBUGGABLE bool operator>(const FVoxelVector& InLhs, const FVoxelVector& InRhs)
-{
-	return (!FMath::IsNearlyEqual(InLhs.Value.X, InRhs.Value.X) && InLhs.Value.X > InRhs.Value.X) ||
-		   (!FMath::IsNearlyEqual(InLhs.Value.Y, InRhs.Value.Y) && InLhs.Value.Y > InRhs.Value.Y) ||
-		   (!FMath::IsNearlyEqual(InLhs.Value.Z, InRhs.Value.Z) && InLhs.Value.Z > InRhs.Value.Z);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelVector operator+(const FVoxelVector& InLhs, const FVoxelVector& InRhs)
-{
-	return FVoxelVector(InLhs.Value + InRhs.Value);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelVector operator-(const FVoxelVector& InLhs, const FVoxelVector& InRhs)
-{
-	return FVoxelVector(InLhs.Value - InRhs.Value);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelVector operator+(const FVoxelVector& InLhs, const float &InRhs)
-{
-	return FVoxelVector(InLhs.Value + InRhs);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelVector Abs(const FVoxelVector& InValue)
-{
-	return FVoxelVector(InValue.Value.GetAbs());
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelVector operator-(const FVoxelVector& InValue)
-{
-	return FVoxelVector(FVector(-InValue.Value.X, -InValue.Value.Y, -InValue.Value.Z));
-}
-
-FORCEINLINE_DEBUGGABLE std::ostream& operator<<(std::ostream& os, const FVoxelIntVector& InValue)
-{
-	os.write(reinterpret_cast<const char*>(&InValue.Value.X), sizeof(InValue.Value.X));
-	os.write(reinterpret_cast<const char*>(&InValue.Value.Y), sizeof(InValue.Value.Y));
-	os.write(reinterpret_cast<const char*>(&InValue.Value.Z), sizeof(InValue.Value.Z));
-	return os;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator==(const FVoxelIntVector& InLhs, const FVoxelIntVector& InRhs)
-{
-	return InLhs.Value == InRhs.Value;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator<(const FVoxelIntVector& InLhs, const FVoxelIntVector& InRhs)
-{
-	return InLhs.Value.X < InRhs.Value.X ||
-		   InLhs.Value.Y < InRhs.Value.Y ||
-		   InLhs.Value.Z < InRhs.Value.Z;
-}
-
-FORCEINLINE_DEBUGGABLE bool operator>(const FVoxelIntVector& InLhs, const FVoxelIntVector& InRhs)
-{
-	return InLhs.Value.X > InRhs.Value.X ||
-		   InLhs.Value.Y > InRhs.Value.Y ||
-		   InLhs.Value.Z > InRhs.Value.Z;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelIntVector operator+(const FVoxelIntVector& InLhs, const FVoxelIntVector& InRhs)
-{
-	return FVoxelIntVector(InLhs.Value + InRhs.Value);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelIntVector operator-(const FVoxelIntVector& InLhs, const FVoxelIntVector& InRhs)
-{
-	return FVoxelIntVector(InLhs.Value - InRhs.Value);
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelIntVector operator+(const FVoxelIntVector& InLhs, const float &InRhs)
-{
-	(void)InRhs;
-	return InLhs;
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelIntVector Abs(const FVoxelIntVector& InValue)
-{
-	return FVoxelIntVector(FIntVector(FMath::Abs(InValue.Value.X), FMath::Abs(InValue.Value.Y), FMath::Abs(InValue.Value.Z)));
-}
-
-FORCEINLINE_DEBUGGABLE FVoxelIntVector operator-(const FVoxelIntVector& InValue)
-{
-	return FVoxelIntVector(FIntVector(-InValue.Value.X, -InValue.Value.Y, -InValue.Value.Z));
+	return FVoxel(-InValue.Value);
 }
 
 FORCEINLINE_DEBUGGABLE std::ostream& operator<<(std::ostream& os, const FMetadataBool& InValue)

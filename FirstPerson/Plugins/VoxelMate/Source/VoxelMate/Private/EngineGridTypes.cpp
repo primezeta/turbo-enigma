@@ -1,12 +1,6 @@
 #include "VoxelMatePCH.h"
 #include "EngineGridTypes.h"
 
-const FVoxelBool FVoxelBool::ZeroValue(false);
-const FVoxelUInt8 FVoxelUInt8::ZeroValue(0);
-const FVoxelInt32 FVoxelInt32::ZeroValue(0);
-const FVoxelFloat FVoxelFloat::ZeroValue(0.0f);
-const FVoxelVector FVoxelVector::ZeroValue(EForceInit::ForceInitToZero);
-const FVoxelIntVector FVoxelIntVector::ZeroValue(EForceInit::ForceInitToZero);
 const FMetadataBool FMetadataBool::ZeroValue(false);
 const FMetadataFloat FMetadataFloat::ZeroValue(0.0f);
 const FMetadataInt32 FMetadataInt32::ZeroValue(0);
@@ -21,4 +15,3 @@ const FMetadataBox FMetadataBox::ZeroValue(EForceInit::ForceInitToZero);
 const FMetadataDateTime FMetadataDateTime::ZeroValue(0);
 const FMetadataString FMetadataString::ZeroValue(TEXT(""));
 const FMetadataText FMetadataText::ZeroValue(TEXT(""));
-

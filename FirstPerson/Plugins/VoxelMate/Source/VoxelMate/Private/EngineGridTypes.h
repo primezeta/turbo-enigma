@@ -3,39 +3,9 @@
 #include <openvdb/openvdb.h>
 
 template<>
-FORCEINLINE FVoxelBool openvdb::zeroVal<FVoxelBool>()
+FORCEINLINE FVoxel openvdb::zeroVal<FVoxel>()
 {
-	return FVoxelBool::ZeroValue;
-}
-
-template<>
-FORCEINLINE FVoxelUInt8 openvdb::zeroVal<FVoxelUInt8>()
-{
-	return FVoxelUInt8::ZeroValue;
-}
-
-template<>
-FORCEINLINE FVoxelInt32 openvdb::zeroVal<FVoxelInt32>()
-{
-	return FVoxelInt32::ZeroValue;
-}
-
-template<>
-FORCEINLINE FVoxelFloat openvdb::zeroVal<FVoxelFloat>()
-{
-	return FVoxelFloat::ZeroValue;
-}
-
-template<>
-FORCEINLINE FVoxelVector openvdb::zeroVal<FVoxelVector>()
-{
-	return FVoxelVector::ZeroValue;
-}
-
-template<>
-FORCEINLINE FVoxelIntVector openvdb::zeroVal<FVoxelIntVector>()
-{
-	return FVoxelIntVector::ZeroValue;
+	return FVoxel();
 }
 
 template<>
