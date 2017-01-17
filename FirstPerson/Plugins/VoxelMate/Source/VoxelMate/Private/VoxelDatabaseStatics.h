@@ -106,10 +106,10 @@ namespace VoxelDatabaseUtil
 		typedef typename GridType::ValueType VoxelType;
 		typedef typename IterT IterType;
 
-		const AGridSource& GridSource;
+		const UGridSource& GridSource;
 		const GridType& Grid;
 
-		TSetValuesOp(const AGridSource &InGridSource, const GridType& InGrid)
+		TSetValuesOp(const UGridSource &InGridSource, const GridType& InGrid)
 			: GridSource(InGridSource), Grid(InGrid)
 		{}
 
@@ -885,6 +885,7 @@ namespace VoxelDatabaseStatics
 	const extern FString HalfFloatTypenameSuffix;
 	//const static FString HalfFloatTypenameSuffix = UTF8_TO_TCHAR(HALF_FLOAT_TYPENAME_SUFFIX);
 	//extern const ANSICHAR* HALF_FLOAT_TYPENAME_SUFFIX; FFFFUUUUU can't get this to link from the anonymous namespace
+	const extern FString MetaNameGridRegionScale;
 	const extern FString MetaNameGridValueSource;
 	const extern FString MetaNameGridIndex;
 	const extern FString MetaNameGridDisplayText; //TODO maybe make openvdb::Name copies of these
@@ -998,45 +999,40 @@ namespace VoxelDatabaseStatics
 		Grid.setTransform(openvdb::math::Transform::Ptr(new openvdb::math::Transform(openvdb::math::MapBase::Ptr(new openvdb::math::NonlinearFrustumMap(BoundingBox, Taper, Depth)))));
 	}
 
-	FORCEINLINE_DEBUGGABLE void CreateGridData(const FText& GridDisplayText, bool SaveFloatAsHalf, openvdb::GridBase::Ptr& OutGridPtr)
+	FORCEINLINE_DEBUGGABLE void CreateGridData(const UGridSource& DataSource, const FVector& GridTranslation, bool SaveFloatAsHalf, openvdb::GridBase::Ptr& OutGridPtr)
 	{
-		NET_LOG_STATIC(LogVoxelMate, "%s", *GridDisplayText.ToString());
+		NET_LOG_STATIC(LogVoxelMate, "%s");
+
 		OutGridPtr = FGridFactory::Create<FVoxel>();
-		OutGridPtr->setName(TCHAR_TO_UTF8(*GridDisplayText.ToString()));
+		//OutGridPtr->setName(TCHAR_TO_UTF8(*GridDescription.ToString()));
 		OutGridPtr->setSaveFloatAsHalf(SaveFloatAsHalf);
-		//FMetaMapFactory::InsertGridMeta<FMetadataText>(*OutGridPtr, MetaNameGridDisplayText, FMetadataText(GridDisplayText));
+		
+		const GridType::Ptr TypedGridPtr = openvdb::gridPtrCast<GridType>(OutGridPtr);
+		if (TypedGridPtr)
+		{
+			const openvdb::Coord FillStart(0, 0, 0);
+			const openvdb::Coord FillEnd(DataSource.RegionVoxelCount.X - 1, DataSource.RegionVoxelCount.Y - 1, DataSource.RegionVoxelCount.Z - 1);
+			const openvdb::CoordBBox FillBBox(FillStart, FillEnd);
+			openvdb::TypedMetadata<FVoxel>::Ptr BackgroundValueMetadata = boost::static_pointer_cast<openvdb::TypedMetadata<FVoxel>>(TypedGridPtr->tree().getBackgroundValue());
+
+			TypedGridPtr->fill(FillBBox, BackgroundValueMetadata->value(), true);
+			TypedGridPtr->tree().voxelizeActiveTiles();
+
+			const FTranslationCoordinateTransform GridCoordTransform(GridTranslation);
+			SetGridCoordinateTransform<FTranslationCoordinateTransform>(*OutGridPtr, GridCoordTransform);
+
+			typedef VoxelDatabaseUtil::VoxelIteratorAdaptor<EVoxelIterator::ActiveVoxelsIter, GridType> IterAdaptor;
+			typedef VoxelDatabaseUtil::TSetValuesOp<IterAdaptor::Type, GridType> OpType;
+
+			OpType SetValuesOp(DataSource, *TypedGridPtr);
+			openvdb::tools::foreach<IterAdaptor::Type, OpType>(IterAdaptor::SelectIter(*TypedGridPtr), SetValuesOp);
+		}
+		else
+		{
+			//TODO log error (grid types mismatched)
+			check(false); //TODO handle error
+		}
 	}
-
-	//FORCEINLINE_DEBUGGABLE void CreateVoxelValuesFromSource(const openvdb::GridBase::Ptr& GridPtr, AGridSource& GridSource)
-	//{
-	//	const GridType::Ptr TypedGridPtr = openvdb::gridPtrCast<GridType>(GridPtr);
-	//	if (TypedGridPtr)
-	//	{
-	//		const openvdb::Coord FillStart(0, 0, 0);
-	//		const openvdb::Coord FillEnd(GridSource.GridSize.X - 1, GridSource.GridSize.Y - 1, GridSource.GridSize.Z - 1);
-	//		const openvdb::CoordBBox FillBBox(FillStart, FillEnd);
-	//		openvdb::TypedMetadata<FVoxel>::Ptr BackgroundValueMetadata = boost::static_pointer_cast<openvdb::TypedMetadata<FVoxel>>(TypedGridPtr->tree().getBackgroundValue());
-
-	//		TypedGridPtr->fill(FillBBox, BackgroundValueMetadata->value(), true);
-	//		TypedGridPtr->tree().voxelizeActiveTiles();
-
-	//		FTranslationCoordinateTransform CoordTransform(GridSource.GridTranslation);
-	//		SetGridCoordinateTransform<FTranslationCoordinateTransform>(*GridPtr, CoordTransform);
-
-	//		GridPtr->insertMeta(TCHAR_TO_UTF8(*MetaNameGridIndex), openvdb::TypedMetadata<FMetadataIntVector>(FMetadataIntVector(GridSource.GridIndex)));
-
-	//		typedef VoxelDatabaseUtil::VoxelIteratorAdaptor<EVoxelIterator::ActiveVoxelsIter, GridType> IterAdaptor;
-	//		typedef VoxelDatabaseUtil::TSetValuesOp<IterAdaptor::Type, GridType> OpType;
-
-	//		OpType SetValuesOp(GridSource, *TypedGridPtr);
-	//		openvdb::tools::foreach<IterAdaptor::Type, OpType>(IterAdaptor::SelectIter(*TypedGridPtr), SetValuesOp);
-	//	}
-	//	else
-	//	{
-	//		//TODO log error (grid types mismatched)
-	//		check(false); //TODO handle error
-	//	}
-	//}
 
 	FORCEINLINE_DEBUGGABLE void ServerUpdateChangedVoxelValues(const openvdb::GridBase::Ptr& GridPtr, AVoxelDatabase& ServerDatabase)
 	{

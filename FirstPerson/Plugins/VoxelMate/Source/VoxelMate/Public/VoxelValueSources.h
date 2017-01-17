@@ -4,34 +4,30 @@
 #include "VoxelValueSources.generated.h"
 
 UCLASS(Abstract, NotPlaceable, Blueprintable)
-class VOXELMATE_API AGridSource : public AActor
+class VOXELMATE_API UGridSource : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	AGridSource(const FObjectInitializer& Initializer)
+	UGridSource(const FObjectInitializer& Initializer)
 		: Super(Initializer)
 	{
-		SetReplicates(true);
-		IsFloatSavedAsHalf = false;
+		GridId = FGuid::NewGuid();
+		NumActiveAdjacentRegions = FIntVector(0, 0, 0);
+		RegionVoxelCount = FIntVector(1, 1, 1);
 	}
 
-	UFUNCTION(Category = VoxelGridSource, BlueprintCallable)
-		FString ToString()
-		{
-			return FString::Printf(TEXT("%s%s"), *GridSectionDimensions.ToString(), IsFloatSavedAsHalf ? TEXT(";half") : TEXT(""));
-		}
+	UPROPERTY(Replicated, BlueprintReadOnly)
+		FGuid GridId;
+	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere)
+		FIntVector NumActiveAdjacentRegions;
+	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere)
+		FIntVector RegionVoxelCount;
 
-	virtual void Serialize(FArchive& Ar) override
+	virtual bool IsSupportedForNetworking() const override
 	{
-		Ar << GridSectionDimensions;
-		Ar << IsFloatSavedAsHalf;
+		return true;
 	}
-	
-	UPROPERTY(Replicated, BlueprintReadOnly)
-		FIntVector GridSectionDimensions;
-	UPROPERTY(Replicated, BlueprintReadOnly)
-		bool IsFloatSavedAsHalf;
 
 	UFUNCTION(Category = VoxelGridSource, BlueprintNativeEvent, BlueprintCallable)
 		void GetValue(float x, float y, float z, FVoxel& OutValue) const;

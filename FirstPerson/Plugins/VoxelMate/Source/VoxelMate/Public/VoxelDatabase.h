@@ -2,6 +2,7 @@
 #include "EngineMinimal.h"
 #include "VoxelDatabaseCommon.h"
 #include "UnrealNetwork.h"
+#include "Runtime/Engine/Classes/Engine/ActorChannel.h"
 #include "VoxelValueSources.h"
 #include "VoxelDatabase.generated.h"
 
@@ -123,13 +124,24 @@ public:
 		SetReplicateMovement(false);
 		SetActorEnableCollision(false);
 		bNetTemporary = 0;
-		bAutoDestroyWhenFinished = 0;
 		bCanBeDamaged = 0;
 		bAlwaysRelevant = 1;
 		bNetLoadOnClient = 1;
-		//ServerDatabaseIsInitialized = false;
 	}
 
+	UPROPERTY(ReplicatedUsing=OnRep_GridSource)
+		UGridSource* GridSource;
+
+	UFUNCTION(Category = VoxelDatabase, BlueprintCallable)
+		void InitializeAuthGridSource(UGridSource* GridSourceTemplate, TSubclassOf<UGridSource> GridSourceType);
+
+	UFUNCTION(Category = VoxelDatabase)
+		void OnRep_GridSource();
+
+	UFUNCTION(Category = VoxelDatabase, BlueprintCallable)
+		void GenerateGridValues(const FGuid& GridId, const FVector& Location);
+
+	virtual bool ReplicateSubobjects(UActorChannel *Channel, FOutBunch *Bunch, FReplicationFlags *RepFlags) override;
 	virtual void Serialize(FArchive& Ar) override;
 
 	//UPROPERTY(ReplicatedUsing=OnRep_ServerDatabaseIsInitialized)
@@ -146,11 +158,6 @@ public:
 
 	//UFUNCTION()
 	//	void OnRep_GridBaseValuesGeneratorArray();
-
-	UFUNCTION(Category = VoxelDatabase, BlueprintCallable, NetMulticast, Reliable, WithValidation)
-		void AddGrid(TSubclassOf<AGridSource> GridSourceClass, const FText& GridText);
-	bool AddGrid_Validate(TSubclassOf<AGridSource> GridSourceClass, const FText& GridText);
-	void AddGrid_Implementation(TSubclassOf<AGridSource> GridSourceClass, const FText& GridText);
 
 	//UFUNCTION(Category = VoxelDatabase, BlueprintCallable, NetMulticast, Reliable, WithValidation)
 	//	void ChangeVoxel(const FIntVector& GridId, const FIntVector& IndexCoord, const FVoxel& Voxel, bool IsActive);

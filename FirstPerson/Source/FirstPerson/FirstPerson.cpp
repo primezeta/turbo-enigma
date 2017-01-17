@@ -5,13 +5,13 @@
 
 DEFINE_LOG_CATEGORY(LogFirstPerson);
 
-void AVoxelPerlinNoiseSource::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UVoxelPerlinNoiseSource::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AVoxelPerlinNoiseSource, Frequency);
-	DOREPLIFETIME(AVoxelPerlinNoiseSource, Lacunarity);
-	DOREPLIFETIME(AVoxelPerlinNoiseSource, Persistence);
-	DOREPLIFETIME(AVoxelPerlinNoiseSource, OctaveCount);
+	DOREPLIFETIME(UVoxelPerlinNoiseSource, Frequency);
+	DOREPLIFETIME(UVoxelPerlinNoiseSource, Lacunarity);
+	DOREPLIFETIME(UVoxelPerlinNoiseSource, Persistence);
+	DOREPLIFETIME(UVoxelPerlinNoiseSource, OctaveCount);
 }
 
 IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, FirstPerson, "FirstPerson" );
